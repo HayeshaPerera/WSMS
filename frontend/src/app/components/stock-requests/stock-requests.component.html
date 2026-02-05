@@ -1,0 +1,97 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <div class="page-header">
+    <h2>📋 Stock Requests Management</h2>
+    <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+      <span>📄</span> Export PDF
+    </button>
+  </div>
+  <div *ngIf="loading" class="spinner"></div>
+  
+  <div class="table-container" *ngIf="!loading && requests.length > 0; else emptyState">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>From Supermarket</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Requested</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of requests" [ngClass]="{'highlight-pending': r.status==='PENDING'}">
+          <td><strong>#{{r.id}}</strong></td>
+          <td>
+            <div class="supermarket-info">
+              <strong>{{r.supermarket?.name || 'Unknown'}}</strong>
+              <small *ngIf="r.supermarket?.code">{{r.supermarket?.code}}</small>
+            </div>
+          </td>
+          <td>
+            <div class="product-info">
+              <strong>{{r.product?.name || 'Unknown Product'}}</strong>
+              <small>{{r.product?.sku || 'N/A'}}</small>
+            </div>
+          </td>
+          <td><strong>{{r.requestedQuantity}}</strong> units</td>
+          <td>
+            {{r.requestedAt | date:'MMM d, y'}}
+            <br>
+            <small class="text-muted">{{r.requestedAt | date:'shortTime'}}</small>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-warning': r.status==='PENDING',
+              'badge-success': r.status==='APPROVED',
+              'badge-danger': r.status==='REJECTED'
+            }">
+              <span *ngIf="r.status==='PENDING'">⏳ PENDING</span>
+              <span *ngIf="r.status==='APPROVED'">✅ APPROVED</span>
+              <span *ngIf="r.status==='REJECTED'">❌ REJECTED</span>
+            </span>
+            <div *ngIf="r.status === 'APPROVED' && r.approvedAt" class="response-date">
+              <small>{{r.approvedAt | date:'short'}}</small>
+            </div>
+            <div *ngIf="r.status === 'REJECTED' && r.rejectionReason" class="rejection-info">
+              <small class="rejection-reason">{{r.rejectionReason}}</small>
+            </div>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button 
+                class="btn btn-success" 
+                *ngIf="auth.isWarehouseStaff() && r.status==='PENDING'" 
+                (click)="approve(r)"
+                title="Approve request and create delivery">
+                ✅ Approve
+              </button>
+              <button 
+                class="btn btn-danger" 
+                *ngIf="auth.isWarehouseStaff() && r.status==='PENDING'" 
+                (click)="reject(r)"
+                title="Reject request">
+                ❌ Reject
+              </button>
+              <span *ngIf="r.status === 'APPROVED'" class="status-text success">
+                ✓ Approved - Delivery Created
+              </span>
+              <span *ngIf="r.status === 'REJECTED'" class="status-text danger">
+                ✗ Rejected
+              </span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <p>📭 No stock requests found</p>
+      <small>Requests from supermarkets will appear here</small>
+    </div>
+  </ng-template>
+</div>

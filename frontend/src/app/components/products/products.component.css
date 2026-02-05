@@ -1,0 +1,92 @@
+/* Products styles - Modern Black/Yellow Theme */
+.container {
+	background: var(--primary-bg);
+	color: var(--text-primary);
+	min-height: 100vh;
+	padding: 32px 16px;
+}
+
+h2 {
+	color: var(--accent-color);
+	font-size: 2rem;
+	font-weight: 700;
+	margin-bottom: 24px;
+}
+
+.table-container {
+	background: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+	box-shadow: var(--shadow);
+	overflow: hidden;
+	margin-top: 16px;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+thead {
+	background: var(--accent-hover);
+	border-bottom: 2px solid var(--border-color);
+}
+
+thead th {
+	padding: 14px 12px;
+	text-align: left;
+	font-weight: 700;
+	color: var(--accent-color);
+	font-size: 0.95rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+tbody tr {
+	border-bottom: 1px solid var(--border-color);
+	transition: background 0.3s;
+}
+
+tbody tr:hover {
+	background: var(--secondary-bg);
+}
+
+tbody td {
+	padding: 14px 12px;
+	color: var(--text-primary);
+	font-size: 0.95rem;
+}
+
+tbody td strong {
+	font-weight: 600;
+	color: var(--accent-color);
+}
+
+.spinner {
+	width: 50px;
+	height: 50px;
+	border: 4px solid var(--border-color);
+	border-top-color: var(--accent-color);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin: 60px auto;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+	.container {
+		padding: 16px 4px;
+	}
+	h2 {
+		font-size: 1.3rem;
+	}
+	.table-container {
+		overflow-x: auto;
+	}
+	table {
+		min-width: 700px;
+	}
+}

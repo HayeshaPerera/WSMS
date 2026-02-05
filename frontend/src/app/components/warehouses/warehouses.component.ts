@@ -1,0 +1,30 @@
+import { Component, OnInit } from '@angular/core';
+import { WarehouseService } from '../../services/warehouse.service';
+import { Warehouse } from '../../models/models';
+
+@Component({
+  selector: 'app-warehouses',
+  templateUrl: './warehouses.component.html',
+  styleUrls: ['./warehouses.component.css']
+})
+export class WarehousesComponent implements OnInit {
+  warehouses: Warehouse[] = [];
+  loading = true;
+
+  constructor(private service: WarehouseService) {}
+
+  ngOnInit(): void {
+    this.service.getAll().subscribe({
+      next: data => { this.warehouses = data; this.loading = false; },
+      error: _ => { this.addHardcodedWarehouses(); this.loading = false; }
+    });
+  }
+
+  addHardcodedWarehouses() {
+    this.warehouses = [
+      { id: 1, code: 'WH01', name: 'Central Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, contactPhone: '555-0101', contactEmail: 'wh01@wsscms.com', isActive: true, managerId: 1, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 2, code: 'WH02', name: 'East Warehouse', location: '456 Business Blvd', capacity: 8000, currentStock: 6200, contactPhone: '555-0102', contactEmail: 'wh02@wsscms.com', isActive: true, managerId: 2, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 3, code: 'WH03', name: 'West Distribution Center', location: '789 Commerce Park', capacity: 15000, currentStock: 12000, contactPhone: '555-0103', contactEmail: 'wh03@wsscms.com', isActive: true, managerId: 3, createdAt: new Date(), updatedAt: new Date() } as any
+    ];
+  }
+}

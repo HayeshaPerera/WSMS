@@ -1,0 +1,175 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <div class="header-row">
+    <h2>Warehouse Inventory</h2>
+    <button class="btn btn-primary" (click)="toggleForm()">{{ showForm ? 'Cancel' : '+ Add Item' }}</button>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let k of kpis">
+      <div class="kpi-label">{{k.label}}</div>
+      <div class="kpi-value">{{k.value}}</div>
+    </div>
+  </div>
+
+  <!-- Utilization & Schedule -->
+  <div class="two-col">
+    <div class="util-card">
+      <h3>Storage Utilization</h3>
+      <div class="util-stats">
+        <div><span>Capacity</span><strong>{{utilization.capacity}} units</strong></div>
+        <div><span>Current</span><strong>{{utilization.current}} units</strong></div>
+        <div><span>Free</span><strong>{{utilization.free}} units</strong></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" [style.width.%]="(utilization.current / utilization.capacity) * 100"></div></div>
+    </div>
+    <div class="schedule-card">
+      <h3>Receiving Schedule (Today)</h3>
+      <div class="schedule-list">
+        <div class="schedule-item" *ngFor="let r of receivingSchedule">
+          <span class="time">{{r.eta}}</span>
+          <span class="supplier">{{r.supplier}}</span>
+          <span class="sku">{{r.sku}}</span>
+          <span class="qty">{{r.qty}} units</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top SKUs -->
+  <div class="topskus-card">
+    <h3>Top SKUs Turnover</h3>
+    <div class="topskus-list">
+      <div class="topsku" *ngFor="let t of topSkus">
+        <span class="sku">{{t.sku}}</span>
+        <span class="name">{{t.name}}</span>
+        <span class="turnover">{{t.turnover}} units/week</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-container" *ngIf="showForm">
+    <h3>{{ editingId ? 'Edit Item' : 'Add New Item' }}</h3>
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Product:</label>
+        <select [(ngModel)]="form.productId" name="productId" required (change)="onProductSelect($event)">
+          <option value="">Select a product</option>
+          <option *ngFor="let p of products" [value]="p.id">{{ p.sku }} - {{ p.name }}</option>
+          <option value="new">+ Create New Product</option>
+        </select>
+      </div>
+      <div *ngIf="isNewProduct" class="new-product-section">
+        <h4>New Product Details</h4>
+        <div class="form-group">
+          <label>SKU</label>
+          <input type="text" [(ngModel)]="newProduct.sku" name="newSku" required>
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="newProduct.name" name="newName" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" [(ngModel)]="newProduct.category" name="newCategory" required>
+        </div>
+        <div class="form-group">
+          <label>Unit Price</label>
+          <input type="number" [(ngModel)]="newProduct.unitPrice" name="newUnitPrice" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Quantity:</label>
+        <input type="number" [(ngModel)]="form.quantity" name="quantity" required>
+      </div>
+      <div class="form-group">
+        <label>Reorder Level:</label>
+        <input type="number" [(ngModel)]="form.reorderLevel" name="reorderLevel" required>
+      </div>
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-success">{{ editingId ? 'Update' : 'Add' }}</button>
+        <button type="button" class="btn btn-secondary" (click)="resetForm(); toggleForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading" class="spinner"></div>
+  <div class="table-container" *ngIf="!loading && inventory.length; else empty">
+    <table>
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Reorder Level</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inventory">
+          <td>{{item.product?.sku || 'N/A'}}</td>
+          <td>{{item.product?.name || 'Unknown Product'}}</td>
+          <td><strong>{{item.quantity}}</strong></td>
+          <td>{{item.reorderLevel}}</td>
+          <td>
+            <span class="badge" [ngClass]="item.lowStockAlert ? 'badge-danger' : 'badge-success'">
+              {{ item.lowStockAlert ? 'LOW STOCK' : 'OK' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-warning" (click)="edit(item)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(item.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #empty>
+    <div class="alert alert-info">No inventory records found. Click 'Add Item' to get started.</div>
+  </ng-template>
+
+  <!-- Activity -->
+  <div class="activity-card">
+      <!-- Pending Stock Requests for Approval -->
+      <div class="section-card">
+        <h3>Pending Stock Requests</h3>
+        <div *ngIf="pendingRequests.length; else noRequests">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Request #</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Supermarket</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of pendingRequests">
+                <td>#{{req.id}}</td>
+                <td>{{req.product?.name || 'Unknown Product'}}</td>
+                <td>{{req.requestedQuantity}} units</td>
+                <td>{{req.supermarket?.name || 'Unknown'}}</td>
+                <td>
+                  <button class="btn btn-success btn-sm" (click)="approveRequest(req.id, req.requestedQuantity)">✅ Approve</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noRequests>
+          <div class="alert alert-info">No pending stock requests for approval.</div>
+        </ng-template>
+      </div>
+    <h3>Recent Activity</h3>
+    <div class="activity-list">
+      <div class="activity-item" *ngFor="let a of recentActivity">
+        <span class="time">{{a.time}}</span>
+        <span class="text">{{a.text}}</span>
+        <span class="tag" [ngClass]="a.type">{{a.type}}</span>
+      </div>
+    </div>
+  </div>
+</div>

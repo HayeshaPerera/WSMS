@@ -1,0 +1,119 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <div class="page-header">
+    <h2>📦 Delivery Tracking</h2>
+    <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+      <span>📄</span> Export PDF
+    </button>
+  </div>
+  <div *ngIf="loading" class="spinner"></div>
+  
+  <div class="table-container" *ngIf="!loading && deliveries.length > 0; else emptyState">
+    <table>
+      <thead>
+        <tr>
+          <th>Tracking #</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>From → To</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of deliveries">
+          <td><strong>{{d.trackingNumber}}</strong></td>
+          <td>{{d.product?.name || 'Unknown Product'}}</td>
+          <td>{{d.quantity}} units</td>
+          <td>
+            <div class="route">
+              <span class="warehouse">{{d.warehouse?.name || 'Unknown'}}</span>
+              <span class="arrow">→</span>
+              <span class="supermarket">{{d.supermarket?.name || 'Unknown'}}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-warning': d.status === 'PENDING',
+              'badge-info': d.status === 'DISPATCHED' || d.status === 'IN_TRANSIT',
+              'badge-primary': d.status === 'OUT_FOR_DELIVERY',
+              'badge-success': d.status === 'DELIVERED',
+              'badge-danger': d.status === 'CANCELLED' || d.status === 'FAILED'
+            }">
+              {{d.status}}
+            </span>
+          </td>
+          <td>
+            <small>{{d.createdAt | date:'short'}}</small>
+            <div *ngIf="d.estimatedDelivery">
+              <small class="text-primary"><strong>📅 Expected: {{d.estimatedDelivery | date:'MMM d, y'}}</strong></small>
+            </div>
+            <div *ngIf="d.deliveredAt">
+              <small class="text-success">✅ Delivered: {{d.deliveredAt | date:'short'}}</small>
+            </div>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <!-- Warehouse Actions -->
+              <button 
+                *ngIf="auth.isWarehouseStaff() && d.status === 'PENDING'" 
+                class="btn btn-sm btn-primary" 
+                (click)="setStatus(d, statuses.DISPATCHED)"
+                title="Mark as dispatched">
+                🚛 Dispatch
+              </button>
+              <button 
+                *ngIf="auth.isWarehouseStaff() && d.status === 'DISPATCHED'" 
+                class="btn btn-sm btn-info" 
+                (click)="setStatus(d, statuses.IN_TRANSIT)"
+                title="Mark as in transit">
+                🚚 In Transit
+              </button>
+              <button 
+                *ngIf="auth.isWarehouseStaff() && d.status === 'IN_TRANSIT'" 
+                class="btn btn-sm btn-warning" 
+                (click)="setStatus(d, statuses.OUT_FOR_DELIVERY)"
+                title="Mark as out for delivery">
+                📍 Out for Delivery
+              </button>
+              
+              <!-- Supermarket Actions -->
+              <div *ngIf="isSupermarketUserForDelivery(d) && (d.status === 'OUT_FOR_DELIVERY' || d.status === 'IN_TRANSIT' || d.status === 'DISPATCHED' || d.status === 'PENDING')">
+                <button 
+                  class="btn btn-sm btn-success" 
+                  (click)="markReceived(d, true)"
+                  title="Confirm receipt">
+                  ✅ Received
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="markReceived(d, false)"
+                  title="Mark as not received">
+                  ❌ Not Received
+                </button>
+              </div>
+              
+              <!-- Already Delivered -->
+              <span *ngIf="d.status === 'DELIVERED'" class="text-success">
+                ✅ Received {{d.deliveredAt | date:'short'}}
+              </span>
+              
+              <!-- Not Received Status -->
+              <span *ngIf="d.status === 'FAILED'" class="text-danger">
+                ❌ Not Received
+                <small *ngIf="d.failureReason" class="d-block">{{d.failureReason}}</small>
+              </span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <p>📭 No deliveries found</p>
+    </div>
+  </ng-template>
+</div>

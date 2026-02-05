@@ -1,0 +1,241 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <div class="page-header">
+    <h2>Analytics & Risk Management Dashboard</h2>
+    <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+      Export PDF Report
+    </button>
+  </div>
+  
+  <!-- Alert Summary Cards -->
+  <div class="alert-summary">
+    <div class="summary-card critical">
+      <div class="card-value">{{alertStats.critical}}</div>
+      <div class="card-label">Critical</div>
+    </div>
+    <div class="summary-card high">
+      <div class="card-value">{{alertStats.high}}</div>
+      <div class="card-label">High Priority</div>
+    </div>
+    <div class="summary-card medium">
+      <div class="card-value">{{alertStats.medium}}</div>
+      <div class="card-label">Medium</div>
+    </div>
+    <div class="summary-card low">
+      <div class="card-value">{{alertStats.low}}</div>
+      <div class="card-label">Low</div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button 
+      [class.active]="selectedTab === 'alerts'" 
+      (click)="selectedTab = 'alerts'">
+      Alerts & Exceptions
+    </button>
+    <button 
+      [class.active]="selectedTab === 'reorder'" 
+      (click)="selectedTab = 'reorder'">
+      Reorder Recommendations
+    </button>
+    <button 
+      [class.active]="selectedTab === 'costs'" 
+      (click)="selectedTab = 'costs'">
+      Cost Analysis
+    </button>
+    <button 
+      [class.active]="selectedTab === 'audit'" 
+      (click)="selectedTab = 'audit'">
+      Audit Trail
+    </button>
+  </div>
+
+  <!-- Alerts Tab -->
+  <div *ngIf="selectedTab === 'alerts'" class="tab-content">
+    <div class="section-header">
+      <h3>Active Alerts & Exceptions</h3>
+      <button class="btn btn-sm btn-secondary" (click)="clearAcknowledged()">
+        Clear Acknowledged
+      </button>
+    </div>
+    
+    <div *ngIf="alerts.length === 0" class="empty-state">
+      <p>No active alerts - System operating normally</p>
+    </div>
+    
+    <div class="alerts-container" *ngIf="alerts.length > 0">
+      <div *ngFor="let alert of alerts" class="alert-card" [ngClass]="getSeverityClass(alert.severity)">
+        <div class="alert-icon">{{getAlertIcon(alert.type)}}</div>
+        <div class="alert-content">
+          <div class="alert-header">
+            <span class="alert-title">{{alert.title}}</span>
+            <span class="alert-severity">{{alert.severity}}</span>
+          </div>
+          <div class="alert-message">{{alert.message}}</div>
+          <div class="alert-footer">
+            <small>{{alert.timestamp | date:'short'}}</small>
+            <button class="btn-link" (click)="acknowledgeAlert(alert.id)">
+              Acknowledge
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reorder Recommendations Tab -->
+  <div *ngIf="selectedTab === 'reorder'" class="tab-content">
+    <h3>AI-Powered Reorder Recommendations</h3>
+    
+    <div class="recommendations-grid">
+      <div *ngFor="let rec of reorderRecommendations" class="recommendation-card">
+        <div class="rec-header">
+          <h4>{{rec.productName}}</h4>
+          <span class="confidence-badge" [ngClass]="getConfidenceClass(rec.confidence)">
+            {{rec.confidence}}% confidence
+          </span>
+        </div>
+        
+        <div class="rec-stats">
+          <div class="stat">
+            <label>Current Stock:</label>
+            <div class="current">{{rec.currentStock}} units</div>
+          </div>
+          <div class="stat">
+            <label>Reorder Level:</label>
+            <div class="reorder">{{rec.reorderLevel}} units</div>
+          </div>
+          <div class="stat">
+            <label>Recommended Qty:</label>
+            <div class="recommended">{{rec.recommendedQuantity}} units</div>
+          </div>
+          <div class="stat">
+            <label>Estimated Cost:</label>
+            <div class="cost">{{rec.estimatedCost | lkr}}</div>
+          </div>
+          <div class="stat">
+            <label>Days Until Stockout:</label>
+            <div class="days" [class.urgent]="rec.daysUntilStockout < 7">
+              {{rec.daysUntilStockout}} days
+            </div>
+          </div>
+        </div>
+        
+        <div class="rec-reasoning">
+          <strong>Analysis:</strong> {{rec.reasoning}}
+        </div>
+        
+        <button class="btn btn-primary btn-block" disabled>
+          Create Stock Request
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Analysis Tab -->
+  <div *ngIf="selectedTab === 'costs'" class="tab-content">
+    <h3>Financial Impact Analysis</h3>
+    
+    <div *ngIf="costAnalysis" class="cost-dashboard">
+      <div class="cost-card total-value">
+        <div class="cost-icon">TOTAL</div>
+        <div class="cost-info">
+          <div class="cost-label">Total Inventory Value</div>
+          <div class="cost-value">{{costAnalysis.totalInventoryValue | lkr}}</div>
+        </div>
+      </div>
+      
+      <div class="cost-card total-impact">
+        <div class="cost-icon">IMPACT</div>
+        <div class="cost-info">
+          <div class="cost-label">Total Cost Impact</div>
+          <div class="cost-value impact">{{costAnalysis.totalCostImpact | lkr}}</div>
+          <div class="cost-trend" [class.positive]="costAnalysis.monthlyTrend < 0">
+            {{costAnalysis.monthlyTrend > 0 ? '↑' : '↓'}} {{Math.abs(costAnalysis.monthlyTrend)}}% vs last month
+          </div>
+        </div>
+      </div>
+      
+      <div class="cost-breakdown">
+        <h4>Cost Breakdown</h4>
+        <div class="breakdown-item">
+          <span class="breakdown-label">Excess Inventory Holding Cost</span>
+          <span class="breakdown-value excess">{{costAnalysis.excessInventoryCost | lkr}}</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-label">Stockout & Lost Sales Cost</span>
+          <span class="breakdown-value stockout">{{costAnalysis.stockoutCost | lkr}}</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-label">Delivery Delay Cost</span>
+          <span class="breakdown-value delay">{{costAnalysis.deliveryDelayCost | lkr}}</span>
+        </div>
+      </div>
+      
+      <div class="cost-insights">
+        <h4>Key Insights</h4>
+        <ul>
+          <li *ngIf="costAnalysis.excessInventoryCost > 1000">
+            Consider reducing excess inventory to lower holding costs
+          </li>
+          <li *ngIf="costAnalysis.stockoutCost > 500">
+            High stockout costs detected - increase reorder frequencies
+          </li>
+          <li *ngIf="costAnalysis.deliveryDelayCost > 200">
+            Delivery delays impacting costs - review logistics processes
+          </li>
+          <li *ngIf="costAnalysis.monthlyTrend > 0">
+            Costs increased by {{costAnalysis.monthlyTrend}}% - investigate root causes
+          </li>
+          <li *ngIf="costAnalysis.monthlyTrend < 0">
+            Good news! Costs decreased by {{Math.abs(costAnalysis.monthlyTrend)}}% this month
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Trail Tab -->
+  <div *ngIf="selectedTab === 'audit'" class="tab-content">
+    <div class="section-header">
+      <h3>System Audit Trail</h3>
+      <input 
+        type="search" 
+        placeholder="Search audit logs..." 
+        (input)="searchAuditLogs($any($event.target).value)"
+        class="search-input">
+    </div>
+    
+    <div class="audit-table-container">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of recentAuditLogs">
+            <td><small>{{log.timestamp | date:'short'}}</small></td>
+            <td>
+              <strong>{{log.userName}}</strong>
+              <br><small>ID: {{log.userId}}</small>
+            </td>
+            <td>
+              <span class="action-badge">{{log.action}}</span>
+            </td>
+            <td>
+              <div>{{log.entityType}}</div>
+              <small>{{log.entityName}}</small>
+            </td>
+            <td class="details-cell">{{log.details}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <h2>Supermarkets</h2>
+  <div *ngIf="loading" class="spinner"></div>
+  <div class="table-container" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Location</th>
+          <th>Storage Capacity</th>
+          <th>Current Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of supermarkets">
+          <td>{{s.code}}</td>
+          <td>{{s.name}}</td>
+          <td>{{s.location}}</td>
+          <td>{{s.storageCapacity}}</td>
+          <td>{{s.currentStock}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

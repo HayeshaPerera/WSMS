@@ -1,0 +1,25 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <h2>Users</h2>
+  <div *ngIf="loading" class="spinner"></div>
+  <div class="table-container" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th>Roles</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of users">
+          <td>{{u.username}}</td>
+          <td>{{u.email}}</td>
+          <td>{{u.fullName}}</td>
+          <td>{{rolesLabel(u)}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

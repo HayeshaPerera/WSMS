@@ -1,0 +1,185 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <div class="page-header">
+    <h2>Inventory Management</h2>
+    <div class="header-actions">
+      <button class="btn btn-success" (click)="toggleAddForm()" *ngIf="auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.isAdmin()">
+        {{ showAddForm ? 'Cancel' : '+ Add Inventory' }}
+      </button>
+      <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+        Export PDF
+      </button>
+    </div>
+  </div>
+  
+  <!-- Add Inventory Form -->
+  <div class="add-form-container" *ngIf="showAddForm">
+    <div class="form-card">
+      <h3>Add Inventory Item</h3>
+      
+      <div class="form-group">
+        <label>Select Product</label>
+        <select class="form-control" (change)="onProductSelect($event)">
+          <option value="">-- Select Existing Product or Create New --</option>
+          <option *ngFor="let product of availableProducts" [value]="product.id">
+            {{product.sku}} - {{product.name}} ({{product.category}})
+          </option>
+          <option value="new">+ Create New Product</option>
+        </select>
+      </div>
+      
+      <!-- New Product Form -->
+      <div class="new-product-section" *ngIf="isNewProduct">
+        <h4>New Product Details</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>SKU *</label>
+            <input type="text" class="form-control" [(ngModel)]="newProduct.sku" placeholder="e.g., PROD016">
+          </div>
+          <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="newProduct.name" placeholder="e.g., Organic Apples">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category *</label>
+            <select class="form-control" [(ngModel)]="newProduct.category">
+              <option value="">Select Category</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Meat">Meat</option>
+              <option value="Produce">Produce</option>
+              <option value="Grains">Grains</option>
+              <option value="Canned Goods">Canned Goods</option>
+              <option value="Spreads">Spreads</option>
+              <option value="Cooking">Cooking</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Frozen">Frozen</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Unit Price (LKR) *</label>
+            <input type="number" class="form-control" [(ngModel)]="newProduct.unitPrice" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Description (Optional)</label>
+          <textarea class="form-control" [(ngModel)]="newProduct.description" rows="2" placeholder="Product description..."></textarea>
+        </div>
+      </div>
+      
+      <!-- Inventory Details -->
+      <div class="inventory-details-section">
+        <h4>Inventory Details</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Warehouse *</label>
+            <select class="form-control" [(ngModel)]="newInventory.warehouseId">
+              <option [value]="1">Central Warehouse (WH01)</option>
+              <option [value]="2">North Distribution Center (WH02)</option>
+              <option [value]="3">South Logistics Hub (WH03)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Quantity *</label>
+            <input type="number" class="form-control" [(ngModel)]="newInventory.quantity" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>Reorder Level *</label>
+            <input type="number" class="form-control" [(ngModel)]="newInventory.reorderLevel" placeholder="0" min="0">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="addInventoryItem()">
+          {{ isNewProduct ? 'Create Product & Add Inventory' : 'Add Inventory' }}
+        </button>
+        <button class="btn btn-secondary" (click)="toggleAddForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="search" 
+        placeholder="Search by product name or SKU..." 
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+        class="search-input">
+    </div>
+    
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedCategory" (change)="applyFilters()" class="filter-select">
+        <option value="">All Categories</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
+      </select>
+      
+      <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()" class="filter-select">
+        <option value="">All Warehouses</option>
+        <option *ngFor="let wh of warehouses" [value]="wh">{{wh}}</option>
+      </select>
+      
+      <button 
+        class="btn btn-filter" 
+        [class.active]="showLowStockOnly"
+        (click)="toggleLowStockFilter()">
+        {{showLowStockOnly ? 'Showing Low Stock' : 'Show Low Stock Only'}}
+      </button>
+      
+      <button class="btn btn-secondary" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+    
+    <div class="results-count">
+      Showing {{filteredItems.length}} of {{items.length}} items
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="spinner"></div>
+  <div class="table-container" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Unit Price</th>
+          <th>Quantity</th>
+          <th>Reorder Level</th>
+          <th>Total Value</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredItems" [class.low-stock]="item.quantity <= item.reorderLevel">
+          <td>{{item.product?.sku || 'N/A'}}</td>
+          <td><strong>{{item.product?.name || 'Unknown Product'}}</strong></td>
+          <td>{{item.product?.category || 'N/A'}}</td>
+          <td>{{item.warehouse?.name || item.supermarket?.name || 'N/A'}}</td>
+          <td>{{(item.product?.unitPrice || 0) | lkr}}</td>
+          <td>{{item.quantity}}</td>
+          <td>{{item.reorderLevel}}</td>
+          <td>{{(item.quantity * (item.product?.unitPrice || 0)) | lkr}}</td>
+          <td>
+            <span class="badge" [ngClass]="item.quantity <= item.reorderLevel ? 'badge-warning' : 'badge-success'">
+              {{ item.quantity <= item.reorderLevel ? 'LOW STOCK' : 'OK' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="filteredItems.length === 0" class="empty-state">
+      <p>No items match your filters</p>
+    </div>
+  </div>
+</div>

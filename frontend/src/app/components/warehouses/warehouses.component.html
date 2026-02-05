@@ -1,0 +1,27 @@
+<app-navbar></app-navbar>
+<div class="container">
+  <h2>Warehouses</h2>
+  <div *ngIf="loading" class="spinner"></div>
+  <div class="table-container" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th>Current Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let w of warehouses">
+          <td>{{w.code}}</td>
+          <td>{{w.name}}</td>
+          <td>{{w.location}}</td>
+          <td>{{w.capacity}}</td>
+          <td>{{w.currentStock}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
