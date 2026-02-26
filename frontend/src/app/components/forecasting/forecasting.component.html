@@ -1,5 +1,4 @@
-<app-navbar></app-navbar>
-<div class="forecast-container">
+<div class="forecasting-container animate-fade-in">
   <div class="forecast-header">
     <h1>📊 Demand Forecasting</h1>
     <p class="subtitle">AI-Powered Inventory Predictions & Analysis</p>
@@ -37,10 +36,8 @@
 
     <!-- Forecasts Grid -->
     <div class="forecasts-grid">
-      <div *ngFor="let f of forecasts" 
-           class="forecast-card" 
-           [class.selected]="selectedForecast?.id === f.id"
-           (click)="selectForecast(f)">
+      <div *ngFor="let f of forecasts" class="forecast-card" [class.selected]="selectedForecast?.id === f.id"
+        (click)="selectForecast(f)">
         <div class="forecast-header-card">
           <div class="product-name">{{f.productName}}</div>
           <div class="trend-badge" [style.background]="getTrendColor(f.trend)">
@@ -59,7 +56,8 @@
           </div>
           <div class="metric">
             <label>Current Stock</label>
-            <span class="metric-value" [class.low-stock]="f.currentStock < f.predictedWeeklyDemand">{{f.currentStock}} units</span>
+            <span class="metric-value" [class.low-stock]="f.currentStock < f.predictedWeeklyDemand">{{f.currentStock}}
+              units</span>
           </div>
         </div>
 
@@ -84,7 +82,7 @@
     <!-- Detail View -->
     <div *ngIf="selectedForecast" class="detail-section">
       <h2>Detailed Forecast: {{selectedForecast.productName}}</h2>
-      
+
       <div class="detail-grid">
         <div class="detail-card">
           <h3>Product Information</h3>
@@ -102,7 +100,9 @@
           </div>
           <div class="info-row">
             <span>Current Stock:</span>
-            <strong [class.text-danger]="selectedForecast.currentStock < selectedForecast.predictedWeeklyDemand">{{selectedForecast.currentStock}} units</strong>
+            <strong
+              [class.text-danger]="selectedForecast.currentStock < selectedForecast.predictedWeeklyDemand">{{selectedForecast.currentStock}}
+              units</strong>
           </div>
         </div>
 
@@ -122,7 +122,8 @@
           </div>
           <div class="info-row">
             <span>Trend:</span>
-            <strong [style.color]="getTrendColor(selectedForecast.trend)">{{selectedForecast.trend | uppercase}} {{getTrendIcon(selectedForecast.trend)}}</strong>
+            <strong [style.color]="getTrendColor(selectedForecast.trend)">{{selectedForecast.trend | uppercase}}
+              {{getTrendIcon(selectedForecast.trend)}}</strong>
           </div>
           <div class="info-row">
             <span>Forecast Method:</span>
@@ -154,7 +155,8 @@
           </div>
           <div class="recommendation">
             <span class="rec-label">Monthly Revenue Est.:</span>
-            <span class="rec-value">{{(selectedForecast.predictedMonthlyDemand * selectedForecast.unitPrice) | lkr}}</span>
+            <span class="rec-value">{{(selectedForecast.predictedMonthlyDemand * selectedForecast.unitPrice) |
+              lkr}}</span>
           </div>
         </div>
       </div>

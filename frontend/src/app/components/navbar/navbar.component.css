@@ -291,8 +291,9 @@
   /* Below the trigger */
   right: 0;
   /* Aligned to right edge */
-  margin-top: 1rem;
-  /* Gap below trigger */
+  margin-top: 0;
+  padding-top: 1rem;
+  /* Gap below trigger box but bridged by padding */
   min-width: 200px;
   /* Minimum width */
   display: none;
@@ -305,10 +306,24 @@
   /* Above other elements */
 }
 
-/* Show dropdown on hover */
-.dropdown:hover .dropdown-content {
+/* Show dropdown on hover or when triggered by click (.show class) */
+.dropdown:hover .dropdown-content,
+.dropdown-content.show {
   display: flex;
   /* Show as flex column */
+  animation: slideTop 0.3s ease-out;
+}
+
+@keyframes slideTop {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Dropdown menu items */
@@ -597,14 +612,18 @@
   /* Absolute within wrapper */
   left: -320px;
   /* Hidden off-screen to the left */
-  width: 300px;
+  width: 280px;
   /* Panel width */
   height: calc(100% - 2rem);
   /* Full height minus margins */
   margin: 1rem;
   /* Margin for floating effect */
-  padding: 2rem;
+  padding: 2.5rem 1.5rem;
   /* Inner padding */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(25, 25, 35, 0.9) 0%, rgba(15, 15, 20, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
   transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   /* Smooth slide */
   display: flex;
@@ -731,6 +750,9 @@
 
 /* Sidebar nav link: full-width clickable area */
 .sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   padding: 0.8rem 1rem;
   /* Inner padding */
   color: var(--text-secondary);

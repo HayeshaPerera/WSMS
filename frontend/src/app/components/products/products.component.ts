@@ -15,9 +15,9 @@ export class ProductsComponent implements OnInit {
   loading = true;
   showAddForm = false;
   editingProduct: Product | null = null;
-  
+
   categories = ['Dairy', 'Bakery', 'Beverages', 'Meat', 'Produce', 'Grains', 'Canned Goods', 'Spreads', 'Cooking', 'Snacks', 'Frozen'];
-  
+
   newProduct = {
     sku: '',
     name: '',
@@ -34,7 +34,7 @@ export class ProductsComponent implements OnInit {
     private sharedData: SharedDataService,
     private notifications: NotificationService,
     public auth: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -43,18 +43,18 @@ export class ProductsComponent implements OnInit {
   loadProducts(): void {
     this.loading = true;
     this.service.getAll().subscribe({
-      next: (data) => { 
+      next: (data) => {
         if (Array.isArray(data) && data.length > 0) {
           this.products = data;
           this.sharedData.setProducts(data);
         } else {
           this.addHardcodedProducts();
         }
-        this.loading = false; 
+        this.loading = false;
       },
-      error: () => { 
-        this.addHardcodedProducts(); 
-        this.loading = false; 
+      error: () => {
+        this.addHardcodedProducts();
+        this.loading = false;
       }
     });
   }
@@ -83,45 +83,83 @@ export class ProductsComponent implements OnInit {
 
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
-    this.editingProduct = null;
     if (!this.showAddForm) {
+      this.editingProduct = null;
       this.resetForm();
     }
   }
 
-  addProduct(): void {
+  editProduct(product: Product): void {
+    this.editingProduct = product;
+    this.newProduct = {
+      sku: product.sku,
+      name: product.name,
+      category: product.category,
+      unitPrice: product.unitPrice,
+      description: product.description || '',
+      reorderLevel: product.reorderLevel,
+      minStockLevel: product.minStockLevel,
+      perishable: product.perishable
+    };
+    this.showAddForm = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  saveProduct(): void {
     if (!this.newProduct.sku || !this.newProduct.name || !this.newProduct.category || this.newProduct.unitPrice <= 0) {
       this.notifications.error('Please fill in all required fields');
       return;
     }
 
-    const newId = Math.max(...this.products.map(p => p.id), 0) + 1;
-    const product: Product = {
-      id: newId,
-      sku: this.newProduct.sku,
-      name: this.newProduct.name,
-      category: this.newProduct.category,
-      unitPrice: this.newProduct.unitPrice,
-      description: this.newProduct.description,
-      reorderLevel: this.newProduct.reorderLevel,
-      minStockLevel: this.newProduct.minStockLevel,
-      perishable: this.newProduct.perishable,
-      active: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    if (this.editingProduct) {
+      // Update existing
+      const updated: Product = {
+        ...this.editingProduct,
+        ...this.newProduct,
+        updatedAt: new Date()
+      };
 
-    this.products.unshift(product);
-    this.sharedData.addProduct(product);
-    this.notifications.success(`✅ Product "${product.name}" added successfully`);
-    
-    this.service.create(product).subscribe({
-      next: () => console.log('Product synced with backend'),
-      error: () => console.log('Backend sync failed, using local data')
-    });
+      const idx = this.products.findIndex(p => p.id === updated.id);
+      if (idx !== -1) this.products[idx] = updated;
+
+      this.sharedData.updateProduct(updated.id, updated);
+      this.notifications.success(`✅ Product "${updated.name}" updated successfully`);
+
+      this.service.update(updated.id, updated).subscribe({
+        next: () => console.log('Update synced with backend'),
+        error: () => console.log('Update sync failed')
+      });
+    } else {
+      // Create new
+      const newId = Math.max(...this.products.map(p => p.id), 0) + 1;
+      const product: Product = {
+        id: newId,
+        sku: this.newProduct.sku,
+        name: this.newProduct.name,
+        category: this.newProduct.category,
+        unitPrice: this.newProduct.unitPrice,
+        description: this.newProduct.description,
+        reorderLevel: this.newProduct.reorderLevel,
+        minStockLevel: this.newProduct.minStockLevel,
+        perishable: this.newProduct.perishable,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      this.products.unshift(product);
+      this.sharedData.addProduct(product);
+      this.notifications.success(`✅ Product "${product.name}" added successfully`);
+
+      this.service.create(product).subscribe({
+        next: () => console.log('Product synced with backend'),
+        error: () => console.log('Backend sync failed, using local data')
+      });
+    }
 
     this.resetForm();
     this.showAddForm = false;
+    this.editingProduct = null;
   }
 
   deleteProduct(product: Product): void {
@@ -129,7 +167,7 @@ export class ProductsComponent implements OnInit {
       this.products = this.products.filter(p => p.id !== product.id);
       this.sharedData.deleteProduct(product.id);
       this.notifications.success(`Product "${product.name}" deleted`);
-      
+
       this.service.delete(product.id).subscribe({
         next: () => console.log('Delete synced with backend'),
         error: () => console.log('Backend sync failed')

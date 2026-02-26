@@ -12,9 +12,9 @@
     </div>
   </header>
 
-  <!-- Add Product Form -->
+  <!-- Add/Edit Product Form -->
   <section class="glass-card mb-4 animate-slide-in" *ngIf="showAddForm">
-    <h3 class="mb-4">Product Registration</h3>
+    <h3 class="mb-4">{{ editingProduct ? 'Edit Product: ' + editingProduct.name : 'Product Registration' }}</h3>
     <div class="modern-form">
       <div class="form-grid mb-4">
         <div class="form-group">
@@ -68,7 +68,8 @@
 
       <div class="form-actions border-top pt-4">
         <button class="btn btn-secondary glass" (click)="toggleAddForm()">Discard</button>
-        <button class="btn btn-primary" (click)="addProduct()">Add to Catalog</button>
+        <button class="btn btn-primary" (click)="saveProduct()">{{ editingProduct ? 'Update Product' : 'Add to Catalog'
+          }}</button>
       </div>
     </div>
   </section>
@@ -125,9 +126,14 @@
               </span>
             </td>
             <td *ngIf="auth.isAdmin()">
-              <button class="btn btn-icon btn-logout glass" (click)="deleteProduct(p)" title="Retire Product">
-                <i class="fas fa-trash-alt"></i>
-              </button>
+              <div class="d-flex gap-1">
+                <button class="btn btn-icon btn-primary glass" (click)="editProduct(p)" title="Edit Product">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-icon btn-logout glass" (click)="deleteProduct(p)" title="Retire Product">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>

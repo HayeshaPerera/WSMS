@@ -40,6 +40,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   // ========== UI State Properties ==========
 
+  showManagementDropdown = false;
   sidebarOpen = false;         // Whether the mobile sidebar is currently visible
   showNotifPanel = false;      // Whether the notification dropdown panel is currently visible
 
@@ -130,10 +131,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Toggles the management dropdown visibility.
+   */
+  toggleManagement(): void {
+    this.showManagementDropdown = !this.showManagementDropdown;
+    this.showNotifPanel = false; // Close other dropdowns
+  }
+
+  /**
    * Toggles the mobile sidebar visibility.
    */
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen; // Flip the sidebar state
+    if (this.sidebarOpen) {
+      this.showNotifPanel = false; // Close notification panel if sidebar opens
+      this.showManagementDropdown = false; // Close management dropdown if sidebar opens
+    }
   }
 
   /**
@@ -141,6 +154,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
    */
   toggleNotifPanel(): void {
     this.showNotifPanel = !this.showNotifPanel; // Flip the panel state
+    this.showManagementDropdown = false; // Close management dropdown if notification panel opens
   }
 
   /**

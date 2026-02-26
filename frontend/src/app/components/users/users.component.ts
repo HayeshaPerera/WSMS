@@ -32,7 +32,8 @@ export class UsersComponent implements OnInit {
   }
 
   rolesLabel(user: User): string {
-    return (user.roles || []).map(r => r.name).join(', ');
+    const roles = user.roles || [];
+    return roles.map(r => typeof r === 'string' ? r : r.name).join(', ');
   }
 
   deleteUser(id: number) {
