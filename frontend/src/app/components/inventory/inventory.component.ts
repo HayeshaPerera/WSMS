@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { InventoryService } from '../../services/inventory.service';
 import { ProductService } from '../../services/product.service';
+import { WarehouseService } from '../../services/warehouse.service';
+import { SupermarketService } from '../../services/supermarket.service';
 import { NotificationService } from '../../services/notification.service';
 import { SharedDataService } from '../../services/shared-data.service';
 import { PdfReportService } from '../../services/pdf-report.service';
@@ -18,16 +20,16 @@ export class InventoryComponent implements OnInit {
   availableProducts: Product[] = [];
   loading = true;
   showAddForm = false;
-  
+
   // Filter properties
   searchTerm = '';
   selectedCategory = '';
   selectedWarehouse = '';
   showLowStockOnly = false;
-  
+
   categories = ['Dairy', 'Bakery', 'Beverages', 'Meat', 'Produce', 'Grains', 'Canned Goods', 'Spreads', 'Cooking', 'Snacks', 'Frozen'];
-  warehouses = ['Central Warehouse', 'North Distribution Center', 'South Logistics Hub'];
-  
+  warehouses: any[] = [];
+
   // Form properties
   selectedProduct: Product | null = null;
   isNewProduct = false;
@@ -49,28 +51,69 @@ export class InventoryComponent implements OnInit {
   constructor(
     private inventoryService: InventoryService,
     private productService: ProductService,
+    private warehouseService: WarehouseService,
+    private supermarketService: SupermarketService,
     private notifications: NotificationService,
     private sharedData: SharedDataService,
     private pdfReport: PdfReportService,
     public auth: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Always load hardcoded data first to ensure visibility
     this.addHardcodedInventory();
     this.addHardcodedProducts();
+    this.addHardcodedWarehouses();
     this.filteredItems = [...this.items];
     this.loading = false;
-    
+
     // Then try to load from API (will merge/update if successful)
     this.loadInventoryFromAPI();
     this.loadProductsFromAPI();
+    this.loadWarehousesFromAPI();
+
+    // If admin, also fetch warehouses and supermarkets for full view
+    const user = this.auth.getCurrentUser();
+    if (user && this.auth.isAdmin()) {
+      this.supermarketService.getAll().subscribe({ next: (data: any) => this.sharedData.setSupermarkets(data), error: () => console.log('Failed to load supermarkets') });
+    }
+
+    // Subscribe to shared warehouses to keep local list updated
+    this.sharedData.warehouses$.subscribe(whs => {
+      if (Array.isArray(whs) && whs.length > 0) {
+        this.warehouses = whs;
+      }
+    });
 
     // Re-enrich inventory whenever products are loaded/updated (handles async arrival)
     this.sharedData.products$.subscribe(products => {
       if (Array.isArray(products) && products.length > 0) {
         this.reEnrichInventory();
       }
+    });
+  }
+
+  addHardcodedWarehouses(): void {
+    this.warehouses = [
+      { id: 1, name: 'Central Warehouse', code: 'WH01' },
+      { id: 2, name: 'North Distribution Center', code: 'WH02' },
+      { id: 3, name: 'South Logistics Hub', code: 'WH03' }
+    ];
+  }
+
+  loadWarehousesFromAPI(): void {
+    this.warehouseService.getAll().subscribe({
+      next: (data: any) => {
+        let whs: any[] = [];
+        if (Array.isArray(data)) whs = data;
+        else if (data && Array.isArray(data.data)) whs = data.data;
+
+        if (whs.length > 0) {
+          this.warehouses = whs;
+          this.sharedData.setWarehouses(whs);
+        }
+      },
+      error: () => console.log('Failed to load warehouses from API')
     });
   }
 
@@ -108,7 +151,20 @@ export class InventoryComponent implements OnInit {
   }
 
   loadInventoryFromAPI(): void {
-    this.inventoryService.getAllInventory().subscribe({
+    // If logged-in user is a supermarket user, fetch supermarket-scoped inventory
+    const user = this.auth.getCurrentUser();
+    let inventory$;
+    if (user && (this.auth.isSupermarketManager() || user.supermarketId)) {
+      const sid = user.supermarketId || (user as any).supermarketId;
+      inventory$ = this.inventoryService.getSupermarketInventory(sid);
+    } else if (user && (this.auth.isWarehouseStaff() || user.warehouseId)) {
+      const wid = user.warehouseId || (user as any).warehouseId;
+      inventory$ = this.inventoryService.getWarehouseInventory(wid);
+    } else {
+      inventory$ = this.inventoryService.getAllInventory();
+    }
+
+    inventory$.subscribe({
       next: (data: any) => {
         let inventoryData: Inventory[] = [];
         if (Array.isArray(data)) {
@@ -118,11 +174,11 @@ export class InventoryComponent implements OnInit {
         } else if (data && typeof data === 'object' && Array.isArray(data.content)) {
           inventoryData = data.content;
         }
-        
+
         // Only use API data if it has valid product information
-        const hasValidProducts = inventoryData.length > 0 && 
+        const hasValidProducts = inventoryData.length > 0 &&
           inventoryData.every(item => item.product && item.product.name && item.product.sku && item.product.unitPrice);
-        
+
         if (hasValidProducts) {
           this.items = inventoryData;
           this.filteredItems = [...this.items];
@@ -198,11 +254,11 @@ export class InventoryComponent implements OnInit {
         } else if (products && typeof products === 'object' && Array.isArray(products.content)) {
           productData = products.content;
         }
-        
+
         // Only use API data if it has valid product information
-        const hasValidProducts = productData.length > 0 && 
+        const hasValidProducts = productData.length > 0 &&
           productData.every(p => p.name && p.sku && p.unitPrice);
-        
+
         if (hasValidProducts) {
           this.availableProducts = productData;
           this.sharedData.setProducts(this.availableProducts);
@@ -274,7 +330,7 @@ export class InventoryComponent implements OnInit {
           reorderLevel: 25, minStockLevel: 8, perishable: true, active: true,
           createdAt: new Date(), updatedAt: new Date()
         },
-    
+
         warehouse: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
         quantity: 18,
         reorderLevel: 25,
@@ -460,8 +516,21 @@ export class InventoryComponent implements OnInit {
         updatedAt: new Date()
       }
     ] as Inventory[];
-    
+
     this.sharedData.setInventory(this.items);
+    // If the logged-in user is a supermarket, attach supermarket info to demo items
+    const user = this.auth.getCurrentUser();
+    if (user && user.supermarketId) {
+      const sid = user.supermarketId;
+      this.items = this.items.map(it => ({
+        ...it,
+        supermarket: { id: sid, code: `SM-${sid}`, name: `Supermarket ${sid}` },
+        // hide warehouse from supermarket view
+        warehouse: undefined
+      } as any));
+      this.filteredItems = [...this.items];
+      this.sharedData.setInventory(this.items);
+    }
   }
 
   addHardcodedProducts(): void {
@@ -482,7 +551,7 @@ export class InventoryComponent implements OnInit {
       { id: 14, sku: 'PROD014', name: 'Strawberries 250g', category: 'Produce', unitPrice: 899.00, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
       { id: 15, sku: 'PROD015', name: 'Butter 200g', category: 'Dairy', unitPrice: 549.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }
     ] as Product[];
-    
+
     this.sharedData.setProducts(this.availableProducts);
   }
 
@@ -510,7 +579,10 @@ export class InventoryComponent implements OnInit {
       filtered = filtered.filter(item => item.product?.category === this.selectedCategory);
     }
     if (this.selectedWarehouse) {
-      filtered = filtered.filter(item => item.warehouse?.name === this.selectedWarehouse);
+      filtered = filtered.filter(item =>
+        item.warehouse?.name === this.selectedWarehouse ||
+        String(item.warehouse?.id) === String(this.selectedWarehouse)
+      );
     }
     if (this.showLowStockOnly) {
       filtered = filtered.filter(item => item.quantity <= item.reorderLevel);
@@ -530,10 +602,10 @@ export class InventoryComponent implements OnInit {
     this.showLowStockOnly = !this.showLowStockOnly;
     this.applyFilters();
   }
-  
+
   onProductSelect(event: any): void {
     const productId = event.target.value;
-    
+
     if (productId === 'new') {
       this.isNewProduct = true;
       this.selectedProduct = null;
@@ -547,19 +619,19 @@ export class InventoryComponent implements OnInit {
       this.newInventory.productId = null;
     }
   }
-  
+
   addInventoryItem(): void {
     if (this.newInventory.quantity <= 0) {
       this.notifications.error('Please enter a valid quantity');
       return;
     }
-    
+
     if (this.isNewProduct) {
       if (!this.newProduct.sku || !this.newProduct.name || !this.newProduct.category || this.newProduct.unitPrice <= 0) {
         this.notifications.error('Please fill in all product details (SKU, Name, Category, and Price)');
         return;
       }
-      
+
       const newProductId = Math.max(...this.availableProducts.map(p => p.id), 0) + 1;
       const createdProduct: Product = {
         id: newProductId,
@@ -575,7 +647,7 @@ export class InventoryComponent implements OnInit {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       // Try to create product in backend first
       this.productService.create(createdProduct).subscribe({
         next: (res: any) => {
@@ -606,7 +678,7 @@ export class InventoryComponent implements OnInit {
       this.createInventoryEntry(this.selectedProduct);
     }
   }
-  
+
   createInventoryEntry(product: Product, persistToBackend: boolean = true): void {
     // Validate product has an ID when persisting to backend
     if (persistToBackend && (!product || !product.id)) {
@@ -615,17 +687,17 @@ export class InventoryComponent implements OnInit {
       // Add local item only, do not attempt backend sync
       return;
     }
-    
-    const warehouseMap: {[key: number]: any} = {
+
+    const warehouseMap: { [key: number]: any } = {
       1: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
       2: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
       3: { id: 3, code: 'WH03', name: 'South Logistics Hub', location: 'Galle', capacity: 6000, currentStock: 2800, active: true, createdAt: new Date(), updatedAt: new Date() }
     };
-    
+
     const newId = Math.max(...this.items.map(i => i.id), 0) + 1;
     const warehouseId = this.newInventory.warehouseId || 1;
     const selectedWarehouse = warehouseMap[warehouseId] || warehouseMap[1];
-    
+
     const newInventoryItem: Inventory = {
       id: newId,
       product: product,
@@ -637,14 +709,14 @@ export class InventoryComponent implements OnInit {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     // Add to local state immediately for UI update
     this.items.unshift(newInventoryItem);
     this.filteredItems = [...this.items];
     this.sharedData.addInventoryItem(newInventoryItem);
-    
+
     this.notifications.success(`✅ Inventory added: ${product.name} - ${this.newInventory.quantity} units at ${selectedWarehouse.name}`);
-    
+
     // Sync with backend only if requested (product has backend id)
     if (persistToBackend) {
       const payload = {
@@ -673,11 +745,11 @@ export class InventoryComponent implements OnInit {
     } else {
       console.log('Skipping backend sync for inventory — product not persisted on backend');
     }
-    
+
     this.resetForm();
     this.showAddForm = false;
   }
-  
+
   resetForm(): void {
     this.selectedProduct = null;
     this.isNewProduct = false;

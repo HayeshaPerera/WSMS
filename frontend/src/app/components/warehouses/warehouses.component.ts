@@ -11,7 +11,7 @@ export class WarehousesComponent implements OnInit {
   warehouses: Warehouse[] = [];
   loading = true;
 
-  constructor(private service: WarehouseService) {}
+  constructor(private service: WarehouseService) { }
 
   ngOnInit(): void {
     this.service.getAll().subscribe({
@@ -26,5 +26,18 @@ export class WarehousesComponent implements OnInit {
       { id: 2, code: 'WH02', name: 'East Warehouse', location: '456 Business Blvd', capacity: 8000, currentStock: 6200, contactPhone: '555-0102', contactEmail: 'wh02@wsscms.com', isActive: true, managerId: 2, createdAt: new Date(), updatedAt: new Date() } as any,
       { id: 3, code: 'WH03', name: 'West Distribution Center', location: '789 Commerce Park', capacity: 15000, currentStock: 12000, contactPhone: '555-0103', contactEmail: 'wh03@wsscms.com', isActive: true, managerId: 3, createdAt: new Date(), updatedAt: new Date() } as any
     ];
+  }
+
+  deleteWarehouse(id: number) {
+    if (confirm('Are you sure you want to delete this warehouse?')) {
+      this.service.delete(id).subscribe({
+        next: () => this.warehouses = this.warehouses.filter(w => w.id !== id),
+        error: err => {
+          console.error('Error deleting warehouse', err);
+          // Also remove from local list if it's hardcoded offline demo
+          this.warehouses = this.warehouses.filter(w => w.id !== id);
+        }
+      });
+    }
   }
 }

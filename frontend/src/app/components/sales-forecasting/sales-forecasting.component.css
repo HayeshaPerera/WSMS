@@ -1,0 +1,720 @@
+/* ================================================
+   Sales & AI Forecasting Component Styles
+   Premium glassmorphism design with dark theme
+   ================================================ */
+
+/* Main container - no extra padding since parent provides it */
+.sales-container {
+    padding: 0;
+}
+
+/* ========================
+   Tab Switcher Styles
+   ======================== */
+
+/* Container for the tab buttons - glass card with no gap */
+.tab-switcher {
+    display: flex;
+    /* Horizontal layout */
+    gap: 0;
+    /* No gap between buttons */
+    padding: 6px;
+    /* Small inner padding for the pill effect */
+    border-radius: 14px;
+    /* Rounded corners */
+}
+
+/* Individual tab button - transparent by default */
+.tab-btn {
+    flex: 1;
+    /* Each tab takes equal width */
+    padding: 12px 20px;
+    /* Comfortable click target */
+    background: transparent;
+    /* No background by default */
+    border: none;
+    /* Remove default button border */
+    color: rgba(255, 255, 255, 0.5);
+    /* Dimmed text when inactive */
+    font-weight: 600;
+    /* Semi-bold text */
+    font-size: 0.95rem;
+    /* Slightly smaller than body text */
+    border-radius: 10px;
+    /* Rounded corners for active state */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    transition: all 0.3s ease;
+    /* Smooth transition for hover/active */
+    display: flex;
+    /* Flexbox for icon + text alignment */
+    align-items: center;
+    /* Vertically center icon and text */
+    justify-content: center;
+    /* Horizontally center content */
+    gap: 8px;
+    /* Space between icon and text */
+}
+
+/* Tab button hover state - slightly visible */
+.tab-btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Active tab button - gold accent with glow */
+.tab-btn.active {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+    /* Gold gradient */
+    color: #FFD700;
+    /* Gold text color */
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.1);
+    /* Subtle gold glow */
+}
+
+/* ========================
+   KPI Grid Styles
+   ======================== */
+
+/* 4-column grid for KPI cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+/* Individual KPI card - horizontal layout with icon + data */
+.kpi-card {
+    display: flex;
+    /* Horizontal layout */
+    align-items: center;
+    /* Vertically center content */
+    gap: 16px;
+    /* Space between icon and text */
+    padding: 20px;
+    /* Inner padding */
+    border-radius: 14px;
+    /* Rounded corners */
+}
+
+/* KPI icon circle - colored gradient background */
+.kpi-icon {
+    width: 50px;
+    /* Fixed width */
+    height: 50px;
+    /* Fixed height (square) */
+    border-radius: 12px;
+    /* Rounded square shape */
+    display: flex;
+    /* Center the icon */
+    align-items: center;
+    /* Vertical centering */
+    justify-content: center;
+    /* Horizontal centering */
+    font-size: 1.2rem;
+    /* Icon size */
+    flex-shrink: 0;
+    /* Don't shrink when space is tight */
+}
+
+/* Gradient background variants for KPI icons */
+.gradient-gold {
+    background: linear-gradient(135deg, #FFD700, #FF8C00);
+    color: #000;
+}
+
+/* Gold for revenue */
+.gradient-blue {
+    background: linear-gradient(135deg, #36A2EB, #2196F3);
+    color: #fff;
+}
+
+/* Blue for units */
+.gradient-green {
+    background: linear-gradient(135deg, #4BC0C0, #4CAF50);
+    color: #fff;
+}
+
+/* Green for avg value */
+.gradient-purple {
+    background: linear-gradient(135deg, #9966FF, #7C4DFF);
+    color: #fff;
+}
+
+/* Purple for top product */
+
+/* KPI data section - vertical layout for value + label */
+.kpi-data {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* KPI value text - large and bold */
+.kpi-value {
+    font-size: 1.3rem;
+    /* Large text for the value */
+    font-weight: 700;
+    /* Bold */
+    color: #fff;
+    /* White text */
+    white-space: nowrap;
+    /* Don't wrap to next line */
+    overflow: hidden;
+    /* Hide overflow */
+    text-overflow: ellipsis;
+    /* Show ... if text is too long */
+}
+
+/* KPI label text - small uppercase subtitle */
+.kpi-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ========================
+   Filter Panel Styles
+   ======================== */
+
+/* Filter panel container */
+.filter-panel {
+    padding: 16px 20px;
+}
+
+/* Main layout for search box and filter controls */
+.controls-layout {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Search box with icon */
+.search-box {
+    position: relative;
+}
+
+/* Search input field */
+.search-box input {
+    width: 100%;
+    /* Full width of container */
+    padding: 10px 10px 10px 36px;
+    /* Extra left padding for the search icon */
+    background: rgba(255, 255, 255, 0.05);
+    /* Subtle dark background */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Subtle border */
+    border-radius: 10px;
+    /* Rounded corners */
+    color: #fff;
+    /* White text */
+    font-size: 0.9rem;
+    /* Readable font size */
+}
+
+/* Search icon positioned inside the input */
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Filter controls group - horizontal row of dropdowns */
+.filter-group {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Individual filter item - vertical label + input */
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+}
+
+/* Shared styles for filter dropdowns and date inputs */
+.select-wrapper select,
+.date-input {
+    width: 100%;
+    /* Full width */
+    padding: 8px 12px;
+    /* Inner padding */
+    background: rgba(255, 255, 255, 0.05);
+    /* Subtle dark background */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Subtle border */
+    border-radius: 8px;
+    /* Rounded corners */
+    color: #fff;
+    /* White text */
+    font-size: 0.85rem;
+    /* Slightly smaller text */
+}
+
+/* Flex utility classes for responsive layout */
+.flex-0 {
+    flex: 0;
+    min-width: auto;
+}
+
+/* Don't grow - for the reset button */
+.flex-2 {
+    flex: 2;
+}
+
+/* Grow at 2x rate - for search box */
+.flex-3 {
+    flex: 3;
+}
+
+/* Grow at 3x rate - for filter group */
+
+/* ========================
+   Charts Grid Styles
+   ======================== */
+
+/* 2-column grid for charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Individual chart card */
+.chart-card {
+    padding: 20px;
+}
+
+/* Chart card title */
+.chart-card h4 {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Chart canvas wrapper - fixed height for consistent sizing */
+.chart-wrapper {
+    height: 260px;
+    position: relative;
+}
+
+/* Small chart variant (doughnut) - spans full width but limits max-width */
+.chart-small {
+    grid-column: 1 / -1;
+    max-width: 400px;
+}
+
+/* ========================
+   Record Sale Form Styles
+   ======================== */
+
+/* Form container */
+.record-form {
+    padding: 24px;
+}
+
+/* Form title */
+.record-form h3 {
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+/* 3-column grid for form fields */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Individual form field group - vertical label + input */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Form field label - small uppercase */
+.form-group label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Form inputs and selects - glass dark theme */
+.form-group select,
+.form-group input {
+    padding: 10px 14px;
+    /* Comfortable input padding */
+    background: rgba(255, 255, 255, 0.05);
+    /* Subtle dark background */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Subtle border */
+    border-radius: 10px;
+    /* Rounded corners */
+    color: #fff;
+    /* White text */
+    font-size: 0.9rem;
+    /* Readable font size */
+}
+
+/* Form input focus state - gold border with glow */
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    /* Remove default browser outline */
+    border-color: #FFD700;
+    /* Gold border on focus */
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    /* Subtle gold glow */
+}
+
+/* Form action buttons container - aligned to bottom of form */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+/* ========================
+   Forecast Summary Styles
+   ======================== */
+
+/* 3-column grid for forecast summary stats */
+.forecast-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Individual forecast stat card */
+.forecast-stat {
+    display: flex;
+    /* Horizontal layout */
+    align-items: center;
+    /* Vertically center */
+    gap: 14px;
+    /* Space between icon and data */
+    padding: 18px;
+    /* Inner padding */
+}
+
+/* Forecast stat icon container */
+.stat-icon {
+    width: 46px;
+    /* Fixed size */
+    height: 46px;
+    /* Square */
+    border-radius: 12px;
+    /* Rounded square */
+    display: flex;
+    /* Center the icon */
+    align-items: center;
+    /* Vertical center */
+    justify-content: center;
+    /* Horizontal center */
+    font-size: 1.1rem;
+    /* Icon size */
+    flex-shrink: 0;
+    /* Don't shrink */
+}
+
+/* Stat data section */
+.stat-data {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Stat value - large bold number */
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Stat label - small subtitle */
+.stat-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================
+   Forecast Cards Grid
+   ======================== */
+
+/* Auto-fill grid for forecast cards - min 340px per card */
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+/* Individual forecast card */
+.forecast-card {
+    padding: 20px;
+    border-radius: 14px;
+}
+
+/* Card header - product info on left, trend badge on right */
+.forecast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+/* Product name and SKU column */
+.forecast-product {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Trend direction badge (INCREASING/DECREASING/STABLE) */
+.trend-badge {
+    padding: 4px 12px;
+    /* Pill shape padding */
+    border-radius: 20px;
+    /* Fully rounded pill */
+    font-size: 0.75rem;
+    /* Small text */
+    font-weight: 700;
+    /* Bold */
+    display: flex;
+    /* Align icon and text */
+    align-items: center;
+    /* Vertical center */
+    gap: 4px;
+    /* Space between icon and text */
+    background: rgba(255, 255, 255, 0.05);
+    /* Subtle background */
+}
+
+/* 2x2 grid for forecast metrics */
+.forecast-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Two columns */
+    gap: 12px;
+    /* Gap between metric boxes */
+    margin-bottom: 16px;
+    /* Space before footer */
+}
+
+/* Individual metric box */
+.metric {
+    display: flex;
+    /* Vertical layout */
+    flex-direction: column;
+    gap: 2px;
+    /* Small gap between label and value */
+    padding: 10px;
+    /* Inner padding */
+    background: rgba(255, 255, 255, 0.03);
+    /* Very subtle background */
+    border-radius: 8px;
+    /* Rounded corners */
+}
+
+/* Metric label - tiny uppercase text */
+.metric-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+/* Metric value - medium bold text */
+.metric-value {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Card footer - confidence bar and method */
+.forecast-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Confidence bar container - label, track, and percentage */
+.confidence-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Confidence bar track (background) */
+.progress-track {
+    flex: 1;
+    /* Take remaining space */
+    height: 6px;
+    /* Thin bar */
+    background: rgba(255, 255, 255, 0.1);
+    /* Dark track background */
+    border-radius: 3px;
+    /* Rounded ends */
+    overflow: hidden;
+    /* Clip the fill to the track */
+}
+
+/* Confidence bar fill (colored portion) */
+.progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+/* Confidence level colors */
+.progress-fill.badge-success {
+    background: #4CAF50;
+}
+
+/* Green for 80%+ confidence */
+.progress-fill.badge-warning {
+    background: #FF9800;
+}
+
+/* Orange for 60-79% confidence */
+.progress-fill.badge-danger {
+    background: #F44336;
+}
+
+/* Red for below 60% confidence */
+
+/* ========================
+   Sales Table Styles
+   ======================== */
+
+/* Scrollable table container for horizontal overflow */
+.table-container {
+    overflow-x: auto;
+}
+
+/* Table - full width with collapsed borders */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Table header cells */
+thead th {
+    padding: 14px 16px;
+    /* Comfortable padding */
+    text-align: left;
+    /* Left-aligned text */
+    font-size: 0.75rem;
+    /* Small text */
+    text-transform: uppercase;
+    /* UPPERCASE labels */
+    letter-spacing: 0.5px;
+    /* Slightly spaced letters */
+    color: rgba(255, 255, 255, 0.4);
+    /* Dimmed text */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    /* Subtle bottom border */
+    background: rgba(0, 0, 0, 0.2);
+    /* Slightly darker background */
+}
+
+/* Table body cells */
+tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.9rem;
+}
+
+/* Table row hover effect - subtle gold highlight */
+tbody tr:hover {
+    background: rgba(255, 215, 0, 0.03);
+}
+
+/* Product name + SKU cell layout */
+.product-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ========================
+   Empty State Styles
+   ======================== */
+
+/* Empty state container */
+.empty-placeholder {
+    border-radius: 14px;
+}
+
+/* Empty state icon - large and faded */
+.empty-placeholder i {
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+/* Empty state heading */
+.empty-placeholder h3 {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================
+   Responsive Breakpoints
+   ======================== */
+
+/* Tablet: 1024px and below */
+@media (max-width: 1024px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* 2-column KPI grid */
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Single-column charts */
+    .forecast-summary {
+        grid-template-columns: 1fr;
+    }
+
+    /* Single-column forecast stats */
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* 2-column form grid */
+}
+
+/* Mobile: 640px and below */
+@media (max-width: 640px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Single-column KPI grid */
+    .controls-layout {
+        flex-direction: column;
+    }
+
+    /* Stack search and filters vertically */
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    /* Stack filter dropdowns vertically */
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Single-column form */
+    .forecast-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Single-column forecast cards */
+}

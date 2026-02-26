@@ -1,23 +1,41 @@
-<div class="container" style="max-width:480px; margin-top:4rem;">
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Login</h2>
+<div class="login-wrapper">
+  <div class="glass-card login-card animate-fade-in">
+    <div class="login-header">
+      <div class="logo-icon glass">
+        <i class="fas fa-warehouse"></i>
+      </div>
+      <h2 class="mt-2">WSMS</h2>
+      <p class="text-secondary">Warehouse Supply Chain Management</p>
     </div>
-    <div class="card-body">
-      <form (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label class="form-label">Username</label>
-          <input class="form-control" [(ngModel)]="credentials.username" name="username" required />
+
+    <form (ngSubmit)="onSubmit()" class="mt-4">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-container">
+          <input class="form-control" [(ngModel)]="credentials.username" name="username" placeholder="Enter your username" required />
         </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" [(ngModel)]="credentials.password" name="password" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-container">
+          <input type="password" class="form-control" [(ngModel)]="credentials.password" name="password" placeholder="••••••••" required />
         </div>
-        <div *ngIf="error" class="alert alert-danger">{{error}}</div>
-        <button class="btn btn-primary" [disabled]="loading" type="submit">
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
-      </form>
+      </div>
+
+      <div *ngIf="error" class="alert-box error animate-fade-in">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{error}}</span>
+      </div>
+
+      <button class="btn btn-primary w-full mt-2" [disabled]="loading" type="submit">
+        <span *ngIf="!loading">Sign In</span>
+        <div *ngIf="loading" class="btn-spinner"></div>
+      </button>
+    </form>
+
+    <div class="login-footer mt-4">
+      <p class="text-muted">© 2026 WSMS Premium Edition</p>
     </div>
   </div>
 </div>

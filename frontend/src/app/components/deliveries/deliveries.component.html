@@ -1,119 +1,174 @@
-<app-navbar></app-navbar>
-<div class="container">
-  <div class="page-header">
-    <h2>📦 Delivery Tracking</h2>
-    <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
-      <span>📄</span> Export PDF
-    </button>
-  </div>
-  <div *ngIf="loading" class="spinner"></div>
-  
-  <div class="table-container" *ngIf="!loading && deliveries.length > 0; else emptyState">
-    <table>
-      <thead>
-        <tr>
-          <th>Tracking #</th>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>From → To</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let d of deliveries">
-          <td><strong>{{d.trackingNumber}}</strong></td>
-          <td>{{d.product?.name || 'Unknown Product'}}</td>
-          <td>{{d.quantity}} units</td>
-          <td>
-            <div class="route">
-              <span class="warehouse">{{d.warehouse?.name || 'Unknown'}}</span>
-              <span class="arrow">→</span>
-              <span class="supermarket">{{d.supermarket?.name || 'Unknown'}}</span>
-            </div>
-          </td>
-          <td>
-            <span class="badge" [ngClass]="{
-              'badge-warning': d.status === 'PENDING',
-              'badge-info': d.status === 'DISPATCHED' || d.status === 'IN_TRANSIT',
-              'badge-primary': d.status === 'OUT_FOR_DELIVERY',
-              'badge-success': d.status === 'DELIVERED',
-              'badge-danger': d.status === 'CANCELLED' || d.status === 'FAILED'
-            }">
-              {{d.status}}
-            </span>
-          </td>
-          <td>
-            <small>{{d.createdAt | date:'short'}}</small>
-            <div *ngIf="d.estimatedDelivery">
-              <small class="text-primary"><strong>📅 Expected: {{d.estimatedDelivery | date:'MMM d, y'}}</strong></small>
-            </div>
-            <div *ngIf="d.deliveredAt">
-              <small class="text-success">✅ Delivered: {{d.deliveredAt | date:'short'}}</small>
-            </div>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <!-- Warehouse Actions -->
-              <button 
-                *ngIf="auth.isWarehouseStaff() && d.status === 'PENDING'" 
-                class="btn btn-sm btn-primary" 
-                (click)="setStatus(d, statuses.DISPATCHED)"
-                title="Mark as dispatched">
-                🚛 Dispatch
-              </button>
-              <button 
-                *ngIf="auth.isWarehouseStaff() && d.status === 'DISPATCHED'" 
-                class="btn btn-sm btn-info" 
-                (click)="setStatus(d, statuses.IN_TRANSIT)"
-                title="Mark as in transit">
-                🚚 In Transit
-              </button>
-              <button 
-                *ngIf="auth.isWarehouseStaff() && d.status === 'IN_TRANSIT'" 
-                class="btn btn-sm btn-warning" 
-                (click)="setStatus(d, statuses.OUT_FOR_DELIVERY)"
-                title="Mark as out for delivery">
-                📍 Out for Delivery
-              </button>
-              
-              <!-- Supermarket Actions -->
-              <div *ngIf="isSupermarketUserForDelivery(d) && (d.status === 'OUT_FOR_DELIVERY' || d.status === 'IN_TRANSIT' || d.status === 'DISPATCHED' || d.status === 'PENDING')">
-                <button 
-                  class="btn btn-sm btn-success" 
-                  (click)="markReceived(d, true)"
-                  title="Confirm receipt">
-                  ✅ Received
-                </button>
-                <button 
-                  class="btn btn-sm btn-danger" 
-                  (click)="markReceived(d, false)"
-                  title="Mark as not received">
-                  ❌ Not Received
-                </button>
-              </div>
-              
-              <!-- Already Delivered -->
-              <span *ngIf="d.status === 'DELIVERED'" class="text-success">
-                ✅ Received {{d.deliveredAt | date:'short'}}
-              </span>
-              
-              <!-- Not Received Status -->
-              <span *ngIf="d.status === 'FAILED'" class="text-danger">
-                ❌ Not Received
-                <small *ngIf="d.failureReason" class="d-block">{{d.failureReason}}</small>
-              </span>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <ng-template #emptyState>
-    <div class="empty-state">
-      <p>📭 No deliveries found</p>
+<div class="deliveries-container animate-fade-in">
+  <header class="page-header mb-4">
+    <div class="header-info">
+      <h1>Delivery Tracking</h1>
+      <p class="text-secondary">Global Logistics & Distribution Stream</p>
     </div>
-  </ng-template>
+    <div class="header-actions">
+      <button class="btn btn-secondary glass" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+        <i class="fas fa-file-invoice"></i> Export Logistics Report
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="p-5 text-center">
+    <div class="spinner"></div>
+    <p class="text-secondary mt-2">Connecting to logistics network...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Filters & Stats -->
+    <section class="glass-card mb-4 filter-panel">
+      <div class="controls-layout">
+        <div class="search-box glass flex-2">
+          <i class="fas fa-search search-icon"></i>
+          <input type="search" placeholder="Search tracking #, product..." [(ngModel)]="searchTerm"
+            (input)="applyFilters()">
+        </div>
+
+        <div class="filter-group flex-3">
+          <div class="filter-item">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STATUS</label>
+            <div class="select-wrapper glass">
+              <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+                <option value="">All Statuses</option>
+                <option *ngFor="let s of statuses | keyvalue" [value]="s.value">{{s.value}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-item">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">W-HOUSE</label>
+            <div class="select-wrapper glass">
+              <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()">
+                <option value="">All Warehouses</option>
+                <option *ngFor="let wh of warehouses" [value]="wh.id || wh.name">{{wh.name}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-item">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STORE</label>
+            <div class="select-wrapper glass">
+              <select [(ngModel)]="selectedSupermarket" (change)="applyFilters()">
+                <option value="">All Stores</option>
+                <option *ngFor="let sm of supermarkets" [value]="sm.id || sm.name">{{sm.name}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-item flex-0">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
+            <button class="btn btn-icon btn-secondary glass" (click)="clearFilters()">
+              <i class="fas fa-undo-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="glass-card p-0 overflow-hidden mb-4" *ngIf="filteredDeliveries.length > 0; else emptyState">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking #</th>
+              <th>Specification</th>
+              <th>Logistics Route</th>
+              <th>Real-time Status</th>
+              <th>Timeline</th>
+              <th>Control Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of filteredDeliveries">
+              <td><span class="tracking-tag glass text-accent fw-bold">{{d.trackingNumber}}</span></td>
+              <td>
+                <div class="product-info">
+                  <span class="text-white fw-bold">{{d.product?.name}}</span>
+                  <span class="qty-label fs-xs text-muted">{{d.quantity}} units</span>
+                </div>
+              </td>
+              <td>
+                <div class="route-display glass p-2 px-3">
+                  <div class="point">
+                    <i class="fas fa-warehouse text-accent"></i>
+                    <span>{{d.warehouse?.name}}</span>
+                  </div>
+                  <div class="connector"><i class="fas fa-long-arrow-alt-right"></i></div>
+                  <div class="point">
+                    <i class="fas fa-store text-info"></i>
+                    <span>{{d.supermarket?.name}}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="{
+                'badge-warning': d.status === 'PENDING',
+                'badge-info': d.status === 'DISPATCHED' || d.status === 'IN_TRANSIT',
+                'badge-primary': d.status === 'OUT_FOR_DELIVERY',
+                'badge-success': d.status === 'DELIVERED',
+                'badge-danger': d.status === 'CANCELLED' || d.status === 'FAILED'
+              }">
+                  <i class="fas fa-circle fs-xs mr-2"></i> {{d.status}}
+                </span>
+              </td>
+              <td>
+                <div class="date-cell">
+                  <div *ngIf="d.status !== 'DELIVERED' && d.estimatedDelivery">
+                    <span class="text-info fw-bold">ETA: {{d.estimatedDelivery | date:'MMM d'}}</span>
+                  </div>
+                  <div *ngIf="d.status === 'DELIVERED'">
+                    <span class="text-success fw-bold">Arrived: {{d.deliveredAt | date:'MMM d'}}</span>
+                  </div>
+                  <small class="text-muted">Origin: {{d.createdAt | date:'shortTime'}}</small>
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <!-- Warehouse Strategy Actions -->
+                  <ng-container *ngIf="auth.isWarehouseStaff()">
+                    <button *ngIf="d.status === 'PENDING'" class="btn btn-sm btn-primary"
+                      (click)="setStatus(d, statuses.DISPATCHED)">
+                      <i class="fas fa-truck-loading"></i> Dispatch
+                    </button>
+                    <button *ngIf="d.status === 'DISPATCHED'" class="btn btn-sm btn-info"
+                      (click)="setStatus(d, statuses.IN_TRANSIT)">
+                      <i class="fas fa-truck-moving"></i> Transit
+                    </button>
+                    <button *ngIf="d.status === 'IN_TRANSIT'" class="btn btn-sm btn-warning"
+                      (click)="setStatus(d, statuses.OUT_FOR_DELIVERY)">
+                      <i class="fas fa-map-marker-alt"></i> Final Leg
+                    </button>
+                  </ng-container>
+
+                  <!-- Supermarket Receipt Controls -->
+                  <div *ngIf="isSupermarketUserForDelivery(d) && (d.status !== 'DELIVERED' && d.status !== 'FAILED')">
+                    <button class="btn btn-sm btn-success" (click)="markReceived(d, true)">
+                      <i class="fas fa-check-double"></i> Confirm
+                    </button>
+                    <button class="btn btn-sm btn-logout glass" (click)="markReceived(d, false)">
+                      <i class="fas fa-times"></i> Rejection
+                    </button>
+                  </div>
+
+                  <div *ngIf="d.status === 'DELIVERED'" class="completion-pill success glass p-1 px-3">
+                    <i class="fas fa-check-circle"></i> ARCHIVED
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-placeholder p-5 text-center text-muted glass-card">
+        <i class="fas fa-box-open mb-3 fs-xl d-block"></i>
+        <h3>Logistics channel empty</h3>
+        <p>Active delivery threads will be tracked here.</p>
+      </div>
+    </ng-template>
+  </ng-container>
 </div>

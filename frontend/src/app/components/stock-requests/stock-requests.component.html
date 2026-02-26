@@ -1,97 +1,152 @@
-<app-navbar></app-navbar>
-<div class="container">
-  <div class="page-header">
-    <h2>📋 Stock Requests Management</h2>
-    <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
-      <span>📄</span> Export PDF
-    </button>
-  </div>
-  <div *ngIf="loading" class="spinner"></div>
-  
-  <div class="table-container" *ngIf="!loading && requests.length > 0; else emptyState">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>From Supermarket</th>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>Requested</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of requests" [ngClass]="{'highlight-pending': r.status==='PENDING'}">
-          <td><strong>#{{r.id}}</strong></td>
-          <td>
-            <div class="supermarket-info">
-              <strong>{{r.supermarket?.name || 'Unknown'}}</strong>
-              <small *ngIf="r.supermarket?.code">{{r.supermarket?.code}}</small>
-            </div>
-          </td>
-          <td>
-            <div class="product-info">
-              <strong>{{r.product?.name || 'Unknown Product'}}</strong>
-              <small>{{r.product?.sku || 'N/A'}}</small>
-            </div>
-          </td>
-          <td><strong>{{r.requestedQuantity}}</strong> units</td>
-          <td>
-            {{r.requestedAt | date:'MMM d, y'}}
-            <br>
-            <small class="text-muted">{{r.requestedAt | date:'shortTime'}}</small>
-          </td>
-          <td>
-            <span class="badge" [ngClass]="{
-              'badge-warning': r.status==='PENDING',
-              'badge-success': r.status==='APPROVED',
-              'badge-danger': r.status==='REJECTED'
-            }">
-              <span *ngIf="r.status==='PENDING'">⏳ PENDING</span>
-              <span *ngIf="r.status==='APPROVED'">✅ APPROVED</span>
-              <span *ngIf="r.status==='REJECTED'">❌ REJECTED</span>
-            </span>
-            <div *ngIf="r.status === 'APPROVED' && r.approvedAt" class="response-date">
-              <small>{{r.approvedAt | date:'short'}}</small>
-            </div>
-            <div *ngIf="r.status === 'REJECTED' && r.rejectionReason" class="rejection-info">
-              <small class="rejection-reason">{{r.rejectionReason}}</small>
-            </div>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button 
-                class="btn btn-success" 
-                *ngIf="auth.isWarehouseStaff() && r.status==='PENDING'" 
-                (click)="approve(r)"
-                title="Approve request and create delivery">
-                ✅ Approve
-              </button>
-              <button 
-                class="btn btn-danger" 
-                *ngIf="auth.isWarehouseStaff() && r.status==='PENDING'" 
-                (click)="reject(r)"
-                title="Reject request">
-                ❌ Reject
-              </button>
-              <span *ngIf="r.status === 'APPROVED'" class="status-text success">
-                ✓ Approved - Delivery Created
-              </span>
-              <span *ngIf="r.status === 'REJECTED'" class="status-text danger">
-                ✗ Rejected
-              </span>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <ng-template #emptyState>
-    <div class="empty-state">
-      <p>📭 No stock requests found</p>
-      <small>Requests from supermarkets will appear here</small>
+<div class="stock-requests-container animate-fade-in">
+  <header class="page-header mb-4">
+    <div class="header-info">
+      <h1>Stock Requests</h1>
+      <p class="text-secondary">Procurement Oversight & Approval</p>
     </div>
-  </ng-template>
+    <div class="header-actions">
+      <button class="btn btn-secondary glass" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+        <i class="fas fa-file-export"></i> Analytics Export
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="p-5 text-center">
+    <div class="spinner"></div>
+    <p class="text-secondary mt-2">Loading requests queue...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Filters & Stats -->
+    <section class="glass-card mb-4 filter-panel">
+      <div class="controls-layout">
+        <div class="search-box glass flex-2">
+          <i class="fas fa-search search-icon"></i>
+          <input type="search" placeholder="Search order ID, product name..." [(ngModel)]="searchTerm"
+            (input)="applyFilters()">
+        </div>
+
+        <div class="filter-group flex-3">
+          <div class="filter-item">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STATUS</label>
+            <div class="select-wrapper glass">
+              <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+                <option value="">All Statuses</option>
+                <option value="PENDING">PENDING</option>
+                <option value="APPROVED">APPROVED</option>
+                <option value="REJECTED">REJECTED</option>
+                <option value="DELIVERED">DELIVERED</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-item">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STORE</label>
+            <div class="select-wrapper glass">
+              <select [(ngModel)]="selectedSupermarket" (change)="applyFilters()">
+                <option value="">All Stores</option>
+                <option *ngFor="let sm of supermarkets" [value]="sm.id || sm.name">{{sm.name}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-item flex-0">
+            <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
+            <button class="btn btn-icon btn-secondary glass" (click)="clearFilters()">
+              <i class="fas fa-undo-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="glass-card p-0 overflow-hidden mb-4" *ngIf="filteredRequests.length > 0; else emptyState">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Origination</th>
+              <th>Product Specification</th>
+              <th>Quantity</th>
+              <th>Timeline</th>
+              <th>Status</th>
+              <th>Decision Control</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of filteredRequests" [ngClass]="{'row-highlight': r.status==='PENDING'}">
+              <td><span class="id-tag glass">#{{r.id}}</span></td>
+              <td>
+                <div class="supermarket-cell">
+                  <i class="fas fa-store text-accent"></i>
+                  <div class="info">
+                    <span class="name text-white fw-bold">{{r.supermarket?.name}}</span>
+                    <span class="code text-muted fs-xs">{{r.supermarket?.code}}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="product-cell">
+                  <span class="text-white">{{r.product?.name}}</span>
+                  <span class="sku text-accent fs-xs fw-bold">{{r.product?.sku}}</span>
+                </div>
+              </td>
+              <td>
+                <div class="qty-badge glass">
+                  <strong>{{r.requestedQuantity}}</strong>
+                  <small>UNITS</small>
+                </div>
+              </td>
+              <td>
+                <div class="date-cell">
+                  <span>{{r.requestedAt | date:'MMM d, y'}}</span>
+                  <small class="text-muted">{{r.requestedAt | date:'shortTime'}}</small>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="{
+                'badge-warning': r.status==='PENDING',
+                'badge-success': r.status==='APPROVED',
+                'badge-danger': r.status==='REJECTED'
+              }">
+                  {{r.status}}
+                </span>
+              </td>
+              <td>
+                <div class="action-grid">
+                  <ng-container *ngIf="auth.isWarehouseStaff() && r.status==='PENDING'; else completedView">
+                    <button class="btn btn-sm btn-primary" (click)="approve(r)" title="Approve & Dispatch">
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="btn btn-sm btn-logout glass" (click)="reject(r)" title="Reject Order">
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                  </ng-container>
+                  <ng-template #completedView>
+                    <div class="completion-meta">
+                      <div *ngIf="r.status === 'APPROVED'" class="text-success fs-xs fw-bold">
+                        <i class="fas fa-shipping-fast"></i> DISPATCHED
+                      </div>
+                      <div *ngIf="r.status === 'REJECTED'" class="text-danger fs-xs fw-bold">
+                        <i class="fas fa-ban"></i> VOIDED
+                      </div>
+                    </div>
+                  </ng-template>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-placeholder p-5 text-center text-muted glass-card">
+        <i class="fas fa-inbox mb-3 fs-xl d-block"></i>
+        <h3>No pending requests</h3>
+        <p>Requests from supermarket branch managers will appear here.</p>
+      </div>
+    </ng-template>
+  </ng-container>
 </div>

@@ -1,224 +1,180 @@
-<app-navbar></app-navbar>
-<div class="admin-container">
-  <div class="admin-header">
-    <h1>Administrator Dashboard</h1>
-    <p class="subtitle">System Overview & Analytics</p>
-  </div>
+<div class="admin-container animate-fade-in">
+  <header class="admin-header">
+    <div class="header-info">
+      <h1>Dashboard</h1>
+      <p class="text-secondary">System Overview & Predictive Analytics</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary glass">
+        <i class="fas fa-download"></i> Export Report
+      </button>
+      <button class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Request
+      </button>
+    </div>
+  </header>
 
-  <!-- KPI Cards -->
-  <div class="kpi-grid">
-    <div class="kpi-card" [style.border-left]="'5px solid #FFD700'">
-      <div class="kpi-icon">📦</div>
-      <div class="kpi-content">
-        <div class="kpi-label">Total Products</div>
-        <div class="kpi-value">{{totalProducts}}</div>
-        <div class="kpi-trend">All active products</div>
+  <!-- KPI Grid -->
+  <section class="kpi-grid mb-4">
+    <div class="glass-card stat-card" style="--primary: var(--accent)">
+      <div class="stat-icon glass">📦</div>
+      <div class="stat-content">
+        <span class="stat-label">Total Products</span>
+        <div class="stat-value">{{totalProducts}}</div>
+        <div class="stat-meta text-muted">Active items in catalog</div>
       </div>
     </div>
 
-    <div class="kpi-card" [style.border-left]="'5px solid #4CAF50'">
-      <div class="kpi-icon">📊</div>
-      <div class="kpi-content">
-        <div class="kpi-label">Inventory Value</div>
-        <div class="kpi-value">{{totalInventoryValue | lkr}}</div>
-        <div class="kpi-trend">Current stock value</div>
+    <div class="glass-card stat-card" style="--primary: var(--success)">
+      <div class="stat-icon glass">📊</div>
+      <div class="stat-content">
+        <span class="stat-label">Inventory Value</span>
+        <div class="stat-value">{{totalInventoryValue | lkr}}</div>
+        <div class="stat-meta text-muted">Current valuation</div>
       </div>
     </div>
 
-    <div class="kpi-card" [style.border-left]="'5px solid #FF9800'">
-      <div class="kpi-icon">⏳</div>
-      <div class="kpi-content">
-        <div class="kpi-label">Pending Requests</div>
-        <div class="kpi-value">{{pendingRequests}}</div>
-        <div class="kpi-trend">Awaiting approval</div>
+    <div class="glass-card stat-card" style="--primary: var(--warning)">
+      <div class="stat-icon glass">⏳</div>
+      <div class="stat-content">
+        <span class="stat-label">Pending Orders</span>
+        <div class="stat-value">{{pendingRequests}}</div>
+        <div class="stat-meta text-muted">Requests needing approval</div>
       </div>
     </div>
 
-    <div class="kpi-card" [style.border-left]="'5px solid #2196F3'">
-      <div class="kpi-icon">🚚</div>
-      <div class="kpi-content">
-        <div class="kpi-label">Active Deliveries</div>
-        <div class="kpi-value">{{activeDeliveries}}</div>
-        <div class="kpi-trend">In transit</div>
+    <div class="glass-card stat-card" style="--primary: var(--info)">
+      <div class="stat-icon glass">🚚</div>
+      <div class="stat-content">
+        <span class="stat-label">Active Shipping</span>
+        <div class="stat-value">{{activeDeliveries}}</div>
+        <div class="stat-meta text-muted">Packages in transit</div>
       </div>
     </div>
+  </section>
 
-    <div class="kpi-card" [style.border-left]="'5px solid #F44336'">
-      <div class="kpi-icon">⚠️</div>
-      <div class="kpi-content">
-        <div class="kpi-label">Low Stock Items</div>
-        <div class="kpi-value">{{lowStockItems}}</div>
-        <div class="kpi-trend">Below reorder level</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- AI Ops Snapshot -->
-  <div class="ai-grid">
-    <div *ngFor="let insight of aiInsights" class="ai-card">
-      <div class="ai-label">{{insight.label}}</div>
-      <div class="ai-value">{{insight.value}}</div>
-      <div class="ai-delta">{{insight.delta}}</div>
-    </div>
-  </div>
-
-  <!-- Charts Section -->
-  <div class="charts-section">
-    <div class="chart-container">
-      <h3>Stock Requests Status</h3>
-      <canvas id="requestStatusChart" style="max-height: 250px;"></canvas>
-    </div>
-    <div class="chart-container">
-      <h3>Inventory Trend</h3>
-      <canvas id="inventoryTrendChart" style="max-height: 250px;"></canvas>
-    </div>
-    <div class="chart-container">
-      <h3>Delivery Status</h3>
-      <canvas id="deliveryChart" style="max-height: 250px;"></canvas>
-    </div>
-  </div>
-
-  <!-- Forecast Highlights -->
-  <div class="forecast-section">
-    <h3>AI Forecast Highlights</h3>
-    <div class="forecast-cards">
-      <div *ngFor="let item of forecastHighlights" class="forecast-card">
-        <div class="forecast-title">{{item.title}}</div>
-        <div class="forecast-detail">{{item.detail}}</div>
-        <div class="forecast-action">{{item.action}}</div>
-        <div class="forecast-confidence">Confidence: {{(item.confidence * 100) | number:'1.0-0'}}%</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Smart Restock Recommendations -->
-  <div class="recommendations-section">
-    <h3>Smart Restock Recommendations</h3>
-    <div class="recommendation-grid">
-      <div *ngFor="let rec of restockRecommendations" class="recommendation-card">
-        <div class="rec-header">
-          <span class="rec-product">{{rec.product}}</span>
-          <span class="rec-priority" [ngClass]="rec.priority.toLowerCase()">{{rec.priority}}</span>
-        </div>
-        <div class="rec-body">
-          <div class="rec-metrics">
-            <span>Current: <strong>{{rec.current}}</strong></span>
-            <span>Min: <strong>{{rec.min}}</strong></span>
-            <span>Suggested: <strong>{{rec.suggested}}</strong></span>
+  <div class="dashboard-layout">
+    <div class="main-stats">
+      <!-- AI Insights -->
+      <section class="glass-card mb-4 ai-insight-panel">
+        <h3 class="mb-3"><i class="fas fa-robot text-primary"></i> AI Operational Insights</h3>
+        <div class="ai-chips">
+          <div *ngFor="let insight of aiInsights" class="ai-chip glass">
+            <span class="label">{{insight.label}}</span>
+            <span class="value">{{insight.value}}</span>
+            <span class="delta" [class.up]="insight.delta.startsWith('+')" [class.down]="insight.delta.startsWith('-')">
+              {{insight.delta}}
+            </span>
           </div>
-          <div class="rec-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="getProgressPercent(rec.current, rec.min)"></div>
+        </div>
+      </section>
+
+      <!-- Charts -->
+      <section class="charts-grid mb-4">
+        <div class="glass-card chart-panel">
+          <h3 class="mb-3">Stock Request Distribution</h3>
+          <div class="chart-wrapper">
+            <canvas id="requestStatusChart"></canvas>
+          </div>
+        </div>
+        <div class="glass-card chart-panel">
+          <h3 class="mb-3">Inventory Value Trend</h3>
+          <div class="chart-wrapper">
+            <canvas id="inventoryTrendChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recommendations -->
+      <section class="glass-card mb-4">
+        <h3 class="mb-3"><i class="fas fa-lightbulb text-accent"></i> Smart Recommendations</h3>
+        <div class="rec-list">
+          <div *ngFor="let rec of restockRecommendations" class="rec-item glass mb-2">
+            <div class="rec-info">
+              <span class="product">{{rec.product}}</span>
+              <span class="badge"
+                [ngClass]="'badge-' + (rec.priority === 'High' ? 'danger' : 'warning')">{{rec.priority}}</span>
             </div>
-            <span class="progress-label">{{getProgressPercent(rec.current, rec.min) | number:'1.0-0'}}% of min</span>
+            <p class="reason text-secondary mt-1">{{rec.reason}}</p>
+            <div class="rec-action mt-2">
+              <button class="btn btn-secondary btn-sm glass">Review</button>
+              <button class="btn btn-primary btn-sm">Restock</button>
+            </div>
           </div>
         </div>
-        <div class="rec-action">{{rec.reason}}</div>
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <!-- Low Stock Warnings -->
-  <div class="warnings-section">
-    <h3>⚠️ Low Stock Alerts</h3>
-    <div class="warnings-table">
-      <div class="table-header">
-        <div class="col-product">Product</div>
-        <div class="col-warehouse">Warehouse</div>
-        <div class="col-current">Current</div>
-        <div class="col-minimum">Min Level</div>
-        <div class="col-status">Status</div>
-      </div>
-      <div *ngFor="let item of inventoryWarnings" class="table-row">
-        <div class="col-product">{{item.product}}</div>
-        <div class="col-warehouse">{{item.warehouse}}</div>
-        <div class="col-current">{{item.current}} units
-          <div class="mini-progress">
-            <div class="mini-fill" [style.width.%]="getProgressPercent(item.current, item.minimum)"></div>
+      <!-- Low Stock Alerts Table -->
+      <section class="glass-card mb-4 overflow-hidden">
+        <div class="d-flex justify-between align-center mb-3">
+          <h3><i class="fas fa-exclamation-triangle text-danger"></i> Low Stock Alerts</h3>
+          <span class="badge badge-danger">{{lowStockItems}} Items</span>
+        </div>
+        <div class="table-container p-0">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Warehouse</th>
+                <th>Stock Level</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of inventoryWarnings">
+                <td>{{item.product}}</td>
+                <td>{{item.warehouse}}</td>
+                <td>
+                  <div class="stock-level-cell">
+                    <span>{{item.current}} / {{item.minimum}}</span>
+                    <div class="progress-track glass ml-2">
+                      <div class="progress-bar bg-danger"
+                        [style.width.%]="getProgressPercent(item.current, item.minimum)"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <button class="btn btn-logout btn-sm">Resolve</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- Sidebar Stats -->
+    <aside class="side-stats">
+      <section class="glass-card mb-4">
+        <h3 class="mb-3">Recent Activity</h3>
+        <div class="activity-timeline">
+          <div *ngFor="let act of recentActivity" class="activity-item pb-3">
+            <div class="time text-muted">{{act.time}}</div>
+            <div class="text">{{act.text}}</div>
+            <div class="badge-tag" [ngClass]="act.type">{{act.type}}</div>
           </div>
         </div>
-        <div class="col-minimum">{{item.minimum}} units</div>
-        <div class="col-status">
-          <span class="badge badge-danger">{{item.percentage}}% capacity</span>
+      </section>
+
+      <section class="glass-card">
+        <h3 class="mb-3">Performance Pulse</h3>
+        <div class="pulse-metrics">
+          <div class="pulse-card glass mb-2">
+            <span class="label">Fulfillment Rate</span>
+            <div class="value">94.2%</div>
+            <div class="pulse-bar">
+              <div class="fill" style="width: 94%"></div>
+            </div>
+          </div>
+          <div class="pulse-card glass">
+            <span class="label">System Uptime</span>
+            <div class="value text-success">99.9%</div>
+            <div class="pulse-bar">
+              <div class="fill bg-success" style="width: 99%"></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Sellers -->
-  <div class="topsellers-section">
-    <h3>Top Sellers</h3>
-    <div class="topseller-list">
-      <div class="topseller-item" *ngFor="let ts of topSellers">
-        <div class="ts-name">{{ts.name}}</div>
-        <div class="ts-metric">
-          <span>{{ts.units}} units</span>
-          <span class="ts-trend" [class.up]="ts.trend > 0" [class.down]="ts.trend < 0">{{ts.trend > 0 ? '+'+ts.trend : ts.trend}}%</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Category Distribution -->
-  <div class="category-section">
-    <h3>Category Distribution</h3>
-    <div class="category-chips">
-      <span class="chip" *ngFor="let cat of categoryDistribution">{{cat.category}} — {{cat.percentage}}%</span>
-    </div>
-  </div>
-
-  <!-- Recent Activity -->
-  <div class="activity-section">
-    <h3>Recent Activity</h3>
-    <div class="activity-list">
-      <div class="activity-item" *ngFor="let act of recentActivity">
-        <span class="activity-time">{{act.time}}</span>
-        <span class="activity-text">{{act.text}}</span>
-        <span class="activity-tag" [ngClass]="act.type">{{act.type}}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats Summary -->
-  <div class="stats-summary">
-    <div class="summary-card">
-      <h4>Request Pipeline</h4>
-      <div class="stat-row">
-        <span>✓ Approved:</span>
-        <strong>{{requestStats.approved}}</strong>
-      </div>
-      <div class="stat-row">
-        <span>⏳ Pending:</span>
-        <strong>{{requestStats.pending}}</strong>
-      </div>
-      <div class="stat-row">
-        <span>✗ Rejected:</span>
-        <strong>{{requestStats.rejected}}</strong>
-      </div>
-      <div class="stat-row">
-        <span>✅ Completed:</span>
-        <strong>{{requestStats.completed}}</strong>
-      </div>
-    </div>
-
-    <div class="summary-card">
-      <h4>Delivery Pipeline</h4>
-      <div class="stat-row">
-        <span>⏳ Pending:</span>
-        <strong>{{deliveryStats.pending}}</strong>
-      </div>
-      <div class="stat-row">
-        <span>🚚 In Transit:</span>
-        <strong>{{deliveryStats.inTransit}}</strong>
-      </div>
-      <div class="stat-row">
-        <span>✅ Delivered:</span>
-        <strong>{{deliveryStats.delivered}}</strong>
-      </div>
-      <div class="stat-row">
-        <span>⚠️ Delayed:</span>
-        <strong>{{deliveryStats.delayed}}</strong>
-      </div>
-    </div>
+      </section>
+    </aside>
   </div>
 </div>

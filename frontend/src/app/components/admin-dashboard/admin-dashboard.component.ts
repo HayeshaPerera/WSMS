@@ -18,14 +18,14 @@ export class AdminDashboardComponent implements OnInit {
   totalInventoryValue = 0;
   lowStockItems = 0;
   totalProducts = 0;
-  
+
   requestStatusChart: any;
   inventoryTrendChart: any;
   deliveryChart: any;
 
   revenueData = [12000, 15000, 18000, 14000, 21000, 19000];
   revenueLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  
+
   requestStats = {
     pending: 15,
     approved: 45,
@@ -102,7 +102,7 @@ export class AdminDashboardComponent implements OnInit {
     private deliveries: DeliveryService,
     private inventory: InventoryService,
     private products: ProductService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -110,26 +110,70 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadDashboardData(): void {
-    this.stockRequests.countPendingRequests().subscribe(
-      v => this.pendingRequests = v,
+    this.stockRequests.getAllRequests().subscribe(
+      (data: any) => {
+        const arr = Array.isArray(data) ? data : (data && data.data ? data.data : []);
+        this.pendingRequests = arr.filter((r: any) => r.status === 'PENDING').length;
+        this.requestStats = {
+          pending: this.pendingRequests,
+          approved: arr.filter((r: any) => r.status === 'APPROVED').length,
+          rejected: arr.filter((r: any) => r.status === 'REJECTED').length,
+          completed: arr.filter((r: any) => r.status === 'DELIVERED').length
+        };
+        if (this.requestStatusChart) {
+          this.requestStatusChart.data.datasets[0].data = [this.requestStats.pending, this.requestStats.approved, this.requestStats.rejected, this.requestStats.completed];
+          this.requestStatusChart.update();
+        }
+      },
       _ => this.pendingRequests = 15
     );
-    this.deliveries.countActiveDeliveries().subscribe(
-      v => this.activeDeliveries = v,
+
+    this.deliveries.getAllDeliveries().subscribe(
+      (data: any) => {
+        const arr = Array.isArray(data) ? data : (data && data.data ? data.data : []);
+        this.activeDeliveries = arr.filter((d: any) => d.status !== 'DELIVERED').length;
+        this.deliveryStats = {
+          pending: arr.filter((d: any) => d.status === 'PENDING').length,
+          inTransit: arr.filter((d: any) => d.status === 'IN_TRANSIT' || d.status === 'DISPATCHED').length,
+          delivered: arr.filter((d: any) => d.status === 'DELIVERED').length,
+          delayed: arr.filter((d: any) => d.status === 'FAILED').length
+        };
+        if (this.deliveryChart) {
+          this.deliveryChart.data.datasets[0].data = [this.deliveryStats.pending, this.deliveryStats.inTransit, this.deliveryStats.delivered, this.deliveryStats.delayed];
+          this.deliveryChart.update();
+        }
+      },
       _ => this.activeDeliveries = 11
     );
+
     this.inventory.getAllInventory().subscribe(
-      data => {
-        this.totalInventoryValue = data.reduce((sum, item) => sum + (item.quantity * (item.product?.unitPrice || 0)), 0);
-        this.lowStockItems = data.filter(i => i.lowStockAlert).length;
+      (data: any) => {
+        const arr = Array.isArray(data) ? data : (data && data.data ? data.data : []);
+        this.totalInventoryValue = arr.reduce((sum: number, item: any) => sum + (item.quantity * (item.product?.unitPrice || 0)), 0);
+        const warningItems = arr.filter((i: any) => i.lowStockAlert || i.quantity <= (i.reorderLevel || 10));
+        this.lowStockItems = warningItems.length;
+
+        if (warningItems.length > 0) {
+          this.inventoryWarnings = warningItems.slice(0, 5).map((i: any) => ({
+            product: i.product?.name || 'Unknown Item',
+            current: i.quantity,
+            minimum: i.reorderLevel || 10,
+            warehouse: i.warehouse?.name || 'N/A',
+            percentage: Math.round((i.quantity / (i.reorderLevel || 10)) * 100)
+          }));
+        }
       },
       _ => {
         this.totalInventoryValue = 45820;
         this.lowStockItems = 3;
       }
     );
+
     this.products.getAll().subscribe(
-      data => this.totalProducts = data.length,
+      (data: any) => {
+        const arr = Array.isArray(data) ? data : (data && data.data ? data.data : []);
+        this.totalProducts = arr.length || 15;
+      },
       _ => this.totalProducts = 15
     );
   }
@@ -147,7 +191,7 @@ export class AdminDashboardComponent implements OnInit {
   createRequestStatusChart(): void {
     const ctx = document.getElementById('requestStatusChart') as HTMLCanvasElement;
     if (!ctx) return;
-    
+
     this.requestStatusChart = new Chart(ctx, {
       type: 'doughnut',
       data: {

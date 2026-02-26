@@ -15,7 +15,15 @@ import { AuthService } from '../../services/auth.service';
 })
 export class StockRequestsComponent implements OnInit {
   requests: StockRequest[] = [];
+  filteredRequests: StockRequest[] = [];
   loading = true;
+
+  // Filter properties
+  searchTerm = '';
+  selectedStatus = '';
+  selectedSupermarket = '';
+
+  supermarkets: any[] = [];
 
   constructor(
     private service: StockRequestService,
@@ -25,35 +33,70 @@ export class StockRequestsComponent implements OnInit {
     private pdfReport: PdfReportService,
     private sharedData: SharedDataService,
     public auth: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.sharedData.initializeDefaultData();
     // Always load hardcoded data first to ensure visibility
     this.addHardcodedRequests();
     this.loading = false;
-    
+
     // Then try to load from API
     this.loadFromAPI();
-    
+
     // Subscribe to shared data for real-time updates
     this.sharedData.stockRequests$.subscribe(requests => {
       if (Array.isArray(requests) && requests.length > 0) {
-        // Enrich each request with product/supermarket fallback so UI can render immediately
         const products = this.sharedData.getProducts();
-        this.requests = requests.map((r: any) => {
-          if (!r.product && (r.productId || r.product_id)) {
-            const pid = r.productId || r.product_id;
-            r.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
-          }
-          if (!r.supermarket && (r.supermarketId || r.supermarket_id || r.supermarket)) {
-            const sid = r.supermarket?.id || r.supermarketId || r.supermarket_id;
-            if (sid) r.supermarket = { id: sid, code: `SM${sid}`, name: `Supermarket ${sid}` };
-          }
-          return r as StockRequest;
-        });
+        this.requests = requests.map((r: any) => this.enrichRequest(r, products));
+        this.applyFilters();
       }
     });
+
+    // Load static lists for filters
+    this.supermarkets = this.sharedData.getSupermarkets();
+    this.sharedData.supermarkets$.subscribe(s => this.supermarkets = s);
+  }
+
+  private enrichRequest(r: any, products: any[]): StockRequest {
+    if (!r.product && (r.productId || r.product_id)) {
+      const pid = r.productId || r.product_id;
+      r.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
+    }
+    if (!r.supermarket && (r.supermarketId || r.supermarket_id || r.supermarket)) {
+      const sid = r.supermarket?.id || r.supermarketId || r.supermarket_id;
+      if (sid) r.supermarket = { id: sid, code: `SM${sid}`, name: `Supermarket ${sid}` };
+    }
+    return r as StockRequest;
+  }
+
+  applyFilters(): void {
+    let filtered = [...this.requests];
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(r =>
+        String(r.id).includes(term) ||
+        (r.product?.name || '').toLowerCase().includes(term) ||
+        (r.product?.sku || '').toLowerCase().includes(term)
+      );
+    }
+    if (this.selectedStatus) {
+      filtered = filtered.filter(r => r.status === this.selectedStatus);
+    }
+    if (this.selectedSupermarket) {
+      filtered = filtered.filter(r =>
+        r.supermarket?.name === this.selectedSupermarket ||
+        String(r.supermarket?.id) === String(this.selectedSupermarket)
+      );
+    }
+    this.filteredRequests = filtered;
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedStatus = '';
+    this.selectedSupermarket = '';
+    this.applyFilters();
   }
 
   loadFromAPI(): void {
@@ -153,7 +196,7 @@ export class StockRequestsComponent implements OnInit {
         updatedAt: new Date()
       }
     ] as StockRequest[];
-    
+
     this.sharedData.setStockRequests(this.requests);
   }
 

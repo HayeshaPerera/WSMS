@@ -1,0 +1,375 @@
+<!-- Main container for the Sales & AI Forecasting page with fade-in animation -->
+<div class="sales-container animate-fade-in">
+
+    <!-- Page Header: title and action button -->
+    <header class="page-header mb-4">
+        <!-- Left side: page title and subtitle -->
+        <div class="header-info">
+            <h1>Sales & AI Demand Forecasting</h1>
+            <p class="text-secondary">Revenue Analytics & Predictive Intelligence</p>
+        </div>
+        <!-- Right side: Record Sale button (only visible to Admin and Supermarket Manager) -->
+        <div class="header-actions">
+            <button class="btn btn-primary" (click)="toggleRecordForm()"
+                *ngIf="auth.isAdmin() || auth.isSupermarketManager()">
+                <i class="fas fa-plus-circle"></i> Record Sale
+            </button>
+        </div>
+    </header>
+
+    <!-- Tab Switcher: toggles between Sales Analytics and AI Demand Forecast views -->
+    <div class="tab-switcher glass-card mb-4">
+        <!-- Sales Analytics tab button - highlights when active -->
+        <button class="tab-btn" [class.active]="activeTab === 'sales'" (click)="activeTab = 'sales'">
+            <i class="fas fa-chart-line"></i> Sales Analytics
+        </button>
+        <!-- AI Demand Forecast tab button - highlights when active -->
+        <button class="tab-btn" [class.active]="activeTab === 'forecast'" (click)="activeTab = 'forecast'">
+            <i class="fas fa-brain"></i> AI Demand Forecast
+        </button>
+    </div>
+
+    <!-- ========================= -->
+    <!-- RECORD SALE FORM (toggle) -->
+    <!-- ========================= -->
+    <!-- Form for recording a new sale - shown/hidden via showRecordForm toggle -->
+    <div class="glass-card mb-4 record-form" *ngIf="showRecordForm">
+        <h3 class="mb-3"><i class="fas fa-cash-register text-accent"></i> Record New Sale</h3>
+        <!-- Form fields laid out in a 3-column grid -->
+        <div class="form-grid">
+            <!-- Product dropdown: selects which product was sold -->
+            <div class="form-group">
+                <label>Product</label>
+                <select [(ngModel)]="newSale.productId" (change)="onProductSelectForSale($event)" class="glass">
+                    <option [value]="0" disabled>Select product...</option>
+                    <!-- Loop through all products to populate the dropdown -->
+                    <option *ngFor="let p of products" [value]="p.id">{{p.name}} ({{p.sku}})</option>
+                </select>
+            </div>
+            <!-- Store dropdown: selects which supermarket made the sale -->
+            <div class="form-group">
+                <label>Store</label>
+                <select [(ngModel)]="newSale.supermarketId" class="glass">
+                    <option [value]="0" disabled>Select store...</option>
+                    <!-- Loop through all supermarkets to populate the dropdown -->
+                    <option *ngFor="let s of supermarkets" [value]="s.id">{{s.name}}</option>
+                </select>
+            </div>
+            <!-- Date picker: date when the sale occurred -->
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" [(ngModel)]="newSale.saleDate" class="glass">
+            </div>
+            <!-- Quantity input: number of units sold -->
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" [(ngModel)]="newSale.quantitySold" min="1" class="glass">
+            </div>
+            <!-- Unit price input: price per unit (auto-filled when product is selected) -->
+            <div class="form-group">
+                <label>Unit Price (LKR)</label>
+                <input type="number" [(ngModel)]="newSale.unitPrice" step="0.01" class="glass">
+            </div>
+            <!-- Save and Cancel buttons -->
+            <div class="form-group form-actions">
+                <button class="btn btn-success" (click)="recordSale()"><i class="fas fa-check"></i> Save</button>
+                <button class="btn btn-secondary glass" (click)="toggleRecordForm()"><i class="fas fa-times"></i>
+                    Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== -->
+    <!-- SALES ANALYTICS TAB  -->
+    <!-- ==================== -->
+    <div *ngIf="activeTab === 'sales'">
+
+        <!-- KPI (Key Performance Indicator) Cards Row -->
+        <div class="kpi-grid mb-4">
+            <!-- Total Revenue KPI card -->
+            <div class="kpi-card glass-card">
+                <div class="kpi-icon gradient-gold"><i class="fas fa-coins"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-value">LKR {{totalRevenue | number:'1.2-2'}}</span>
+                    <span class="kpi-label">Total Revenue</span>
+                </div>
+            </div>
+            <!-- Total Units Sold KPI card -->
+            <div class="kpi-card glass-card">
+                <div class="kpi-icon gradient-blue"><i class="fas fa-boxes"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-value">{{totalUnitsSold | number}}</span>
+                    <span class="kpi-label">Units Sold</span>
+                </div>
+            </div>
+            <!-- Average Order Value KPI card -->
+            <div class="kpi-card glass-card">
+                <div class="kpi-icon gradient-green"><i class="fas fa-receipt"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-value">LKR {{avgOrderValue | number:'1.2-2'}}</span>
+                    <span class="kpi-label">Avg Order Value</span>
+                </div>
+            </div>
+            <!-- Top Product KPI card -->
+            <div class="kpi-card glass-card">
+                <div class="kpi-icon gradient-purple"><i class="fas fa-trophy"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-value">{{topProduct || 'N/A'}}</span>
+                    <span class="kpi-label">Top Product</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= -->
+        <!-- FILTER PANEL   -->
+        <!-- ============= -->
+        <section class="glass-card mb-4 filter-panel">
+            <div class="controls-layout">
+                <!-- Search box: free-text search across product name, SKU, store, notes -->
+                <div class="search-box glass flex-2">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="search" placeholder="Search product, SKU, store..." [(ngModel)]="searchTerm"
+                        (input)="applyFilters()">
+                </div>
+                <!-- Filter dropdowns row -->
+                <div class="filter-group flex-3">
+                    <!-- Product filter dropdown -->
+                    <div class="filter-item">
+                        <label class="fs-xxs text-muted mb-1 d-block fw-bold">PRODUCT</label>
+                        <div class="select-wrapper glass">
+                            <select [(ngModel)]="selectedProduct" (change)="applyFilters()">
+                                <option value="">All Products</option>
+                                <option *ngFor="let p of products" [value]="p.id">{{p.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Store filter dropdown -->
+                    <div class="filter-item">
+                        <label class="fs-xxs text-muted mb-1 d-block fw-bold">STORE</label>
+                        <div class="select-wrapper glass">
+                            <select [(ngModel)]="selectedSupermarket" (change)="applyFilters()">
+                                <option value="">All Stores</option>
+                                <option *ngFor="let s of supermarkets" [value]="s.id">{{s.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Start date filter -->
+                    <div class="filter-item">
+                        <label class="fs-xxs text-muted mb-1 d-block fw-bold">FROM</label>
+                        <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="glass date-input">
+                    </div>
+                    <!-- End date filter -->
+                    <div class="filter-item">
+                        <label class="fs-xxs text-muted mb-1 d-block fw-bold">TO</label>
+                        <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="glass date-input">
+                    </div>
+                    <!-- Reset filters button -->
+                    <div class="filter-item flex-0">
+                        <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
+                        <button class="btn btn-icon btn-secondary glass" (click)="clearFilters()">
+                            <i class="fas fa-undo-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============= -->
+        <!-- SALES CHARTS   -->
+        <!-- ============= -->
+        <div class="charts-grid mb-4">
+            <!-- Revenue Over Time line chart -->
+            <div class="glass-card chart-card">
+                <h4><i class="fas fa-chart-area text-accent"></i> Revenue Over Time</h4>
+                <div class="chart-wrapper"><canvas id="revenueTimeChart"></canvas></div>
+            </div>
+            <!-- Top Products horizontal bar chart -->
+            <div class="glass-card chart-card">
+                <h4><i class="fas fa-chart-bar text-accent"></i> Top Products</h4>
+                <div class="chart-wrapper"><canvas id="topProductsChart"></canvas></div>
+            </div>
+            <!-- Revenue By Store doughnut chart -->
+            <div class="glass-card chart-card chart-small">
+                <h4><i class="fas fa-chart-pie text-accent"></i> By Store</h4>
+                <div class="chart-wrapper"><canvas id="bySupermarketChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Loading spinner: shown while sales data is being fetched -->
+        <div *ngIf="loading" class="p-5 text-center">
+            <div class="spinner"></div>
+            <p class="text-secondary mt-2">Loading sales records...</p>
+        </div>
+
+        <!-- ============= -->
+        <!-- SALES TABLE    -->
+        <!-- ============= -->
+        <!-- Table showing all filtered sales records -->
+        <div class="glass-card p-0 overflow-hidden" *ngIf="!loading && filteredSales.length > 0">
+            <div class="table-container">
+                <table>
+                    <!-- Table header row -->
+                    <thead>
+                        <tr>
+                            <th>Date</th> <!-- Sale date column -->
+                            <th>Product</th> <!-- Product name and SKU column -->
+                            <th>Store</th> <!-- Supermarket/store name column -->
+                            <th>Qty</th> <!-- Quantity sold column -->
+                            <th>Unit Price</th> <!-- Price per unit column -->
+                            <th>Total</th> <!-- Total amount (qty * price) column -->
+                        </tr>
+                    </thead>
+                    <!-- Table body: one row per filtered sale record -->
+                    <tbody>
+                        <tr *ngFor="let s of filteredSales">
+                            <!-- Sale date -->
+                            <td><span class="text-muted">{{s.saleDate}}</span></td>
+                            <!-- Product name and SKU -->
+                            <td>
+                                <div class="product-cell">
+                                    <span class="text-white fw-bold">{{s.productName}}</span>
+                                    <span class="text-accent fs-xs">{{s.productSku}}</span>
+                                </div>
+                            </td>
+                            <!-- Store name -->
+                            <td><span class="text-info">{{s.supermarketName}}</span></td>
+                            <!-- Quantity sold -->
+                            <td><strong>{{s.quantitySold}}</strong></td>
+                            <!-- Unit price formatted with 2 decimal places -->
+                            <td>LKR {{s.unitPrice | number:'1.2-2'}}</td>
+                            <!-- Total amount formatted with 2 decimal places -->
+                            <td><span class="text-accent fw-bold">LKR {{s.totalAmount | number:'1.2-2'}}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty state: shown when no sales records match the filters -->
+        <div class="empty-placeholder p-5 text-center text-muted glass-card"
+            *ngIf="!loading && filteredSales.length === 0">
+            <i class="fas fa-cash-register mb-3 fs-xl d-block"></i>
+            <h3>No sales records found</h3>
+            <p>Sales records will appear here once they are recorded.</p>
+        </div>
+    </div>
+
+    <!-- ======================= -->
+    <!-- AI DEMAND FORECAST TAB  -->
+    <!-- ======================= -->
+    <div *ngIf="activeTab === 'forecast'">
+
+        <!-- Loading spinner: shown while forecast data is being fetched -->
+        <div *ngIf="forecastLoading" class="p-5 text-center">
+            <div class="spinner"></div>
+            <p class="text-secondary mt-2">Loading AI demand predictions...</p>
+        </div>
+
+        <!-- Forecast content: shown when data is loaded and forecasts exist -->
+        <div *ngIf="!forecastLoading && forecasts.length > 0">
+
+            <!-- Forecast Summary Stats Row -->
+            <div class="forecast-summary mb-4">
+                <!-- Products Forecasted count card -->
+                <div class="glass-card forecast-stat">
+                    <div class="stat-icon gradient-gold"><i class="fas fa-brain"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-value">{{forecasts.length}}</span>
+                        <span class="stat-label">Products Forecasted</span>
+                    </div>
+                </div>
+                <!-- Trending Up count card (counts forecasts with INCREASING trend) -->
+                <div class="glass-card forecast-stat">
+                    <div class="stat-icon gradient-green"><i class="fas fa-arrow-up"></i></div>
+                    <div class="stat-data">
+                        <!-- Count how many forecasts have 'INCREASING' trend using JSON string trick -->
+                        <span class="stat-value">{{(forecasts | json).split('INCREASING').length - 1}}</span>
+                        <span class="stat-label">Trending Up</span>
+                    </div>
+                </div>
+                <!-- Top Recommended Order quantity card -->
+                <div class="glass-card forecast-stat">
+                    <div class="stat-icon gradient-blue"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-data">
+                        <!-- Show the recommended order of the first forecast (highest priority) -->
+                        <span class="stat-value">{{forecasts.length > 0 ? (forecasts[0].recommendedOrder || 0) :
+                            0}}</span>
+                        <span class="stat-label">Top Recommended Order</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forecast Cards Grid: one card per forecasted product -->
+            <div class="forecast-grid">
+                <div class="glass-card forecast-card" *ngFor="let f of forecasts">
+
+                    <!-- Card header: product name/SKU and trend badge -->
+                    <div class="forecast-header">
+                        <div class="forecast-product">
+                            <span class="fw-bold text-white">{{f.productName}}</span>
+                            <span class="text-accent fs-xs fw-bold">{{f.productSku}}</span>
+                        </div>
+                        <!-- Trend badge: shows direction (INCREASING/DECREASING/STABLE) with color -->
+                        <div class="trend-badge" [ngClass]="getTrendColor(f.trend)">
+                            <i class="fas" [ngClass]="getTrendIcon(f.trend)"></i> {{f.trend}}
+                        </div>
+                    </div>
+
+                    <!-- Forecast metrics grid: 2x2 layout of key demand metrics -->
+                    <div class="forecast-metrics">
+                        <!-- Weekly Demand prediction -->
+                        <div class="metric">
+                            <span class="metric-label">Weekly Demand</span>
+                            <span class="metric-value text-accent">{{f.predictedWeeklyDemand | number:'1.0-0'}}
+                                units</span>
+                        </div>
+                        <!-- Monthly Demand prediction -->
+                        <div class="metric">
+                            <span class="metric-label">Monthly Demand</span>
+                            <span class="metric-value text-info">{{f.predictedMonthlyDemand | number:'1.0-0'}}
+                                units</span>
+                        </div>
+                        <!-- Current Stock level (red if below weekly demand, green if adequate) -->
+                        <div class="metric">
+                            <span class="metric-label">Current Stock</span>
+                            <span class="metric-value"
+                                [ngClass]="f.currentStock < f.predictedWeeklyDemand ? 'text-danger' : 'text-success'">{{f.currentStock}}
+                                units</span>
+                        </div>
+                        <!-- AI-recommended order quantity -->
+                        <div class="metric">
+                            <span class="metric-label">Recommended Order</span>
+                            <span class="metric-value text-warning fw-bold">{{f.recommendedOrder}} units</span>
+                        </div>
+                    </div>
+
+                    <!-- Card footer: AI confidence bar and forecast method -->
+                    <div class="forecast-footer">
+                        <!-- Confidence progress bar -->
+                        <div class="confidence-bar">
+                            <span class="fs-xs text-muted">AI Confidence</span>
+                            <!-- Visual progress bar - width set by confidence percentage -->
+                            <div class="progress-track">
+                                <div class="progress-fill" [style.width.%]="f.confidence * 100"
+                                    [ngClass]="getConfidenceBadge(f.confidence)"></div>
+                            </div>
+                            <!-- Confidence percentage text -->
+                            <span class="fs-xs" [ngClass]="getConfidenceBadge(f.confidence)">{{f.confidence * 100 |
+                                number:'1.0-0'}}%</span>
+                        </div>
+                        <!-- Forecast method used (e.g., ARIMA, Moving Average) -->
+                        <span class="fs-xxs text-muted">Method: {{f.forecastMethod}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state: shown when no forecast data is available -->
+        <div class="empty-placeholder p-5 text-center text-muted glass-card"
+            *ngIf="!forecastLoading && forecasts.length === 0">
+            <i class="fas fa-brain mb-3 fs-xl d-block"></i>
+            <h3>No forecast data available</h3>
+            <p>AI demand predictions will appear once there is sufficient sales history.</p>
+        </div>
+    </div>
+</div>

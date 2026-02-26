@@ -10,6 +10,7 @@
           <th>Email</th>
           <th>Full Name</th>
           <th>Roles</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -18,6 +19,10 @@
           <td>{{u.email}}</td>
           <td>{{u.fullName}}</td>
           <td>{{rolesLabel(u)}}</td>
+          <td>
+            <button class="btn btn-sm" (click)="deleteUser(u.id)"
+              style="padding: 0.2rem 0.5rem; font-size: 0.8rem; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>

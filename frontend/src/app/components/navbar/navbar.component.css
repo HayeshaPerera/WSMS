@@ -1,622 +1,811 @@
-/* Root Variables for Light Theme */
-[data-theme="light"] {
-  --nav-bg-primary: #ffffff;
-  --nav-bg-secondary: #f8f9fa;
-  --nav-text-primary: #2c3e50;
-  --nav-text-secondary: #7f8c8d;
-  --nav-border-color: #e0e0e0;
-  --nav-accent-color: #3498db;
-  --nav-accent-hover: #2980b9;
-  --nav-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --nav-dropdown-bg: #ffffff;
-  --sidebar-bg: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  --nav-hover-bg: rgba(52, 152, 219, 0.1);
-  --logo-primary: #3498db;
-  --logo-secondary: #2980b9;
-}
+/* ================================================
+   Navbar Component Styles
+   Premium glassmorphism navigation bar and sidebar
+   ================================================ */
 
-/* Root Variables for Dark Theme */
-[data-theme="dark"] {
-  --nav-bg-primary: #1a1a1a;
-  --nav-bg-secondary: #2d2d2d;
-  --nav-text-primary: rgba(255, 255, 255, 0.95);
-  --nav-text-secondary: rgba(255, 255, 255, 0.7);
-  --nav-border-color: #FFD700;
-  --nav-accent-color: #FFD700;
-  --nav-accent-hover: #FFA500;
-  --nav-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --nav-dropdown-bg: #2d2d2d;
-  --sidebar-bg: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  --nav-hover-bg: rgba(255, 215, 0, 0.1);
-  --logo-primary: #FFD700;
-  --logo-secondary: #FFA500;
-}
-
-/* Navbar Container */
+/* Main navbar container: sticky, rounded, with glass effect */
 .navbar {
-  background: var(--nav-bg-primary);
-  box-shadow: var(--nav-shadow);
+  height: 80px;
+  /* Fixed navbar height */
   position: sticky;
+  /* Sticks to top on scroll */
   top: 0;
+  /* Stick to the very top */
   z-index: 1000;
-  border-bottom: 3px solid var(--nav-border-color);
-  transition: all 0.3s ease;
+  /* Above all page content */
+  margin: 1rem 1.5rem;
+  /* Outer margin for floating effect */
+  border-radius: var(--radius-lg);
+  /* Large rounded corners */
+  display: flex;
+  /* Flexbox for centering */
+  align-items: center;
+  /* Vertical centering */
+  transition: var(--transition);
+  /* Smooth transitions */
 }
 
+/* Inner container: holds left, center, and right sections */
 .navbar-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px;
+  width: 100%;
+  /* Full width */
+  padding: 0 1.5rem;
+  /* Horizontal padding */
   display: flex;
+  /* Horizontal layout */
   align-items: center;
+  /* Vertical centering */
   justify-content: space-between;
-  height: 70px;
-  gap: 20px;
+  /* Space items across full width */
 }
 
-/* Back Button */
-.back-button {
-  background: none;
-  border: 2px solid var(--nav-accent-color);
-  border-radius: 8px;
-  color: var(--nav-accent-color);
-  cursor: pointer;
-  padding: 8px 12px;
-  transition: all 0.3s;
+/* Left and right nav sections: flex with gap */
+.nav-left,
+.nav-right {
   display: flex;
+  /* Horizontal layout */
   align-items: center;
+  /* Vertical centering */
+  gap: 1.5rem;
+  /* Space between items */
+}
+
+/* ========================
+   Brand Logo & Text
+   ======================== */
+
+/* Brand link: logo + text, no underline */
+.brand-link {
+  display: flex;
+  /* Horizontal layout */
+  align-items: center;
+  /* Vertical centering */
+  gap: 1rem;
+  /* Space between logo and text */
+  text-decoration: none;
+  /* Remove link underline */
+}
+
+/* Brand logo: square box with icon */
+.brand-logo {
+  width: 45px;
+  /* Logo width */
+  height: 45px;
+  /* Logo height (square) */
+  display: flex;
+  /* Center icon */
+  align-items: center;
+  /* Vertical center */
   justify-content: center;
+  /* Horizontal center */
+  font-size: 1.4rem;
+  /* Icon size */
+  color: var(--primary);
+  /* Primary brand color */
+  border-radius: 12px;
+  /* Rounded square */
 }
 
-.back-button:hover {
-  background: var(--nav-accent-color);
-  color: var(--nav-bg-primary);
-  transform: translateX(-3px);
+/* Small variant of the brand logo (used in sidebar) */
+.brand-logo.sm {
+  width: 35px;
+  /* Smaller width */
+  height: 35px;
+  /* Smaller height */
+  font-size: 1.1rem;
+  /* Smaller icon */
 }
 
-.back-button svg {
-  display: block;
-}
-
-/* Creative Logo */
-.navbar-brand {
+/* Brand text container: vertical layout */
+.brand-text {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  transition: transform 0.3s;
-}
-
-.navbar-brand:hover {
-  transform: scale(1.05);
-}
-
-.logo-svg {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: filter 0.3s;
-}
-
-.navbar-brand:hover .logo-svg {
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.logo-text-container {
-  display: flex;
+  /* Vertical layout */
   flex-direction: column;
-  gap: 2px;
+  /* Stack name and version */
 }
 
-.logo-text {
-  font-size: 24px;
+/* Brand name: large bold text */
+.brand-name {
+  font-size: 1.4rem;
+  /* Large text */
+  font-weight: 800;
+  /* Extra bold */
+  letter-spacing: -0.5px;
+  /* Tight letter spacing */
+  color: #fff;
+  /* White text */
+}
+
+/* Brand version label: small accent text */
+.brand-version {
+  font-size: 0.7rem;
+  /* Small text */
   font-weight: 700;
-  color: var(--nav-accent-color);
-  letter-spacing: 1px;
+  /* Bold */
+  color: var(--accent);
+  /* Accent color (gold) */
+  letter-spacing: 2px;
+  /* Wide letter spacing */
 }
 
-.logo-subtitle {
-  font-size: 10px;
-  color: var(--nav-text-secondary);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
+/* ========================
+   Navigation Links (Desktop)
+   ======================== */
 
-/* Navigation Links */
-.navbar-links {
+/* Navigation links list: horizontal, no bullets */
+.nav-links {
   display: flex;
+  /* Horizontal layout */
   list-style: none;
-  gap: 5px;
-  margin: 0;
-  padding: 0;
+  /* Remove bullet points */
+  gap: 0.5rem;
+  /* Space between links */
 }
 
-.navbar-links li {
-  position: relative;
-}
-
-.nav-item {
+/* Individual nav link: icon + text */
+.nav-links a {
   display: flex;
+  /* Horizontal layout */
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  color: var(--nav-text-primary);
+  /* Vertical centering */
+  gap: 0.75rem;
+  /* Space between icon and text */
+  padding: 0.8rem 1.2rem;
+  /* Comfortable click target */
+  color: var(--text-secondary);
+  /* Dimmed text by default */
   text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.3s;
-  font-size: 14px;
+  /* No underline */
   font-weight: 500;
-  position: relative;
+  /* Medium weight */
+  font-size: 0.95rem;
+  /* Standard size */
+  border-radius: var(--radius-md);
+  /* Rounded corners */
+  transition: var(--transition);
+  /* Smooth hover effect */
 }
 
-.nav-item:hover {
-  background: var(--nav-hover-bg);
-  color: var(--nav-accent-color);
-  transform: translateY(-2px);
+/* Nav link hover and active states */
+.nav-links a:hover,
+.nav-links a.active {
+  color: #fff;
+  /* White text */
+  background: rgba(255, 255, 255, 0.05);
+  /* Subtle highlight */
 }
 
-.nav-item.active {
-  background: var(--nav-hover-bg);
-  color: var(--nav-accent-color);
-  border-bottom: 2px solid var(--nav-accent-color);
+/* Active nav link: additional border */
+.nav-links a.active {
+  box-shadow: inset 0 0 0 1px var(--glass-border);
+  /* Inner border glow */
 }
 
-.nav-text {
-  white-space: nowrap;
-}
+/* ========================
+   Count Badge (Red Pill)
+   ======================== */
 
-/* Notification Badges */
-.notification-badge {
-  position: absolute;
-  top: 4px;
-  right: 8px;
-  background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+/* Red count badge for pending items */
+.count-badge {
+  background: var(--danger);
+  /* Red background */
   color: white;
-  font-size: 11px;
-  font-weight: bold;
+  /* White text */
+  font-size: 0.7rem;
+  /* Small text */
+  font-weight: 800;
+  /* Extra bold */
   padding: 2px 6px;
+  /* Compact padding */
   border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.4);
-  animation: pulse 2s infinite;
+  /* Pill shape */
+  margin-left: -5px;
+  /* Overlap slightly with text */
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+/* ========================
+   User Profile (Right Side)
+   ======================== */
+
+/* User profile container: pill-shaped glass card */
+.user-profile {
+  display: flex;
+  /* Horizontal layout */
+  align-items: center;
+  /* Vertical centering */
+  gap: 0.75rem;
+  /* Space between avatar, name, and button */
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  /* Asymmetric padding */
+  border-radius: 50px;
+  /* Pill shape */
 }
 
-/* Dropdown */
+/* User avatar: circle with initial letter */
+.user-avatar {
+  width: 32px;
+  /* Avatar width */
+  height: 32px;
+  /* Avatar height (circle) */
+  background: var(--primary);
+  /* Primary brand color */
+  color: #fff;
+  /* White text */
+  display: flex;
+  /* Center letter */
+  align-items: center;
+  /* Vertical center */
+  justify-content: center;
+  /* Horizontal center */
+  border-radius: 50%;
+  /* Perfect circle */
+  font-weight: 700;
+  /* Bold */
+  font-size: 0.9rem;
+  /* Letter size */
+}
+
+/* Logout button: circular with hover effect */
+.logout-btn {
+  background: rgba(255, 255, 255, 0.05);
+  /* Subtle background */
+  border: none;
+  /* No border */
+  color: var(--text-muted);
+  /* Dimmed text */
+  width: 32px;
+  /* Button width */
+  height: 32px;
+  /* Button height (circle) */
+  border-radius: 50%;
+  /* Perfect circle */
+  cursor: pointer;
+  /* Pointer cursor */
+  transition: var(--transition);
+  /* Smooth hover */
+}
+
+/* Logout button hover: turns red */
+.logout-btn:hover {
+  background: var(--danger);
+  /* Red background */
+  color: #fff;
+  /* White icon */
+}
+
+/* ========================
+   Dropdown Menu (Desktop)
+   ======================== */
+
+/* Dropdown container: relative positioning for absolute child */
 .dropdown {
   position: relative;
+  /* Anchor for dropdown content */
 }
 
-.dropdown:hover .dropdown-menu {
-  display: block;
-}
-
-.dropdown-toggle::after {
-  content: ' ▾';
-  font-size: 12px;
-}
-
-.dropdown-menu {
-  display: none;
+/* Dropdown content: hidden by default */
+.dropdown-content {
   position: absolute;
+  /* Positioned relative to parent */
   top: 100%;
-  left: 0;
-  background: var(--nav-dropdown-bg);
-  border: 1px solid var(--nav-border-color);
-  border-radius: 8px;
-  min-width: 180px;
-  padding: 8px 0;
-  margin-top: 5px;
-  box-shadow: var(--nav-shadow);
-  z-index: 1001;
+  /* Below the trigger */
+  right: 0;
+  /* Aligned to right edge */
+  margin-top: 1rem;
+  /* Gap below trigger */
+  min-width: 200px;
+  /* Minimum width */
+  display: none;
+  /* Hidden by default */
+  flex-direction: column;
+  /* Vertical list */
+  padding: 0.5rem;
+  /* Inner padding */
+  z-index: 10;
+  /* Above other elements */
 }
 
-.dropdown-menu li {
-  list-style: none;
-}
-
-.dropdown-menu a {
-  display: block;
-  padding: 10px 20px;
-  color: var(--nav-text-primary);
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.dropdown-menu a:hover {
-  background: var(--nav-hover-bg);
-  color: var(--nav-accent-color);
-  padding-left: 25px;
-}
-
-/* User Actions */
-.navbar-actions {
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-content {
   display: flex;
-  align-items: center;
-  gap: 15px;
+  /* Show as flex column */
 }
 
-/* Theme Toggle */
-.theme-toggle {
-  background: var(--nav-hover-bg);
-  border: 2px solid var(--nav-border-color);
-  border-radius: 50%;
+/* Dropdown menu items */
+.dropdown-content a {
+  padding: 0.8rem 1rem;
+  /* Item padding */
+}
+
+/* ========================
+   Notification Bell
+   ======================== */
+
+/* Notification bell container: relative for badge positioning */
+.notification-bell {
+  position: relative;
+  /* Anchor for badge and dropdown */
+}
+
+/* Bell icon button: circular glass button */
+.bell-trigger {
   width: 40px;
+  /* Button width */
   height: 40px;
+  /* Button height */
+  border: none;
+  /* No border */
+  border-radius: 50%;
+  /* Perfect circle */
   display: flex;
+  /* Center icon */
   align-items: center;
+  /* Vertical center */
   justify-content: center;
+  /* Horizontal center */
   cursor: pointer;
-  transition: all 0.3s;
-  color: var(--nav-accent-color);
+  /* Pointer cursor */
+  color: var(--text-secondary);
+  /* Dimmed icon color */
+  font-size: 1.1rem;
+  /* Icon size */
+  transition: var(--transition);
+  /* Smooth hover */
+  position: relative;
+  /* Anchor for badge */
 }
 
-.theme-toggle:hover {
-  background: var(--nav-accent-color);
-  color: var(--nav-bg-primary);
-  transform: rotate(180deg);
+/* Bell button hover: gold accent */
+.bell-trigger:hover {
+  color: #FFD700;
+  /* Gold icon */
+  background: rgba(255, 215, 0, 0.1);
+  /* Subtle gold background */
 }
 
-.theme-toggle svg {
-  display: block;
+/* Unread count badge: red pill on top-right of bell */
+.notif-badge {
+  position: absolute;
+  /* Positioned relative to button */
+  top: 2px;
+  /* Near top edge */
+  right: 2px;
+  /* Near right edge */
+  background: var(--danger, #F44336);
+  /* Red background */
+  color: white;
+  /* White text */
+  font-size: 0.6rem;
+  /* Tiny text */
+  font-weight: 800;
+  /* Extra bold */
+  padding: 1px 5px;
+  /* Compact padding */
+  border-radius: 10px;
+  /* Pill shape */
+  min-width: 16px;
+  /* Minimum width */
+  text-align: center;
+  /* Center text */
+  line-height: 1.3;
+  /* Line height for readability */
 }
 
-.user-badge {
+/* Notification dropdown panel: glass card below bell */
+.notif-dropdown {
+  position: absolute;
+  /* Positioned relative to bell */
+  top: calc(100% + 12px);
+  /* Gap below bell icon */
+  right: -50px;
+  /* Slightly offset left */
+  width: 340px;
+  /* Panel width */
+  max-height: 420px;
+  /* Maximum panel height */
+  border-radius: 14px;
+  /* Rounded corners */
+  overflow: hidden;
+  /* Clip content to panel */
+  z-index: 3000;
+  /* Above sidebar and other panels */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  /* Deep shadow */
+}
+
+/* Notification panel header: title + action button */
+.notif-header {
   display: flex;
+  /* Horizontal layout */
+  justify-content: space-between;
+  /* Title left, button right */
+  align-items: center;
+  /* Vertical centering */
+  padding: 14px 16px;
+  /* Inner padding */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  /* Subtle divider */
+  color: #fff;
+  /* White text */
+}
+
+/* "Mark all read" button: transparent link-like button */
+.btn-link {
+  background: none;
+  /* No background */
+  border: none;
+  /* No border */
+  cursor: pointer;
+  /* Pointer cursor */
+  padding: 0;
+  /* No padding */
+}
+
+/* Scrollable notification list */
+.notif-list {
+  max-height: 340px;
+  /* Maximum scrollable height */
+  overflow-y: auto;
+  /* Vertical scroll when needed */
+}
+
+/* Individual notification item */
+.notif-item {
+  display: flex;
+  /* Horizontal layout */
+  align-items: flex-start;
+  /* Align to top */
+  gap: 10px;
+  /* Space between icon and content */
+  padding: 12px 16px;
+  /* Inner padding */
+  cursor: pointer;
+  /* Pointer cursor */
+  transition: background 0.2s ease;
+  /* Smooth hover */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  /* Subtle divider */
+}
+
+/* Notification item hover: subtle highlight */
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  /* Light highlight */
+}
+
+/* Unread notification: gold left border + tinted background */
+.notif-item.unread {
+  background: rgba(255, 215, 0, 0.04);
+  /* Gold tint */
+  border-left: 3px solid #FFD700;
+  /* Gold left border */
+}
+
+/* Notification type icon */
+.notif-item i {
+  margin-top: 2px;
+  /* Align with first line of text */
+  font-size: 1rem;
+  /* Icon size */
+  flex-shrink: 0;
+  /* Don't shrink */
+}
+
+/* Notification content: message + timestamp */
+.notif-content {
+  display: flex;
+  /* Vertical layout */
+  flex-direction: column;
+  /* Stack message and time */
+  gap: 2px;
+  /* Tiny gap */
+  min-width: 0;
+  /* Allow text truncation */
+}
+
+/* Notification message text */
+.notif-msg {
+  font-size: 0.85rem;
+  /* Readable size */
+  color: rgba(255, 255, 255, 0.8);
+  /* Slightly dimmed */
+  line-height: 1.4;
+  /* Line spacing */
+}
+
+/* Notification timestamp */
+.notif-time {
+  font-size: 0.7rem;
+  /* Tiny text */
+}
+
+/* Empty notification state */
+.notif-empty {
+  display: flex;
+  /* Vertical centered layout */
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: var(--nav-hover-bg);
-  border: 1px solid var(--nav-border-color);
-  border-radius: 20px;
-  color: var(--nav-accent-color);
-  font-weight: 600;
-  font-size: 14px;
+  /* Space between icon and text */
+  padding: 30px;
+  /* Generous padding */
+  color: rgba(255, 255, 255, 0.3);
+  /* Very dimmed text */
+  font-size: 0.9rem;
+  /* Readable size */
 }
 
-.btn-logout,
-.btn-login {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
+/* Empty state icon */
+.notif-empty i {
+  font-size: 1.5rem;
+  /* Larger icon */
 }
 
-.btn-logout {
-  background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
-  color: white;
-}
+/* ========================
+   Sidebar (Mobile Menu)
+   ======================== */
 
-.btn-logout:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
-}
-
-.btn-login {
-  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
-  color: white;
-}
-
-.btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-}
-
-/* Mobile Menu Toggle */
-.mobile-menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: var(--nav-accent-color);
-  font-size: 28px;
-  cursor: pointer;
-  padding: 5px;
-}
-
-.desktop-only {
-  display: flex;
-}
-
-/* Stylish Sidebar */
-.sidebar {
+/* Sidebar wrapper: covers full screen, hidden by default */
+.sidebar-wrapper {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  /* Fixed overlay */
+  inset: 0;
+  /* Cover entire viewport */
   z-index: 2000;
+  /* Above navbar */
   pointer-events: none;
+  /* Don't block clicks when hidden */
+  visibility: hidden;
+  /* Invisible when closed */
+  transition: var(--transition);
+  /* Smooth open/close */
 }
 
-.sidebar-open {
-  pointer-events: all;
+/* Sidebar wrapper when open: enable interactions */
+.sidebar-wrapper.is-open {
+  pointer-events: auto;
+  /* Allow clicking */
+  visibility: visible;
+  /* Make visible */
 }
 
-.sidebar-overlay {
+/* Dark backdrop behind sidebar with blur effect */
+.sidebar-backdrop {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0);
-  transition: background 0.3s;
+  /* Fill the wrapper */
+  inset: 0;
+  /* Cover everything */
+  background: rgba(0, 0, 0, 0.4);
+  /* Semi-transparent black */
+  backdrop-filter: blur(8px);
+  /* Blur content behind */
+  opacity: 0;
+  /* Hidden by default */
+  transition: var(--transition);
+  /* Fade in */
 }
 
-.sidebar-open .sidebar-overlay {
-  background: rgba(0, 0, 0, 0.7);
+/* Backdrop when sidebar is open: fully visible */
+.sidebar-wrapper.is-open .sidebar-backdrop {
+  opacity: 1;
+  /* Fully visible */
 }
 
-.sidebar-content {
+/* Sidebar panel: slides in from the left */
+.sidebar-aside {
   position: absolute;
-  top: 0;
+  /* Absolute within wrapper */
   left: -320px;
+  /* Hidden off-screen to the left */
   width: 300px;
-  height: 100%;
-  background: var(--sidebar-bg);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
+  /* Panel width */
+  height: calc(100% - 2rem);
+  /* Full height minus margins */
+  margin: 1rem;
+  /* Margin for floating effect */
+  padding: 2rem;
+  /* Inner padding */
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Smooth slide */
   display: flex;
+  /* Vertical layout */
   flex-direction: column;
+  /* Stack children */
 }
 
-.sidebar-open .sidebar-content {
+/* Sidebar when open: slide into view */
+.sidebar-wrapper.is-open .sidebar-aside {
   left: 0;
+  /* Move to visible position */
 }
 
+/* Sidebar header: logo, brand name, and close button */
 .sidebar-header {
   display: flex;
+  /* Horizontal layout */
   align-items: center;
-  gap: 12px;
-  padding: 24px;
-  border-bottom: 2px solid var(--nav-border-color);
-  position: relative;
-}
-
-.logo-svg-small {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.sidebar-title {
-  font-size: 20px;
-  color: var(--nav-accent-color);
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.sidebar-close {
-  position: absolute;
-  right: 20px;
-  background: none;
-  border: none;
-  color: var(--nav-accent-color);
-  font-size: 28px;
-  cursor: pointer;
-  padding: 5px;
-  transition: all 0.3s;
-}
-
-.sidebar-close:hover {
-  transform: rotate(90deg);
-  color: var(--nav-accent-hover);
-}
-
-/* Sidebar User Info */
-.sidebar-user-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 20px 24px;
-  background: var(--nav-hover-bg);
-  border-bottom: 1px solid var(--nav-border-color);
-}
-
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--nav-accent-color);
-  color: var(--nav-bg-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.user-details {
-  flex: 1;
-}
-
-.user-name-sidebar {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--nav-text-primary);
-  margin-bottom: 4px;
-}
-
-.user-role {
-  font-size: 12px;
-  color: var(--nav-text-secondary);
-  text-transform: capitalize;
-}
-
-/* Sidebar Menu */
-.sidebar-menu {
-  list-style: none;
-  padding: 16px;
-  margin: 0;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.sidebar-menu li {
-  margin: 4px 0;
-}
-
-.menu-section {
-  color: var(--nav-text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 16px 16px 8px 16px;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-}
-
-.sidebar-menu a {
-  display: flex;
-  align-items: center;
+  /* Vertical centering */
   justify-content: space-between;
-  padding: 14px 16px;
-  color: var(--nav-text-primary);
-  text-decoration: none;
-  border-radius: 10px;
-  transition: all 0.3s;
-  position: relative;
-  font-weight: 500;
+  /* Space between items */
+  margin-bottom: 2rem;
+  /* Gap below header */
 }
 
-.sidebar-menu a:hover {
-  background: var(--nav-hover-bg);
-  color: var(--nav-accent-color);
-  padding-left: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Sidebar brand text */
+.sidebar-brand {
+  font-size: 1.5rem;
+  /* Large text */
+  font-weight: 800;
+  /* Extra bold */
+  color: #fff;
+  /* White text */
 }
 
-.sidebar-menu a.active {
-  background: var(--nav-accent-color);
-  color: var(--nav-bg-primary);
-  border-left: 4px solid var(--nav-accent-hover);
-  font-weight: 600;
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 20px 24px;
-  border-top: 2px solid var(--nav-border-color);
-  background: var(--nav-hover-bg);
-}
-
-.theme-toggle-sidebar {
-  width: 100%;
+/* Sidebar user card: avatar + info */
+.sidebar-user {
   display: flex;
+  /* Horizontal layout */
   align-items: center;
+  /* Vertical centering */
+  gap: 1rem;
+  /* Space between avatar and info */
+  margin-bottom: 2rem;
+  /* Gap below user card */
+}
+
+/* Large avatar: square with rounded corners */
+.avatar-lg {
+  width: 50px;
+  /* Avatar width */
+  height: 50px;
+  /* Avatar height */
+  background: var(--primary);
+  /* Primary brand color */
+  color: #fff;
+  /* White text */
+  display: flex;
+  /* Center letter */
+  align-items: center;
+  /* Vertical center */
   justify-content: center;
-  gap: 10px;
-  padding: 12px;
-  background: var(--nav-bg-secondary);
-  border: 2px solid var(--nav-border-color);
-  border-radius: 10px;
-  color: var(--nav-text-primary);
-  cursor: pointer;
-  transition: all 0.3s;
+  /* Horizontal center */
+  border-radius: 12px;
+  /* Rounded square */
+  font-size: 1.4rem;
+  /* Letter size */
+  font-weight: 700;
+  /* Bold */
+}
+
+/* User info container: name + role */
+.user-info {
+  display: flex;
+  /* Vertical layout */
+  flex-direction: column;
+  /* Stack name and role */
+}
+
+/* User name text */
+.user-info .name {
   font-weight: 600;
+  /* Semi-bold */
+  color: #fff;
+  /* White text */
 }
 
-.theme-toggle-sidebar:hover {
-  background: var(--nav-accent-color);
-  color: var(--nav-bg-primary);
-  transform: scale(1.05);
+/* User role text: small uppercase */
+.user-info .role {
+  font-size: 0.8rem;
+  /* Small text */
+  color: var(--text-muted);
+  /* Dimmed color */
+  text-transform: uppercase;
+  /* UPPERCASE */
+  letter-spacing: 1px;
+  /* Spaced letters */
 }
 
-.theme-toggle-sidebar svg {
-  display: block;
+/* Sidebar navigation container */
+.sidebar-nav {
+  display: flex;
+  /* Vertical layout */
+  flex-direction: column;
+  /* Stack links */
+  gap: 0.25rem;
+  /* Small gap between links */
 }
 
-/* Responsive Design */
+/* Section label: "MAIN", "ADMIN", etc. */
+.nav-section {
+  font-size: 0.75rem;
+  /* Small text */
+  font-weight: 700;
+  /* Bold */
+  color: var(--text-muted);
+  /* Dimmed color */
+  padding: 1.5rem 1rem 0.5rem;
+  /* Padding above and below */
+  letter-spacing: 2px;
+  /* Wide letter spacing */
+}
+
+/* Sidebar nav link: full-width clickable area */
+.sidebar-nav a {
+  padding: 0.8rem 1rem;
+  /* Inner padding */
+  color: var(--text-secondary);
+  /* Dimmed text */
+  text-decoration: none;
+  /* No underline */
+  font-weight: 500;
+  /* Medium weight */
+  border-radius: var(--radius-md);
+  /* Rounded corners */
+  transition: var(--transition);
+  /* Smooth hover */
+}
+
+/* Sidebar nav link hover and active states */
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: rgba(255, 255, 255, 0.05);
+  /* Subtle highlight */
+  color: #fff;
+  /* White text */
+}
+
+/* Sidebar close button */
+.sidebar-close {
+  background: transparent;
+  /* No background */
+  border: none;
+  /* No border */
+  color: var(--text-muted);
+  /* Dimmed color */
+  font-size: 1.2rem;
+  /* Icon size */
+  cursor: pointer;
+  /* Pointer cursor */
+}
+
+/* Sidebar footer: pushed to bottom */
+.sidebar-footer {
+  margin-top: auto;
+  /* Push to bottom using flexbox */
+  font-size: 0.8rem;
+  /* Small text */
+  color: var(--text-muted);
+  /* Dimmed color */
+  text-align: center;
+  /* Center text */
+}
+
+/* ========================
+   Responsive: Tablet & Mobile
+   ======================== */
+
+/* 1024px and below: hide desktop-only elements */
 @media (max-width: 1024px) {
-  .navbar-links {
-    gap: 2px;
-  }
-  
-  .nav-item {
-    padding: 8px 14px;
-    font-size: 13px;
-  }
-}
 
-@media (max-width: 768px) {
-  .mobile-menu-toggle {
-    display: block;
-  }
-  
+  /* Hide desktop navigation and username */
   .desktop-only {
-    display: none !important;
-  }
-  
-  .navbar-container {
-    height: 60px;
-  }
-  
-  .logo-text {
-    font-size: 20px;
-  }
-  
-  .logo-subtitle {
-    font-size: 9px;
-  }
-  
-  .user-name {
     display: none;
+    /* Hidden on mobile */
   }
-  
-  .back-button {
-    padding: 6px 10px;
-  }
-  
-  .back-button svg {
-    width: 18px;
-    height: 18px;
-  }
-}
 
-@media (max-width: 480px) {
-  .navbar-container {
-    padding: 0 12px;
-    gap: 10px;
+  /* Compact navbar on mobile */
+  .navbar {
+    margin: 0.5rem;
+    /* Smaller margin */
+    height: 70px;
+    /* Shorter navbar */
   }
-  
-  .logo-svg {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .logo-text {
-    font-size: 18px;
-  }
-  
-  .logo-subtitle {
-    display: none;
-  }
-  
-  .user-badge {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .btn-logout,
-  .btn-login {
-    padding: 8px 14px;
-    font-size: 13px;
-  }
-  
-  .theme-toggle {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .theme-toggle svg {
-    width: 18px;
-    height: 18px;
+
+  /* Adjust notification dropdown position on mobile */
+  .notif-dropdown {
+    right: -20px;
+    /* Less offset */
+    width: 300px;
+    /* Narrower panel */
   }
 }

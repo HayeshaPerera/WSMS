@@ -1,227 +1,186 @@
-<app-navbar></app-navbar>
-<div class="supermarket-container">
-  <div class="dashboard-header">
-    <h1>🏪 Supermarket Dashboard</h1>
-    <button class="btn btn-primary" (click)="toggleRequestForm()">
-      {{showRequestForm ? '✖ Cancel' : '➕ New Stock Request'}}
-    </button>
-  </div>
-
-  <!-- KPI Cards -->
-  <div class="kpi-grid">
-    <div class="kpi-card" *ngFor="let k of kpis">
-      <div class="kpi-label">{{k.label}}</div>
-      <div class="kpi-value">{{k.value}}</div>
+<div class="supermarket-container animate-fade-in">
+  <header class="dashboard-header mb-4">
+    <div class="header-info">
+      <h1>Dashboard</h1>
+      <p class="text-secondary">Store Inventory & Stock Procurement</p>
     </div>
-  </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="toggleRequestForm()">
+        <i class="fas" [ngClass]="showRequestForm ? 'fa-times' : 'fa-plus'"></i>
+        {{showRequestForm ? 'Cancel' : 'New Stock Request'}}
+      </button>
+    </div>
+  </header>
 
-  <!-- Request Form -->
-  <div *ngIf="showRequestForm" class="request-form-card">
-    <h3>Create Stock Request</h3>
-    <form (ngSubmit)="submitRequest()">
-      <div class="form-group">
-        <label>Product</label>
-        <select [(ngModel)]="requestForm.productId" name="product" class="form-control" required (change)="onProductSelect(requestForm.productId)">
-          <option value="">-- Select Product --</option>
-          <option *ngFor="let p of products" [value]="p.id">
-            {{p.sku}} - {{p.name}} ({{p.category}})
-          </option>
-        </select>
-        <div *ngIf="availableWarehouseQuantity !== null" class="warehouse-qty-info">
-          <small>Available in warehouse: <strong>{{availableWarehouseQuantity}}</strong> units</small>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Quantity</label>
-        <input type="number" [(ngModel)]="requestForm.quantity" name="quantity" class="form-control" min="1" required>
-      </div>
-      <div class="form-buttons">
-        <button type="submit" class="btn btn-success">Submit Request</button>
-        <button type="button" class="btn btn-secondary" (click)="toggleRequestForm()">Cancel</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Current Inventory -->
-  <div class="section-card">
-    <h2>📦 Current Inventory</h2>
-    <div class="inventory-grid">
-      <div *ngFor="let item of inventory" class="inventory-card" [class.low-stock]="item.lowStockAlert">
-        <div class="card-header">
-          <span class="product-name">{{item.product?.name || 'Unknown Product'}}</span>
-          <span class="stock-badge" [class.alert]="item.lowStockAlert">
-            {{item.lowStockAlert ? '⚠️ LOW' : '✓ OK'}}
-          </span>
-        </div>
-        <div class="card-body">
-          <div class="stat">
-            <label>SKU:</label>
-            <span>{{item.product?.sku || 'N/A'}}</span>
-          </div>
-          <div class="stat">
-            <label>Current Stock:</label>
-            <span>{{item.quantity}} units</span>
-          </div>
-          <div class="stat">
-            <label>Reorder Level:</label>
-            <span>{{item.reorderLevel}} units</span>
-          </div>
-          <div class="stat">
-            <label>Price:</label>
-            <span>{{(item.product?.unitPrice || 0) | lkr}}</span>
-          </div>
-        </div>
+  <!-- KPI Grid -->
+  <section class="kpi-grid mb-4">
+    <div class="glass-card stat-card" *ngFor="let k of kpis" style="--primary: var(--primary)">
+      <div class="stat-icon glass">🏪</div>
+      <div class="stat-content">
+        <span class="stat-label">{{k.label}}</span>
+        <div class="stat-value">{{k.value}}</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- My Stock Requests -->
-  <div class="section-card">
-    <h2>📋 My Stock Requests</h2>
-    <div class="requests-table">
-      <div class="table-row header">
-        <div>Request #</div>
-        <div>Product</div>
-        <div>Quantity</div>
-        <div>Status</div>
-        <div>Requested</div>
-        <div>Response</div>
-      </div>
-      <div *ngFor="let req of myRequests" class="table-row">
-        <div>#{{req.id}}</div>
-        <div>
-          <strong>{{req.productName}}</strong>
-          <small>{{req.productSku}}</small>
-        </div>
-        <div>{{req.requestedQuantity}} units</div>
-        <div>
-          <span class="badge" [ngClass]="getStatusBadge(req.status)">
-            <span *ngIf="req.status === 'PENDING'">⏳ PENDING</span>
-            <span *ngIf="req.status === 'APPROVED'">✅ APPROVED</span>
-            <span *ngIf="req.status === 'REJECTED'">❌ REJECTED</span>
-          </span>
-        </div>
-        <div>
-          {{req.requestDate | date:'MMM d, y'}}
-          <small>{{req.requestDate | date:'shortTime'}}</small>
-        </div>
-        <div>
-          <div *ngIf="req.status === 'APPROVED'" class="response-info">
-            <span class="text-success">✓ Approved</span>
-            <small *ngIf="req.approvedAt">{{req.approvedAt | date:'short'}}</small>
-            <small class="delivery-note">📦 Delivery created</small>
+  <div class="dashboard-grid">
+    <div class="main-content-area">
+      <!-- Request Form -->
+      <section class="glass-card mb-4 animate-slide-in" *ngIf="showRequestForm">
+        <h3 class="mb-3">Procure New Stock</h3>
+        <form (ngSubmit)="submitRequest()" class="modern-form">
+          <div class="form-group">
+            <label class="form-label">Product to Request</label>
+            <div class="select-wrapper glass">
+              <select [(ngModel)]="requestForm.productId" name="product" required
+                (change)="onProductSelect(requestForm.productId)">
+                <option value="">-- Select Product --</option>
+                <option *ngFor="let p of products" [value]="p.id">
+                  {{p.sku}} - {{p.name}} ({{p.category}})
+                </option>
+              </select>
+            </div>
+            <div *ngIf="availableWarehouseQuantity !== null" class="warehouse-info glass mt-2 p-2 px-3">
+              <i class="fas fa-warehouse text-accent mr-2"></i>
+              <span>Available in Central Warehouse: <strong>{{availableWarehouseQuantity}}</strong> units</span>
+            </div>
           </div>
-          <div *ngIf="req.status === 'REJECTED'" class="response-info">
-            <span class="text-danger">✗ Rejected</span>
-            <small *ngIf="req.approvedAt">{{req.approvedAt | date:'short'}}</small>
-            <small *ngIf="req.rejectionReason" class="rejection-reason">{{req.rejectionReason}}</small>
+          <div class="form-group">
+            <label class="form-label">Requested Quantity</label>
+            <input type="number" [(ngModel)]="requestForm.quantity" name="quantity" class="form-control" min="1"
+              required placeholder="Enter quantity">
           </div>
-          <div *ngIf="req.status === 'PENDING'" class="response-info">
-            <span class="text-muted">Awaiting warehouse response...</span>
+          <div class="form-actions mt-4">
+            <button type="button" class="btn btn-secondary glass" (click)="toggleRequestForm()">Discard</button>
+            <button type="submit" class="btn btn-primary">Submit Stock Request</button>
           </div>
-        </div>
-      </div>
-      <div *ngIf="!myRequests.length" class="empty-state">
-        No requests yet. Click "New Stock Request" to create one!
-      </div>
-    </div>
-  </div>
+        </form>
+      </section>
 
-  <!-- Incoming Deliveries -->
-  <div class="section-card">
-    <h2>🚚 Incoming Deliveries</h2>
-    <div class="deliveries-grid">
-      <div *ngFor="let del of myDeliveries" class="delivery-card">
-        <div class="delivery-header">
-          <span class="tracking">📦 {{del.trackingNumber}}</span>
-          <span class="status-badge" [ngClass]="{
-            'badge-warning': del.status === 'PENDING',
-            'badge-info': del.status === 'DISPATCHED' || del.status === 'IN_TRANSIT',
-            'badge-primary': del.status === 'OUT_FOR_DELIVERY',
-            'badge-success': del.status === 'DELIVERED'
-          }">{{del.status}}</span>
-        </div>
-        <div class="delivery-body">
-          <div class="info-row">
-            <span>Product:</span>
-            <strong>{{del.productName}}</strong>
-          </div>
-          <div class="info-row">
-            <span>Quantity:</span>
-            <strong>{{del.quantity}} units</strong>
-          </div>
-          <div class="info-row">
-            <span>From:</span>
-            <strong>{{del.warehouseName}}</strong>
-          </div>
-          <div class="info-row" *ngIf="del.estimatedDelivery">
-            <span>ETA:</span>
-            <strong>{{del.estimatedDelivery | date:'MMM d, y'}}</strong>
-          </div>
-          <div class="info-row" *ngIf="del.deliveredAt">
-            <span>Received:</span>
-            <strong>{{del.deliveredAt | date:'short'}}</strong>
-          </div>
-          <div class="delivery-status-info">
-            <div *ngIf="del.status === 'PENDING'" class="status-message pending">
-              ⏳ Warehouse preparing shipment
+      <!-- Current Inventory -->
+      <section class="section-container mb-4">
+        <h3 class="mb-3">Store Shelf Inventory</h3>
+        <div class="inventory-grid">
+          <div *ngFor="let item of inventory" class="glass-card inventory-item-card"
+            [class.low-stock]="item.lowStockAlert">
+            <div class="item-header">
+              <div class="item-meta">
+                <span class="sku text-accent">{{item.product?.sku}}</span>
+                <span class="name">{{item.product?.name}}</span>
+              </div>
+              <span class="status-indicator" [class.alert]="item.lowStockAlert"></span>
             </div>
-            <div *ngIf="del.status === 'DISPATCHED'" class="status-message dispatched">
-              🚛 Dispatched from warehouse
+            <div class="item-stats mt-3">
+              <div class="stat">
+                <span class="label">Quantity</span>
+                <span class="value">{{item.quantity}}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Reorder at</span>
+                <span class="value">{{item.reorderLevel}}</span>
+              </div>
             </div>
-            <div *ngIf="del.status === 'IN_TRANSIT'" class="status-message transit">
-              🚚 On the way to your location
-            </div>
-            <div *ngIf="del.status === 'OUT_FOR_DELIVERY'" class="status-message out-delivery">
-              📍 Out for delivery - arriving soon!
-            </div>
-            <div *ngIf="del.status === 'DELIVERED'" class="status-message delivered">
-              ✅ Successfully received and confirmed
+            <div class="progress-track glass mt-3">
+              <div class="progress-bar" [ngClass]="item.lowStockAlert ? 'bg-danger' : 'bg-primary'"
+                [style.width.%]="(item.quantity / (item.reorderLevel * 2)) * 100"></div>
             </div>
           </div>
         </div>
-      </div>
-      <div *ngIf="!myDeliveries.length" class="empty-state">
-        No deliveries yet. Create a stock request to get started!
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <!-- Promotions & Trends -->
-  <div class="section-card">
-    <h2>🎯 Promotions & Buying Trends</h2>
-    <div class="two-col">
-      <div class="promo-card">
-        <h3>Promo Highlights</h3>
-        <div class="promo-list">
-          <div class="promo-item" *ngFor="let p of promoHighlights">
-            <span class="title">{{p.title}}</span>
-            <span class="impact">{{p.impact}}</span>
-            <span class="note">{{p.note}}</span>
+      <!-- My Stock Requests -->
+      <section class="glass-card mb-4 overflow-hidden">
+        <h3 class="mb-3">Procurement History</h3>
+        <div class="table-container p-0">
+          <table>
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Last Update</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of myRequests">
+                <td><span class="id-tag glass">#{{req.id}}</span></td>
+                <td>
+                  <div class="product-cell">
+                    <span class="text-white fw-bold">{{req.productName}}</span>
+                    <span class="text-muted fs-xs">{{req.productSku}}</span>
+                  </div>
+                </td>
+                <td>{{req.requestedQuantity}} units</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadge(req.status)">
+                    {{req.status}}
+                  </span>
+                </td>
+                <td>
+                  <div class="date-cell">
+                    <span>{{req.requestDate | date:'MMM d, y'}}</span>
+                    <small class="text-muted">{{req.requestDate | date:'shortTime'}}</small>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="!myRequests.length" class="empty-placeholder p-4 text-center text-muted">
+            <i class="fas fa-clipboard-list mb-2 fs-xl d-block"></i>
+            No procurement history found
           </div>
         </div>
-      </div>
-      <div class="trend-card">
-        <h3>Category Trends</h3>
-        <div class="trend-list">
-          <div class="trend-item" *ngFor="let t of buyingTrends">
-            <span class="category">{{t.category}}</span>
-            <span class="trend">{{t.trend}}</span>
+      </section>
+    </div>
+
+    <!-- Sidebar Analytics -->
+    <aside class="side-panel">
+      <!-- Incoming Deliveries -->
+      <section class="glass-card mb-4">
+        <h3 class="mb-3 text-info"><i class="fas fa-truck"></i> Incoming Shipments</h3>
+        <div class="delivery-list">
+          <div *ngFor="let del of myDeliveries" class="delivery-item glass mb-3">
+            <div class="delivery-meta">
+              <span class="tracking">#{{del.trackingNumber}}</span>
+              <span class="status text-info">{{del.status}}</span>
+            </div>
+            <div class="delivery-content mt-2">
+              <span class="product">{{del.productName}}</span>
+              <span class="qty text-accent">x{{del.quantity}}</span>
+            </div>
+            <div class="delivery-footer mt-2 pt-2 border-top border-glass text-muted">
+              <small>ETA: {{del.estimatedDelivery | date:'shortDate'}}</small>
+            </div>
+          </div>
+          <div *ngIf="!myDeliveries.length" class="text-center p-3 text-muted">
+            No active shipments
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <!-- Activity -->
-  <div class="section-card">
-    <h2>📝 Recent Activity</h2>
-    <div class="activity-list">
-      <div class="activity-item" *ngFor="let a of activityFeed">
-        <span class="time">{{a.time}}</span>
-        <span class="text">{{a.text}}</span>
-        <span class="tag" [ngClass]="a.type">{{a.type}}</span>
-      </div>
-    </div>
+      <!-- Trends -->
+      <section class="glass-card mb-4">
+        <h3 class="mb-3"><i class="fas fa-chart-line text-accent"></i> Market Insights</h3>
+        <div class="trend-group">
+          <div class="trend-item glass mb-2" *ngFor="let t of buyingTrends">
+            <span class="label">{{t.category}}</span>
+            <span class="trend-value" [class.up]="t.trend.includes('+')">{{t.trend}}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Log -->
+      <section class="glass-card">
+        <h3 class="mb-3">Activity Stream</h3>
+        <div class="activity-timeline">
+          <div *ngFor="let a of activityFeed" class="activity-item pb-3">
+            <div class="time text-muted">{{a.time}}</div>
+            <div class="text">{{a.text}}</div>
+            <div class="badge-tag" [ngClass]="a.type">{{a.type}}</div>
+          </div>
+        </div>
+      </section>
+    </aside>
   </div>
 </div>

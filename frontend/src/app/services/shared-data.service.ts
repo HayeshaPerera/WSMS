@@ -36,11 +36,15 @@ export class SharedDataService {
   private deliveriesSubject = new BehaviorSubject<any[]>(this.loadFromStorage('deliveries', []));
   private inventorySubject = new BehaviorSubject<any[]>(this.loadFromStorage('inventory', []));
   private productsSubject = new BehaviorSubject<any[]>(this.loadFromStorage('products', []));
+  private warehousesSubject = new BehaviorSubject<any[]>(this.loadFromStorage('warehouses', []));
+  private supermarketsSubject = new BehaviorSubject<any[]>(this.loadFromStorage('supermarkets', []));
 
   public stockRequests$ = this.stockRequestsSubject.asObservable();
   public deliveries$ = this.deliveriesSubject.asObservable();
   public inventory$ = this.inventorySubject.asObservable();
   public products$ = this.productsSubject.asObservable();
+  public warehouses$ = this.warehousesSubject.asObservable();
+  public supermarkets$ = this.supermarketsSubject.asObservable();
 
   constructor() {
     // If no stock requests in local storage, add demo data
@@ -77,6 +81,18 @@ export class SharedDataService {
       ];
       this.stockRequestsSubject.next(demoRequests);
       this.saveToStorage('stockRequests', demoRequests);
+    }
+
+    // Re-normalize any stored inventory on startup so older localStorage shapes
+    // don't render as 'Unknown Product' in the UI.
+    try {
+      const currentInv = this.inventorySubject.value || [];
+      if (Array.isArray(currentInv) && currentInv.length > 0) {
+        // reuse setInventory normalization
+        this.setInventory(currentInv);
+      }
+    } catch (e) {
+      console.debug('Failed to re-normalize stored inventory on startup', e);
     }
   }
 
@@ -204,6 +220,34 @@ export class SharedDataService {
     return this.productsSubject.value;
   }
 
+  // Warehouses
+  getWarehouses(): any[] {
+    return this.warehousesSubject.value;
+  }
+
+  setWarehouses(warehouses: any[] | ApiResponse): void {
+    const arr: any[] = Array.isArray(warehouses)
+      ? warehouses
+      : (warehouses && typeof warehouses === 'object' && 'data' in warehouses ? (warehouses as ApiResponse).data ?? [] : []);
+    this.warehousesSubject.next(arr);
+    this.saveToStorage('warehouses', arr);
+    console.log('✅ Warehouses set:', arr.length);
+  }
+
+  // Supermarkets
+  getSupermarkets(): any[] {
+    return this.supermarketsSubject.value;
+  }
+
+  setSupermarkets(supermarkets: any[] | ApiResponse): void {
+    const arr: any[] = Array.isArray(supermarkets)
+      ? supermarkets
+      : (supermarkets && typeof supermarkets === 'object' && 'data' in supermarkets ? (supermarkets as ApiResponse).data ?? [] : []);
+    this.supermarketsSubject.next(arr);
+    this.saveToStorage('supermarkets', arr);
+    console.log('✅ Supermarkets set:', arr.length);
+  }
+
   setProducts(products: any[] | ApiResponse): void {
     const arr: any[] = Array.isArray(products)
       ? products
@@ -241,9 +285,48 @@ export class SharedDataService {
     const arr: any[] = Array.isArray(inventory)
       ? inventory
       : (inventory && typeof inventory === 'object' && 'data' in inventory ? (inventory as ApiResponse).data ?? [] : []);
-    this.inventorySubject.next(arr);
-    this.saveToStorage('inventory', arr);
-    console.log('✅ Inventory set:', arr.length, 'items');
+    // Normalize incoming inventory items to avoid "Unknown" displays
+    const products = this.getProducts();
+    const normalized = (arr || []).map((it: any) => {
+      const item: any = { ...it };
+      // ensure numeric quantity
+      item.quantity = item.quantity != null ? Number(item.quantity) : 0;
+
+      // normalize product object
+      if (!item.product) {
+        const pid = item.productId || item.product_id || (item.product && item.product.id) || null;
+        const pname = item.productName || item.product_name || item.name || null;
+        let found = null;
+        if (pid != null) found = products.find(p => p && (p.id == pid || String(p.id) === String(pid)));
+        if (!found && pname) found = products.find(p => p && ((p.name || '').toLowerCase() === String(pname).toLowerCase() || (p.sku || '').toLowerCase() === String(pname).toLowerCase()));
+        if (found) {
+          item.product = { ...found };
+        } else {
+          item.product = item.product || { id: pid || null, name: pname || 'Unknown Product', sku: item.productSku || item.sku || 'N/A', unitPrice: item.unitPrice || 0 };
+        }
+      }
+
+      // normalize supermarket/warehouse references
+      if (!item.supermarket && (item.supermarketId || item.supermarket_id)) {
+        const sid = item.supermarket || item.supermarketId || item.supermarket_id;
+        item.supermarket = { id: sid, code: `SM-${sid}`, name: `Supermarket ${sid}` };
+      }
+      if (!item.warehouse && (item.warehouseId || item.warehouse_id)) {
+        const wid = item.warehouse || item.warehouseId || item.warehouse_id;
+        item.warehouse = { id: wid, code: `WH-${wid}`, name: `Warehouse ${wid}` };
+      }
+
+      // low stock flag if missing
+      if (item.lowStockAlert == null && item.reorderLevel != null) {
+        item.lowStockAlert = item.quantity <= item.reorderLevel;
+      }
+
+      return item;
+    });
+
+    this.inventorySubject.next(normalized);
+    this.saveToStorage('inventory', normalized);
+    console.log('✅ Inventory set (normalized):', normalized.length, 'items');
   }
 
   // Initialize with hardcoded data if empty
