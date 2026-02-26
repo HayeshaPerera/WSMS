@@ -37,26 +37,6 @@
             </div>
           </div>
 
-          <div class="filter-item">
-            <label class="fs-xxs text-muted mb-1 d-block fw-bold">W-HOUSE</label>
-            <div class="select-wrapper glass">
-              <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()">
-                <option value="">All Warehouses</option>
-                <option *ngFor="let wh of warehouses" [value]="wh.id || wh.name">{{wh.name}}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="filter-item">
-            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STORE</label>
-            <div class="select-wrapper glass">
-              <select [(ngModel)]="selectedSupermarket" (change)="applyFilters()">
-                <option value="">All Stores</option>
-                <option *ngFor="let sm of supermarkets" [value]="sm.id || sm.name">{{sm.name}}</option>
-              </select>
-            </div>
-          </div>
-
           <div class="filter-item flex-0">
             <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
             <button class="btn btn-icon btn-secondary glass" (click)="clearFilters()">
@@ -74,7 +54,6 @@
             <tr>
               <th>Tracking #</th>
               <th>Specification</th>
-              <th>Logistics Route</th>
               <th>Real-time Status</th>
               <th>Timeline</th>
               <th>Control Actions</th>
@@ -89,19 +68,7 @@
                   <span class="qty-label fs-xs text-muted">{{d.quantity}} units</span>
                 </div>
               </td>
-              <td>
-                <div class="route-display glass p-2 px-3">
-                  <div class="point">
-                    <i class="fas fa-warehouse text-accent"></i>
-                    <span>{{d.warehouse?.name}}</span>
-                  </div>
-                  <div class="connector"><i class="fas fa-long-arrow-alt-right"></i></div>
-                  <div class="point">
-                    <i class="fas fa-store text-info"></i>
-                    <span>{{d.supermarket?.name}}</span>
-                  </div>
-                </div>
-              </td>
+
               <td>
                 <span class="badge" [ngClass]="{
                 'badge-warning': d.status === 'PENDING',

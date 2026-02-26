@@ -1,81 +1,93 @@
 <app-navbar></app-navbar>
-<div class="container">
-  <div class="page-header">
-    <h2>Analytics & Risk Management Dashboard</h2>
-    <button class="btn btn-primary btn-export" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
-      Export PDF Report
+<div class="analytics-container animate-fade-in">
+  <div class="dashboard-header mb-4">
+    <div class="header-info">
+      <h1>Analytics & Risk Management</h1>
+      <p class="text-secondary">AI-Driven Insights & Alerts</p>
+    </div>
+    <button class="btn btn-primary btn-export glass" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+      <i class="fas fa-file-pdf"></i> Export PDF Report
     </button>
   </div>
-  
+
   <!-- Alert Summary Cards -->
-  <div class="alert-summary">
-    <div class="summary-card critical">
-      <div class="card-value">{{alertStats.critical}}</div>
-      <div class="card-label">Critical</div>
+  <div class="kpi-grid mb-4">
+    <div class="glass-card stat-card border-danger">
+      <div class="stat-icon glass text-danger"><i class="fas fa-radiation"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">Critical</span>
+        <div class="stat-value text-danger">{{alertStats.critical}}</div>
+      </div>
     </div>
-    <div class="summary-card high">
-      <div class="card-value">{{alertStats.high}}</div>
-      <div class="card-label">High Priority</div>
+    <div class="glass-card stat-card border-warning">
+      <div class="stat-icon glass text-warning"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">High Priority</span>
+        <div class="stat-value text-warning">{{alertStats.high}}</div>
+      </div>
     </div>
-    <div class="summary-card medium">
-      <div class="card-value">{{alertStats.medium}}</div>
-      <div class="card-label">Medium</div>
+    <div class="glass-card stat-card border-accent">
+      <div class="stat-icon glass text-accent"><i class="fas fa-exclamation-circle"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">Medium</span>
+        <div class="stat-value text-accent">{{alertStats.medium}}</div>
+      </div>
     </div>
-    <div class="summary-card low">
-      <div class="card-value">{{alertStats.low}}</div>
-      <div class="card-label">Low</div>
+    <div class="glass-card stat-card border-success">
+      <div class="stat-icon glass text-success"><i class="fas fa-info-circle"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">Low</span>
+        <div class="stat-value text-success">{{alertStats.low}}</div>
+      </div>
     </div>
   </div>
 
   <!-- Tab Navigation -->
-  <div class="tabs">
-    <button 
-      [class.active]="selectedTab === 'alerts'" 
-      (click)="selectedTab = 'alerts'">
-      Alerts & Exceptions
+  <div class="tabs mb-4">
+    <button class="btn glass" [class.btn-primary]="selectedTab === 'alerts'"
+      [class.btn-secondary]="selectedTab !== 'alerts'" (click)="selectedTab = 'alerts'">
+      <i class="fas fa-bell"></i> Alerts & Exceptions
     </button>
-    <button 
-      [class.active]="selectedTab === 'reorder'" 
-      (click)="selectedTab = 'reorder'">
-      Reorder Recommendations
+    <button class="btn glass" [class.btn-primary]="selectedTab === 'reorder'"
+      [class.btn-secondary]="selectedTab !== 'reorder'" (click)="selectedTab = 'reorder'">
+      <i class="fas fa-robot"></i> Reorder Recommendations
     </button>
-    <button 
-      [class.active]="selectedTab === 'costs'" 
-      (click)="selectedTab = 'costs'">
-      Cost Analysis
+    <button class="btn glass" [class.btn-primary]="selectedTab === 'costs'"
+      [class.btn-secondary]="selectedTab !== 'costs'" (click)="selectedTab = 'costs'">
+      <i class="fas fa-chart-pie"></i> Cost Analysis
     </button>
-    <button 
-      [class.active]="selectedTab === 'audit'" 
-      (click)="selectedTab = 'audit'">
-      Audit Trail
+    <button class="btn glass" [class.btn-primary]="selectedTab === 'audit'"
+      [class.btn-secondary]="selectedTab !== 'audit'" (click)="selectedTab = 'audit'">
+      <i class="fas fa-history"></i> Audit Trail
     </button>
   </div>
 
   <!-- Alerts Tab -->
-  <div *ngIf="selectedTab === 'alerts'" class="tab-content">
-    <div class="section-header">
-      <h3>Active Alerts & Exceptions</h3>
-      <button class="btn btn-sm btn-secondary" (click)="clearAcknowledged()">
+  <div *ngIf="selectedTab === 'alerts'" class="glass-card animate-slide-in">
+    <div class="dashboard-header mb-4">
+      <h3 class="m-0">Active Alerts & Exceptions</h3>
+      <button class="btn btn-sm btn-secondary glass" (click)="clearAcknowledged()">
         Clear Acknowledged
       </button>
     </div>
-    
-    <div *ngIf="alerts.length === 0" class="empty-state">
-      <p>No active alerts - System operating normally</p>
+
+    <div *ngIf="alerts.length === 0" class="empty-placeholder p-5 text-center text-muted">
+      <i class="fas fa-check-circle mb-2 fs-xl d-block text-success"></i>
+      No active alerts - System operating normally
     </div>
-    
+
     <div class="alerts-container" *ngIf="alerts.length > 0">
-      <div *ngFor="let alert of alerts" class="alert-card" [ngClass]="getSeverityClass(alert.severity)">
+      <div *ngFor="let alert of alerts" class="glass-card alert-item mb-3" [ngClass]="getSeverityClass(alert.severity)">
         <div class="alert-icon">{{getAlertIcon(alert.type)}}</div>
         <div class="alert-content">
           <div class="alert-header">
             <span class="alert-title">{{alert.title}}</span>
-            <span class="alert-severity">{{alert.severity}}</span>
+            <span class="badge" [ngClass]="getSeverityClass(alert.severity)">{{alert.severity}}</span>
           </div>
-          <div class="alert-message">{{alert.message}}</div>
-          <div class="alert-footer">
+          <div class="alert-message text-secondary mt-1">{{alert.message}}</div>
+          <div class="alert-footer mt-2 pt-2 border-top border-glass text-muted">
             <small>{{alert.timestamp | date:'short'}}</small>
-            <button class="btn-link" (click)="acknowledgeAlert(alert.id)">
+            <button class="btn btn-sm btn-secondary glass" (click)="acknowledgeAlert(alert.id)">
               Acknowledge
             </button>
           </div>
@@ -85,130 +97,138 @@
   </div>
 
   <!-- Reorder Recommendations Tab -->
-  <div *ngIf="selectedTab === 'reorder'" class="tab-content">
-    <h3>AI-Powered Reorder Recommendations</h3>
-    
-    <div class="recommendations-grid">
-      <div *ngFor="let rec of reorderRecommendations" class="recommendation-card">
-        <div class="rec-header">
-          <h4>{{rec.productName}}</h4>
-          <span class="confidence-badge" [ngClass]="getConfidenceClass(rec.confidence)">
-            {{rec.confidence}}% confidence
-          </span>
+  <div *ngIf="selectedTab === 'reorder'" class="animate-slide-in">
+    <h3 class="mb-4 text-accent"><i class="fas fa-robot"></i> AI-Powered Recommendations</h3>
+
+    <div class="inventory-grid">
+      <div *ngFor="let rec of reorderRecommendations" class="glass-card inventory-item-card">
+        <div class="item-header">
+          <div class="item-meta">
+            <span class="name text-primary">{{rec.productName}}</span>
+          </div>
+          <span class="badge badge-info">{{rec.confidence}}% confidence</span>
         </div>
-        
-        <div class="rec-stats">
+
+        <div class="item-stats mt-3">
           <div class="stat">
-            <label>Current Stock:</label>
-            <div class="current">{{rec.currentStock}} units</div>
+            <span class="label">Current Stock</span>
+            <span class="value">{{rec.currentStock}}</span>
           </div>
           <div class="stat">
-            <label>Reorder Level:</label>
-            <div class="reorder">{{rec.reorderLevel}} units</div>
-          </div>
-          <div class="stat">
-            <label>Recommended Qty:</label>
-            <div class="recommended">{{rec.recommendedQuantity}} units</div>
-          </div>
-          <div class="stat">
-            <label>Estimated Cost:</label>
-            <div class="cost">{{rec.estimatedCost | lkr}}</div>
-          </div>
-          <div class="stat">
-            <label>Days Until Stockout:</label>
-            <div class="days" [class.urgent]="rec.daysUntilStockout < 7">
-              {{rec.daysUntilStockout}} days
-            </div>
+            <span class="label">Reorder Level</span>
+            <span class="value">{{rec.reorderLevel}}</span>
           </div>
         </div>
-        
-        <div class="rec-reasoning">
-          <strong>Analysis:</strong> {{rec.reasoning}}
+
+        <div class="item-stats mt-3">
+          <div class="stat">
+            <span class="label">Recommended Qty</span>
+            <span class="value text-success">{{rec.recommendedQuantity}}</span>
+          </div>
+          <div class="stat">
+            <span class="label">Est Cost</span>
+            <span class="value text-warning">{{rec.estimatedCost | lkr}}</span>
+          </div>
         </div>
-        
-        <button class="btn btn-primary btn-block" disabled>
-          Create Stock Request
+
+        <div class="progress-track glass mt-3 mb-2">
+          <div class="progress-bar bg-danger" [style.width.%]="(rec.daysUntilStockout / 14) * 100"></div>
+        </div>
+        <small class="text-danger fw-bold" *ngIf="rec.daysUntilStockout < 7">{{rec.daysUntilStockout}} days until
+          stockout</small>
+        <small class="text-secondary" *ngIf="rec.daysUntilStockout >= 7">{{rec.daysUntilStockout}} days until
+          stockout</small>
+
+        <div class="rec-reasoning mt-3 p-2 bg-dark-soft border-radius-sm text-secondary fs-sm">
+          <strong><i class="fas fa-chart-line text-accent"></i> Analysis:</strong> {{rec.reasoning}}
+        </div>
+
+        <button class="btn btn-primary w-100 mt-3" disabled>
+          <i class="fas fa-file-invoice"></i> Create Stock Request
         </button>
       </div>
     </div>
   </div>
 
   <!-- Cost Analysis Tab -->
-  <div *ngIf="selectedTab === 'costs'" class="tab-content">
-    <h3>Financial Impact Analysis</h3>
-    
-    <div *ngIf="costAnalysis" class="cost-dashboard">
-      <div class="cost-card total-value">
-        <div class="cost-icon">TOTAL</div>
-        <div class="cost-info">
-          <div class="cost-label">Total Inventory Value</div>
-          <div class="cost-value">{{costAnalysis.totalInventoryValue | lkr}}</div>
+  <div *ngIf="selectedTab === 'costs'" class="glass-card animate-slide-in">
+    <h3 class="mb-4"><i class="fas fa-chart-pie text-warning"></i> Financial Impact Analysis</h3>
+
+    <div *ngIf="costAnalysis" class="dashboard-grid">
+      <div class="main-content-area">
+        <div class="form-grid mb-4">
+          <div class="glass-card border-success p-4">
+            <div class="text-secondary mb-1 text-uppercase fw-bold fs-xs">Total Inventory Value</div>
+            <div class="text-success fs-xl fw-bold">{{costAnalysis.totalInventoryValue | lkr}}</div>
+          </div>
+
+          <div class="glass-card border-warning p-4">
+            <div class="text-secondary mb-1 text-uppercase fw-bold fs-xs">Total Cost Impact</div>
+            <div class="text-warning fs-xl fw-bold">{{costAnalysis.totalCostImpact | lkr}}</div>
+            <div class="fs-xs fw-bold mt-2" [class.text-success]="costAnalysis.monthlyTrend < 0"
+              [class.text-danger]="costAnalysis.monthlyTrend >= 0">
+              <i class="fas" [ngClass]="costAnalysis.monthlyTrend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+              {{Math.abs(costAnalysis.monthlyTrend)}}% vs last month
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <div class="cost-card total-impact">
-        <div class="cost-icon">IMPACT</div>
-        <div class="cost-info">
-          <div class="cost-label">Total Cost Impact</div>
-          <div class="cost-value impact">{{costAnalysis.totalCostImpact | lkr}}</div>
-          <div class="cost-trend" [class.positive]="costAnalysis.monthlyTrend < 0">
-            {{costAnalysis.monthlyTrend > 0 ? '↑' : '↓'}} {{Math.abs(costAnalysis.monthlyTrend)}}% vs last month
+
+        <div class="glass-card mb-4">
+          <h4 class="mb-3 border-bottom border-glass pb-2">Cost Breakdown</h4>
+          <div class="d-flex justify-between py-2 border-bottom border-glass">
+            <span class="text-secondary">Excess Inventory Holding Cost</span>
+            <span class="text-warning fw-bold">{{costAnalysis.excessInventoryCost | lkr}}</span>
+          </div>
+          <div class="d-flex justify-between py-2 border-bottom border-glass">
+            <span class="text-secondary">Stockout & Lost Sales Cost</span>
+            <span class="text-danger fw-bold">{{costAnalysis.stockoutCost | lkr}}</span>
+          </div>
+          <div class="d-flex justify-between py-2">
+            <span class="text-secondary">Delivery Delay Cost</span>
+            <span class="text-accent fw-bold">{{costAnalysis.deliveryDelayCost | lkr}}</span>
           </div>
         </div>
       </div>
-      
-      <div class="cost-breakdown">
-        <h4>Cost Breakdown</h4>
-        <div class="breakdown-item">
-          <span class="breakdown-label">Excess Inventory Holding Cost</span>
-          <span class="breakdown-value excess">{{costAnalysis.excessInventoryCost | lkr}}</span>
+
+      <aside class="side-panel">
+        <div class="glass-card border-primary h-100">
+          <h4 class="mb-3 text-primary"><i class="fas fa-lightbulb"></i> Key Insights</h4>
+          <ul class="activity-timeline m-0 p-0">
+            <li class="activity-item pb-3" *ngIf="costAnalysis.excessInventoryCost > 1000">
+              <div class="text-secondary fs-sm">Consider reducing excess inventory to lower holding costs.</div>
+            </li>
+            <li class="activity-item pb-3" *ngIf="costAnalysis.stockoutCost > 500">
+              <div class="text-secondary fs-sm">High stockout costs detected - increase reorder frequencies.</div>
+            </li>
+            <li class="activity-item pb-3" *ngIf="costAnalysis.deliveryDelayCost > 200">
+              <div class="text-secondary fs-sm">Delivery delays impacting costs - review logistics processes.</div>
+            </li>
+            <li class="activity-item pb-3" *ngIf="costAnalysis.monthlyTrend > 0">
+              <div class="text-danger fs-sm">Costs increased by {{costAnalysis.monthlyTrend}}% - investigate root
+                causes.</div>
+            </li>
+            <li class="activity-item pb-3" *ngIf="costAnalysis.monthlyTrend < 0">
+              <div class="text-success fs-sm">Good news! Costs decreased by {{Math.abs(costAnalysis.monthlyTrend)}}%
+                this month.</div>
+            </li>
+          </ul>
         </div>
-        <div class="breakdown-item">
-          <span class="breakdown-label">Stockout & Lost Sales Cost</span>
-          <span class="breakdown-value stockout">{{costAnalysis.stockoutCost | lkr}}</span>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-label">Delivery Delay Cost</span>
-          <span class="breakdown-value delay">{{costAnalysis.deliveryDelayCost | lkr}}</span>
-        </div>
-      </div>
-      
-      <div class="cost-insights">
-        <h4>Key Insights</h4>
-        <ul>
-          <li *ngIf="costAnalysis.excessInventoryCost > 1000">
-            Consider reducing excess inventory to lower holding costs
-          </li>
-          <li *ngIf="costAnalysis.stockoutCost > 500">
-            High stockout costs detected - increase reorder frequencies
-          </li>
-          <li *ngIf="costAnalysis.deliveryDelayCost > 200">
-            Delivery delays impacting costs - review logistics processes
-          </li>
-          <li *ngIf="costAnalysis.monthlyTrend > 0">
-            Costs increased by {{costAnalysis.monthlyTrend}}% - investigate root causes
-          </li>
-          <li *ngIf="costAnalysis.monthlyTrend < 0">
-            Good news! Costs decreased by {{Math.abs(costAnalysis.monthlyTrend)}}% this month
-          </li>
-        </ul>
-      </div>
+      </aside>
     </div>
   </div>
 
   <!-- Audit Trail Tab -->
-  <div *ngIf="selectedTab === 'audit'" class="tab-content">
-    <div class="section-header">
-      <h3>System Audit Trail</h3>
-      <input 
-        type="search" 
-        placeholder="Search audit logs..." 
-        (input)="searchAuditLogs($any($event.target).value)"
-        class="search-input">
+  <div *ngIf="selectedTab === 'audit'" class="glass-card animate-slide-in">
+    <div class="dashboard-header mb-4">
+      <h3 class="m-0"><i class="fas fa-history text-secondary"></i> System Audit Trail</h3>
+      <div class="search-box glass">
+        <i class="fas fa-search"></i>
+        <input type="search" placeholder="Search audit logs..." (input)="searchAuditLogs($any($event.target).value)">
+      </div>
     </div>
-    
-    <div class="audit-table-container">
-      <table class="audit-table">
+
+    <div class="table-container p-0">
+      <table>
         <thead>
           <tr>
             <th>Timestamp</th>
@@ -220,19 +240,18 @@
         </thead>
         <tbody>
           <tr *ngFor="let log of recentAuditLogs">
-            <td><small>{{log.timestamp | date:'short'}}</small></td>
+            <td><small class="text-secondary">{{log.timestamp | date:'shortTime'}}</small><br><span
+                class="fs-xs text-muted">{{log.timestamp | date:'MMM d, y'}}</span></td>
             <td>
-              <strong>{{log.userName}}</strong>
-              <br><small>ID: {{log.userId}}</small>
+              <strong class="text-white">{{log.userName}}</strong>
+              <br><small class="text-muted">ID: {{log.userId}}</small>
             </td>
+            <td><span class="badge badge-info">{{log.action}}</span></td>
             <td>
-              <span class="action-badge">{{log.action}}</span>
+              <div class="text-accent">{{log.entityType}}</div>
+              <small class="text-muted">{{log.entityName}}</small>
             </td>
-            <td>
-              <div>{{log.entityType}}</div>
-              <small>{{log.entityName}}</small>
-            </td>
-            <td class="details-cell">{{log.details}}</td>
+            <td><span class="text-secondary fs-sm">{{log.details}}</span></td>
           </tr>
         </tbody>
       </table>

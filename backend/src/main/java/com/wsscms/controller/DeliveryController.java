@@ -95,13 +95,13 @@ public class DeliveryController {
         try {
             String statusStr = body.get("status");
             if (statusStr == null) {
-                return ResponseEntity.badRequest(ApiResponse.error("Missing 'status' in request body"));
+                return ResponseEntity.badRequest().body(ApiResponse.error("Missing 'status' in request body"));
             }
             Delivery.DeliveryStatus status;
             try {
                 status = Delivery.DeliveryStatus.valueOf(statusStr);
             } catch (IllegalArgumentException iae) {
-                return ResponseEntity.badRequest(ApiResponse.error("Invalid delivery status: " + statusStr));
+                return ResponseEntity.badRequest().body(ApiResponse.error("Invalid delivery status: " + statusStr));
             }
 
             String currentLocation = body.get("currentLocation");
@@ -110,7 +110,8 @@ public class DeliveryController {
         } catch (Exception ex) {
             // Log and return structured error instead of 500 stacktrace
             ex.printStackTrace();
-            return ResponseEntity.status(500).body(ApiResponse.error("Failed to update delivery status: " + ex.getMessage()));
+            String msg = ex.getMessage() != null ? ex.getMessage() : ex.toString();
+            return ResponseEntity.status(500).body(ApiResponse.error("Failed to update status: " + msg));
         }
     }
 

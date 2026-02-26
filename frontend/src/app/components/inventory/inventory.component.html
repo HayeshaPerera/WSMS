@@ -66,7 +66,7 @@
 
       <!-- Inventory Specifics -->
       <div class="form-grid">
-        <div class="form-group">
+        <div class="form-group d-none">
           <label class="form-label">Target Warehouse</label>
           <div class="select-wrapper glass">
             <select [(ngModel)]="newInventory.warehouseId">
@@ -115,15 +115,7 @@
           </div>
         </div>
 
-        <div class="filter-item">
-          <label class="fs-xxs text-muted mb-1 d-block fw-bold">LOCATION</label>
-          <div class="select-wrapper glass">
-            <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()">
-              <option value="">All Locations</option>
-              <option *ngFor="let wh of warehouses" [value]="wh.id || wh.name">{{wh.name}}</option>
-            </select>
-          </div>
-        </div>
+
 
         <div class="filter-item">
           <label class="fs-xxs text-muted mb-1 d-block fw-bold">ALERTS</label>
@@ -167,7 +159,6 @@
           <tr>
             <th>SKU / Product</th>
             <th>Category</th>
-            <th>Location</th>
             <th>Unit Price</th>
             <th>Stock Level</th>
             <th>Inventory Value</th>
@@ -183,12 +174,7 @@
               </div>
             </td>
             <td><span class="category-tag glass">{{item.product?.category}}</span></td>
-            <td>
-              <div class="location-cell">
-                <i class="fas" [ngClass]="item.warehouse ? 'fa-warehouse' : 'fa-store'"></i>
-                <span>{{item.warehouse?.name || item.supermarket?.name}}</span>
-              </div>
-            </td>
+
             <td>{{(item.product?.unitPrice || 0) | lkr}}</td>
             <td>
               <div class="quantity-cell">

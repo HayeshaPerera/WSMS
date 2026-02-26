@@ -46,8 +46,8 @@
                     <option *ngFor="let p of products" [value]="p.id">{{p.name}} ({{p.sku}})</option>
                 </select>
             </div>
-            <!-- Store dropdown: selects which supermarket made the sale -->
-            <div class="form-group">
+            <!-- Store dropdown hidden -->
+            <div class="form-group d-none">
                 <label>Store</label>
                 <select [(ngModel)]="newSale.supermarketId" class="glass">
                     <option [value]="0" disabled>Select store...</option>
@@ -143,16 +143,7 @@
                             </select>
                         </div>
                     </div>
-                    <!-- Store filter dropdown -->
-                    <div class="filter-item">
-                        <label class="fs-xxs text-muted mb-1 d-block fw-bold">STORE</label>
-                        <div class="select-wrapper glass">
-                            <select [(ngModel)]="selectedSupermarket" (change)="applyFilters()">
-                                <option value="">All Stores</option>
-                                <option *ngFor="let s of supermarkets" [value]="s.id">{{s.name}}</option>
-                            </select>
-                        </div>
-                    </div>
+
                     <!-- Start date filter -->
                     <div class="filter-item">
                         <label class="fs-xxs text-muted mb-1 d-block fw-bold">FROM</label>
@@ -213,7 +204,6 @@
                         <tr>
                             <th>Date</th> <!-- Sale date column -->
                             <th>Product</th> <!-- Product name and SKU column -->
-                            <th>Store</th> <!-- Supermarket/store name column -->
                             <th>Qty</th> <!-- Quantity sold column -->
                             <th>Unit Price</th> <!-- Price per unit column -->
                             <th>Total</th> <!-- Total amount (qty * price) column -->
@@ -231,8 +221,7 @@
                                     <span class="text-accent fs-xs">{{s.productSku}}</span>
                                 </div>
                             </td>
-                            <!-- Store name -->
-                            <td><span class="text-info">{{s.supermarketName}}</span></td>
+
                             <!-- Quantity sold -->
                             <td><strong>{{s.quantitySold}}</strong></td>
                             <!-- Unit price formatted with 2 decimal places -->

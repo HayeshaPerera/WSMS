@@ -23,6 +23,7 @@ export interface Notification {
   relatedEntityType?: string;       // Optional: type of related entity (e.g., 'DELIVERY', 'STOCK_REQUEST')
   relatedEntityId?: number;         // Optional: ID of the related entity for navigation
   fromBackend?: boolean;            // Flag to distinguish backend notifications from local toasts
+  toastHidden?: boolean;            // Flag to hide local toasts after timeout while keeping them in bell
 }
 
 /**
@@ -215,7 +216,8 @@ export class NotificationService implements OnDestroy {
       type,                     // Set the notification type
       timestamp: new Date(),    // Set current time as the timestamp
       read: false,              // New notifications start as unread
-      fromBackend: false        // Mark as local toast (not from backend)
+      fromBackend: false,       // Mark as local toast (not from backend)
+      toastHidden: false        // Show toast initially
     };
 
     // Get the current notification list
@@ -225,10 +227,21 @@ export class NotificationService implements OnDestroy {
     // Update the unread count to include this new notification
     this.updateUnreadCount();
 
-    // Set a timer to auto-remove the toast notification after 5 seconds
+    // Set a timer to auto-dismiss the toast notification after 5 seconds
     setTimeout(() => {
-      this.remove(notification.id);
+      this.dismissToast(notification.id);
     }, 5000);
+  }
+
+  /**
+   * Dismisses a local toast notification while keeping it in the notification list
+   * @param id - The notification ID to dismiss
+   */
+  dismissToast(id: number): void {
+    const current = this.notifications.value.map(n =>
+      n.id === id ? { ...n, toastHidden: true } : n
+    );
+    this.notifications.next(current);
   }
 
   /** Shortcut to show a success toast notification */

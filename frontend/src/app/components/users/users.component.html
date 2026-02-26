@@ -1,30 +1,63 @@
-<app-navbar></app-navbar>
-<div class="container">
-  <h2>Users</h2>
-  <div *ngIf="loading" class="spinner"></div>
-  <div class="table-container" *ngIf="!loading">
-    <table>
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Full Name</th>
-          <th>Roles</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let u of users">
-          <td>{{u.username}}</td>
-          <td>{{u.email}}</td>
-          <td>{{u.fullName}}</td>
-          <td>{{rolesLabel(u)}}</td>
-          <td>
-            <button class="btn btn-sm" (click)="deleteUser(u.id)"
-              style="padding: 0.2rem 0.5rem; font-size: 0.8rem; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<div class="users-container animate-fade-in">
+  <header class="page-header mb-4">
+    <div class="header-info">
+      <h1>User Management</h1>
+      <p class="text-secondary">System Access & Role Control</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary">
+        <i class="fas fa-user-plus"></i> Add User
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="p-5 text-center">
+    <div class="spinner"></div>
+    <p class="text-secondary mt-2">Loading user directory...</p>
+  </div>
+
+  <div class="glass-card p-0 overflow-hidden mb-4" *ngIf="!loading">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+      <span class="text-secondary fs-xs text-uppercase fw-bold">Active Staff Directory</span>
+      <span class="badge glass text-accent fw-bold">{{users.length}} USERS</span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>User Details</th>
+            <th>Email Contact</th>
+            <th>Role Assignment</th>
+            <th>Control</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-sm glass d-flex justify-content-center align-items-center fw-bold"
+                  style="width: 32px; height: 32px; border-radius: 50%; color: var(--accent);">
+                  {{u.username?.charAt(0) | uppercase}}
+                </div>
+                <div class="d-flex flex-column">
+                  <span class="name text-white fw-bold">{{u.fullName || u.username}}</span>
+                  <span class="text-secondary fs-xs">@{{u.username}}</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="text-info">{{u.email}}</span></td>
+            <td>
+              <span class="badge glass text-white">{{rolesLabel(u).replace('ROLE_', '')}}</span>
+            </td>
+            <td>
+              <button class="btn btn-icon btn-logout glass" (click)="deleteUser(u.id)" title="Remove User">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

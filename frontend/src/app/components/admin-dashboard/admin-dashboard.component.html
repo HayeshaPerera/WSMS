@@ -1,180 +1,112 @@
 <div class="admin-container animate-fade-in">
-  <header class="admin-header">
+  <header class="page-header mb-4">
     <div class="header-info">
-      <h1>Dashboard</h1>
-      <p class="text-secondary">System Overview & Predictive Analytics</p>
+      <h1>Admin Dashboard</h1>
+      <p class="text-secondary">System Overview & Analytics</p>
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary glass">
-        <i class="fas fa-download"></i> Export Report
-      </button>
-      <button class="btn btn-primary">
-        <i class="fas fa-plus"></i> New Request
+        <i class="fas fa-download"></i> Export Analytics
       </button>
     </div>
   </header>
 
-  <!-- KPI Grid -->
+  <!-- Premium KPI Grid -->
   <section class="kpi-grid mb-4">
-    <div class="glass-card stat-card" style="--primary: var(--accent)">
-      <div class="stat-icon glass">📦</div>
+    <div class="glass-card stat-card border-left-accent">
+      <div class="stat-icon glass text-accent"><i class="fas fa-boxes"></i></div>
       <div class="stat-content">
         <span class="stat-label">Total Products</span>
-        <div class="stat-value">{{totalProducts}}</div>
+        <div class="stat-value text-accent">{{totalProducts}}</div>
         <div class="stat-meta text-muted">Active items in catalog</div>
       </div>
     </div>
 
-    <div class="glass-card stat-card" style="--primary: var(--success)">
-      <div class="stat-icon glass">📊</div>
+    <div class="glass-card stat-card border-left-success">
+      <div class="stat-icon glass text-success"><i class="fas fa-chart-line"></i></div>
       <div class="stat-content">
         <span class="stat-label">Inventory Value</span>
-        <div class="stat-value">{{totalInventoryValue | lkr}}</div>
+        <div class="stat-value text-success">{{totalInventoryValue | lkr}}</div>
         <div class="stat-meta text-muted">Current valuation</div>
       </div>
     </div>
 
-    <div class="glass-card stat-card" style="--primary: var(--warning)">
-      <div class="stat-icon glass">⏳</div>
+    <div class="glass-card stat-card border-left-warning">
+      <div class="stat-icon glass text-warning"><i class="fas fa-clipboard-list"></i></div>
       <div class="stat-content">
         <span class="stat-label">Pending Orders</span>
-        <div class="stat-value">{{pendingRequests}}</div>
+        <div class="stat-value text-warning">{{pendingRequests}}</div>
         <div class="stat-meta text-muted">Requests needing approval</div>
       </div>
     </div>
 
-    <div class="glass-card stat-card" style="--primary: var(--info)">
-      <div class="stat-icon glass">🚚</div>
+    <div class="glass-card stat-card border-left-info">
+      <div class="stat-icon glass text-info"><i class="fas fa-truck-moving"></i></div>
       <div class="stat-content">
         <span class="stat-label">Active Shipping</span>
-        <div class="stat-value">{{activeDeliveries}}</div>
+        <div class="stat-value text-info">{{activeDeliveries}}</div>
         <div class="stat-meta text-muted">Packages in transit</div>
       </div>
     </div>
   </section>
 
-  <div class="dashboard-layout">
-    <div class="main-stats">
-      <!-- AI Insights -->
-      <section class="glass-card mb-4 ai-insight-panel">
-        <h3 class="mb-3"><i class="fas fa-robot text-primary"></i> AI Operational Insights</h3>
-        <div class="ai-chips">
-          <div *ngFor="let insight of aiInsights" class="ai-chip glass">
-            <span class="label">{{insight.label}}</span>
-            <span class="value">{{insight.value}}</span>
-            <span class="delta" [class.up]="insight.delta.startsWith('+')" [class.down]="insight.delta.startsWith('-')">
-              {{insight.delta}}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Charts -->
-      <section class="charts-grid mb-4">
-        <div class="glass-card chart-panel">
-          <h3 class="mb-3">Stock Request Distribution</h3>
-          <div class="chart-wrapper">
-            <canvas id="requestStatusChart"></canvas>
-          </div>
-        </div>
-        <div class="glass-card chart-panel">
-          <h3 class="mb-3">Inventory Value Trend</h3>
-          <div class="chart-wrapper">
-            <canvas id="inventoryTrendChart"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- Recommendations -->
-      <section class="glass-card mb-4">
-        <h3 class="mb-3"><i class="fas fa-lightbulb text-accent"></i> Smart Recommendations</h3>
-        <div class="rec-list">
-          <div *ngFor="let rec of restockRecommendations" class="rec-item glass mb-2">
-            <div class="rec-info">
-              <span class="product">{{rec.product}}</span>
-              <span class="badge"
-                [ngClass]="'badge-' + (rec.priority === 'High' ? 'danger' : 'warning')">{{rec.priority}}</span>
-            </div>
-            <p class="reason text-secondary mt-1">{{rec.reason}}</p>
-            <div class="rec-action mt-2">
-              <button class="btn btn-secondary btn-sm glass">Review</button>
-              <button class="btn btn-primary btn-sm">Restock</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Low Stock Alerts Table -->
-      <section class="glass-card mb-4 overflow-hidden">
-        <div class="d-flex justify-between align-center mb-3">
-          <h3><i class="fas fa-exclamation-triangle text-danger"></i> Low Stock Alerts</h3>
-          <span class="badge badge-danger">{{lowStockItems}} Items</span>
-        </div>
-        <div class="table-container p-0">
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Warehouse</th>
-                <th>Stock Level</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of inventoryWarnings">
-                <td>{{item.product}}</td>
-                <td>{{item.warehouse}}</td>
-                <td>
-                  <div class="stock-level-cell">
-                    <span>{{item.current}} / {{item.minimum}}</span>
-                    <div class="progress-track glass ml-2">
-                      <div class="progress-bar bg-danger"
-                        [style.width.%]="getProgressPercent(item.current, item.minimum)"></div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <button class="btn btn-logout btn-sm">Resolve</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+  <!-- Charts -->
+  <section class="charts-grid mb-4">
+    <div class="glass-card p-4">
+      <h3 class="mb-4">Stock Request Distribution</h3>
+      <div class="chart-wrapper">
+        <canvas id="requestStatusChart"></canvas>
+      </div>
     </div>
+    <div class="glass-card p-4">
+      <h3 class="mb-4">Inventory Value Trend</h3>
+      <div class="chart-wrapper">
+        <canvas id="inventoryTrendChart"></canvas>
+      </div>
+    </div>
+  </section>
 
-    <!-- Sidebar Stats -->
-    <aside class="side-stats">
-      <section class="glass-card mb-4">
-        <h3 class="mb-3">Recent Activity</h3>
-        <div class="activity-timeline">
-          <div *ngFor="let act of recentActivity" class="activity-item pb-3">
-            <div class="time text-muted">{{act.time}}</div>
-            <div class="text">{{act.text}}</div>
-            <div class="badge-tag" [ngClass]="act.type">{{act.type}}</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="glass-card">
-        <h3 class="mb-3">Performance Pulse</h3>
-        <div class="pulse-metrics">
-          <div class="pulse-card glass mb-2">
-            <span class="label">Fulfillment Rate</span>
-            <div class="value">94.2%</div>
-            <div class="pulse-bar">
-              <div class="fill" style="width: 94%"></div>
-            </div>
-          </div>
-          <div class="pulse-card glass">
-            <span class="label">System Uptime</span>
-            <div class="value text-success">99.9%</div>
-            <div class="pulse-bar">
-              <div class="fill bg-success" style="width: 99%"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </aside>
-  </div>
+  <!-- Low Stock Alerts Table (Only what is necessary) -->
+  <section class="glass-card p-0 overflow-hidden mb-4">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+      <span class="text-secondary fs-xs text-uppercase fw-bold"><i
+          class="fas fa-exclamation-triangle text-danger mr-2"></i> Critical Low Stock Alerts</span>
+      <span class="badge badge-danger">{{lowStockItems}} ITEMS</span>
+    </div>
+    <div class="table-container p-0">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Location</th>
+            <th>Stock Level Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of inventoryWarnings">
+            <td><strong class="text-white">{{item.product}}</strong></td>
+            <td><span class="category-tag glass">{{item.warehouse}}</span></td>
+            <td>
+              <div class="d-flex flex-column gap-1 w-100" style="max-width: 250px;">
+                <div class="d-flex justify-content-between fs-xs">
+                  <span class="text-danger fw-bold">{{item.current}} UNITS</span>
+                  <span class="text-muted">MIN: {{item.minimum}}</span>
+                </div>
+                <div class="progress-track glass">
+                  <div class="progress-bar bg-danger" [style.width.%]="getProgressPercent(item.current, item.minimum)">
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="inventoryWarnings.length === 0">
+            <td colspan="3" class="text-center p-4 text-muted">
+              <i class="fas fa-check-circle text-success mb-2 fs-lg"></i>
+              <p>All stock levels are optimal.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>

@@ -280,6 +280,77 @@ tbody tr:hover {
   border: 1px solid rgba(255, 23, 68, 0.2);
 }
 
+/* Global Data Table Controls */
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 10px 10px 36px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.search-box input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.05)) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23b0b0d0"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+  background-size: 20px;
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: var(--transition);
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.select-wrapper select option {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Dashboard Cards */
 .dashboard-grid {
   display: grid;
@@ -403,10 +474,16 @@ body.light-theme .glass-card {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
 }
 
-body.light-theme .form-control {
-  background: rgba(0, 0, 0, 0.02);
+body.light-theme .form-control,
+body.light-theme .search-box input,
+body.light-theme .select-wrapper select {
+  background-color: rgba(0, 0, 0, 0.02);
   color: var(--text-primary);
   border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .select-wrapper select {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23475569"><path d="M7 10l5 5 5-5z"/></svg>');
 }
 
 body.light-theme .btn-secondary {

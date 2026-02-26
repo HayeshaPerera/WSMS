@@ -326,7 +326,14 @@ export class DeliveriesComponent implements OnInit {
     this.auditLog.logDeliveryStatusChange(userId, userName, d.id, d.trackingNumber, oldStatus, status);
 
     // Sync with backend and rollback on failure
-    this.service.updateDeliveryStatus(d.id, status, 'Updated via UI').subscribe({
+    let action$;
+    if (status === DeliveryStatus.DISPATCHED) {
+      action$ = this.service.dispatchDelivery(d.id, d.driverName || 'System Driver', d.vehicleNumber || 'System Vehicle');
+    } else {
+      action$ = this.service.updateDeliveryStatus(d.id, status, 'Updated via UI');
+    }
+
+    action$.subscribe({
       next: () => {
         console.log('Status update synced with backend');
       },

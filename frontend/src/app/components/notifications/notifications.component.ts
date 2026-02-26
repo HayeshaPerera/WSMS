@@ -50,7 +50,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     // Subscribe to the notifications observable
     this.subscription = this.notificationService.notifications$.subscribe(
       // Filter out backend notifications — those go to the navbar bell dropdown
-      notifications => this.notifications = notifications.filter(n => !n.fromBackend)
+      // Also hide notifications that have been dismissed as toasts
+      notifications => this.notifications = notifications.filter(n => !n.fromBackend && !n.toastHidden)
     );
   }
 
@@ -67,7 +68,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
    * @param id - The unique notification ID to remove
    */
   remove(id: number): void {
-    this.notificationService.remove(id); // Delegate removal to the service
+    // Dismiss toast but keep in notification list
+    this.notificationService.dismissToast(id);
   }
 
   /**

@@ -40,15 +40,7 @@
             </div>
           </div>
 
-          <div class="filter-item">
-            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STORE</label>
-            <div class="select-wrapper glass">
-              <select [(ngModel)]="selectedSupermarket" (change)="applyFilters()">
-                <option value="">All Stores</option>
-                <option *ngFor="let sm of supermarkets" [value]="sm.id || sm.name">{{sm.name}}</option>
-              </select>
-            </div>
-          </div>
+
 
           <div class="filter-item flex-0">
             <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
@@ -66,7 +58,6 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Origination</th>
               <th>Product Specification</th>
               <th>Quantity</th>
               <th>Timeline</th>
@@ -77,15 +68,7 @@
           <tbody>
             <tr *ngFor="let r of filteredRequests" [ngClass]="{'row-highlight': r.status==='PENDING'}">
               <td><span class="id-tag glass">#{{r.id}}</span></td>
-              <td>
-                <div class="supermarket-cell">
-                  <i class="fas fa-store text-accent"></i>
-                  <div class="info">
-                    <span class="name text-white fw-bold">{{r.supermarket?.name}}</span>
-                    <span class="code text-muted fs-xs">{{r.supermarket?.code}}</span>
-                  </div>
-                </div>
-              </td>
+
               <td>
                 <div class="product-cell">
                   <span class="text-white">{{r.product?.name}}</span>
