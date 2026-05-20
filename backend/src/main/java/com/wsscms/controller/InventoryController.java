@@ -3,6 +3,8 @@ package com.wsscms.controller;
 import com.wsscms.dto.ApiResponse;
 import com.wsscms.dto.InventoryDTO;
 import com.wsscms.service.InventoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/inventory")
+@RequestMapping("/api/v1/inventory")
 @CrossOrigin(origins = "*", maxAge = 3600)
+@Tag(name = "Inventory", description = "Inventory management endpoints")
 public class InventoryController {
 
     @Autowired

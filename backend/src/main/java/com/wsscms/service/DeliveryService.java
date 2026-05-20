@@ -78,9 +78,14 @@ public class DeliveryService {
         delivery.setStockRequest(stockRequest);
         delivery.setWarehouse(stockRequest.getWarehouse());
         delivery.setSupermarket(stockRequest.getSupermarket());
-        delivery.setProduct(stockRequest.getProduct());
-        delivery.setQuantity(stockRequest.getApprovedQuantity());
         delivery.setStatus(Delivery.DeliveryStatus.PENDING);
+        
+        DeliveryItem item = new DeliveryItem();
+        item.setDelivery(delivery);
+        item.setProduct(stockRequest.getProduct());
+        item.setExpectedQuantity(stockRequest.getApprovedQuantity());
+        item.setStatus("PENDING");
+        delivery.getDeliveryItems().add(item);
 
         // Update stock request status
         stockRequest.setStatus(StockRequest.RequestStatus.IN_TRANSIT);
@@ -98,19 +103,26 @@ public class DeliveryService {
             throw new IllegalStateException("Only pending deliveries can be dispatched");
         }
 
-        // Deduct from warehouse inventory (handle multiple inventory rows)
-        List<Inventory> warehouseInventories = inventoryRepository
-                .findByWarehouseIdAndProductId(delivery.getWarehouse().getId(), delivery.getProduct().getId());
-        if (warehouseInventories == null || warehouseInventories.isEmpty()) {
-            throw new EntityNotFoundException("Product not in warehouse inventory");
+        // Deduct from warehouse inventory for all items
+        for (DeliveryItem item : delivery.getDeliveryItems()) {
+            List<Inventory> warehouseInventories = inventoryRepository
+                    .findByWarehouseIdAndProductId(delivery.getWarehouse().getId(), item.getProduct().getId());
+            if (warehouseInventories == null || warehouseInventories.isEmpty()) {
+                throw new EntityNotFoundException("Product not in warehouse inventory");
+            }
+            int totalInventory = warehouseInventories.stream().mapToInt(Inventory::getQuantity).sum();
+            if (totalInventory < item.getExpectedQuantity()) {
+                throw new IllegalStateException("Insufficient inventory in warehouse for product: " + item.getProduct().getName());
+            }
+            int remainingToDeduct = item.getExpectedQuantity();
+            for (Inventory warehouseInventory : warehouseInventories) {
+                if (remainingToDeduct <= 0) break;
+                int canDeduct = Math.min(warehouseInventory.getQuantity(), remainingToDeduct);
+                warehouseInventory.setQuantity(warehouseInventory.getQuantity() - canDeduct);
+                remainingToDeduct -= canDeduct;
+                inventoryRepository.save(warehouseInventory);
+            }
         }
-        // Try to deduct from the first matching inventory row; if insufficient, this will fail earlier
-        Inventory warehouseInventory = warehouseInventories.get(0);
-        if (warehouseInventory.getQuantity() < delivery.getQuantity()) {
-            throw new IllegalStateException("Insufficient inventory in warehouse");
-        }
-        warehouseInventory.setQuantity(warehouseInventory.getQuantity() - delivery.getQuantity());
-        inventoryRepository.save(warehouseInventory);
 
         delivery.setStatus(Delivery.DeliveryStatus.DISPATCHED);
         delivery.setDriverName(driverName);
@@ -160,20 +172,25 @@ public class DeliveryService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         // Add to supermarket inventory
-        List<Inventory> supermarketInventories = inventoryRepository
-            .findBySupermarketIdAndProductId(delivery.getSupermarket().getId(), delivery.getProduct().getId());
-        Inventory supermarketInventory = (supermarketInventories != null && !supermarketInventories.isEmpty()) ? supermarketInventories.get(0) : null;
+        for (DeliveryItem item : delivery.getDeliveryItems()) {
+            List<Inventory> supermarketInventories = inventoryRepository
+                .findBySupermarketIdAndProductId(delivery.getSupermarket().getId(), item.getProduct().getId());
+            Inventory supermarketInventory = (supermarketInventories != null && !supermarketInventories.isEmpty()) ? supermarketInventories.get(0) : null;
 
-        if (supermarketInventory == null) {
-            supermarketInventory = new Inventory();
-            supermarketInventory.setSupermarket(delivery.getSupermarket());
-            supermarketInventory.setProduct(delivery.getProduct());
-            supermarketInventory.setQuantity(0);
-            supermarketInventory.setReorderLevel(10);
+            if (supermarketInventory == null) {
+                supermarketInventory = new Inventory();
+                supermarketInventory.setSupermarket(delivery.getSupermarket());
+                supermarketInventory.setProduct(item.getProduct());
+                supermarketInventory.setQuantity(0);
+                supermarketInventory.setReorderLevel(10);
+            }
+
+            supermarketInventory.setQuantity(supermarketInventory.getQuantity() + item.getExpectedQuantity());
+            inventoryRepository.save(supermarketInventory);
+            
+            item.setActualQuantity(item.getExpectedQuantity());
+            item.setStatus("DELIVERED");
         }
-
-        supermarketInventory.setQuantity(supermarketInventory.getQuantity() + delivery.getQuantity());
-        inventoryRepository.save(supermarketInventory);
 
         delivery.setStatus(Delivery.DeliveryStatus.DELIVERED);
         delivery.setDeliveredAt(LocalDateTime.now());
@@ -203,20 +220,25 @@ public class DeliveryService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         // Add to supermarket inventory (create row if none)
-        List<Inventory> supermarketInventories = inventoryRepository
-                .findBySupermarketIdAndProductId(delivery.getSupermarket().getId(), delivery.getProduct().getId());
-        Inventory supermarketInventory = (supermarketInventories != null && !supermarketInventories.isEmpty()) ? supermarketInventories.get(0) : null;
+        for (DeliveryItem item : delivery.getDeliveryItems()) {
+            List<Inventory> supermarketInventories = inventoryRepository
+                    .findBySupermarketIdAndProductId(delivery.getSupermarket().getId(), item.getProduct().getId());
+            Inventory supermarketInventory = (supermarketInventories != null && !supermarketInventories.isEmpty()) ? supermarketInventories.get(0) : null;
 
-        if (supermarketInventory == null) {
-            supermarketInventory = new Inventory();
-            supermarketInventory.setSupermarket(delivery.getSupermarket());
-            supermarketInventory.setProduct(delivery.getProduct());
-            supermarketInventory.setQuantity(0);
-            supermarketInventory.setReorderLevel(10);
+            if (supermarketInventory == null) {
+                supermarketInventory = new Inventory();
+                supermarketInventory.setSupermarket(delivery.getSupermarket());
+                supermarketInventory.setProduct(item.getProduct());
+                supermarketInventory.setQuantity(0);
+                supermarketInventory.setReorderLevel(10);
+            }
+
+            supermarketInventory.setQuantity(supermarketInventory.getQuantity() + item.getExpectedQuantity());
+            inventoryRepository.save(supermarketInventory);
+            
+            item.setActualQuantity(item.getExpectedQuantity());
+            item.setStatus("DELIVERED");
         }
-
-        supermarketInventory.setQuantity(supermarketInventory.getQuantity() + delivery.getQuantity());
-        inventoryRepository.save(supermarketInventory);
 
         delivery.setStatus(Delivery.DeliveryStatus.DELIVERED);
         delivery.setDeliveredAt(LocalDateTime.now());
@@ -255,7 +277,6 @@ public class DeliveryService {
         DeliveryDTO dto = new DeliveryDTO();
         dto.setId(delivery.getId());
         dto.setTrackingNumber(delivery.getTrackingNumber());
-        dto.setQuantity(delivery.getQuantity());
         dto.setStatus(delivery.getStatus());
         dto.setDriverName(delivery.getDriverName());
         dto.setVehicleNumber(delivery.getVehicleNumber());
@@ -282,10 +303,22 @@ public class DeliveryService {
             dto.setSupermarketName(delivery.getSupermarket().getName());
         }
 
-        if (delivery.getProduct() != null) {
-            dto.setProductId(delivery.getProduct().getId());
-            dto.setProductName(delivery.getProduct().getName());
-            dto.setProductSku(delivery.getProduct().getSku());
+        if (delivery.getDeliveryItems() != null) {
+            List<com.wsscms.dto.DeliveryItemDTO> itemDTOs = delivery.getDeliveryItems().stream().map(item -> {
+                com.wsscms.dto.DeliveryItemDTO itemDTO = new com.wsscms.dto.DeliveryItemDTO();
+                itemDTO.setId(item.getId());
+                if (item.getProduct() != null) {
+                    itemDTO.setProductId(item.getProduct().getId());
+                    itemDTO.setProductName(item.getProduct().getName());
+                    itemDTO.setProductSku(item.getProduct().getSku());
+                }
+                itemDTO.setExpectedQuantity(item.getExpectedQuantity());
+                itemDTO.setActualQuantity(item.getActualQuantity());
+                itemDTO.setStatus(item.getStatus());
+                itemDTO.setNotes(item.getNotes());
+                return itemDTO;
+            }).collect(Collectors.toList());
+            dto.setItems(itemDTOs);
         }
 
         if (delivery.getReceivedBy() != null) {

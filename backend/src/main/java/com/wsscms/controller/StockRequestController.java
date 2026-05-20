@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/stock-requests")
+@RequestMapping("/api/v1/stock-requests")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class StockRequestController {
 

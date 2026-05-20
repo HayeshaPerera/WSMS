@@ -15,12 +15,19 @@ import { ApiResponse } from '../../models/models';
   styleUrls: ['./supermarket-dashboard.component.css']
 })
 export class SupermarketDashboardComponent implements OnInit {
-    availableWarehouseQuantity: number | null = null;
+  availableWarehouseQuantity: number | null = null;
   supermarketId?: number;
   inventory: Inventory[] = [];
   products: Product[] = [];
   myRequests: any[] = [];
   myDeliveries: any[] = [];
+
+  // ── Computed getters (no arrow fns in templates) ────────
+  get lowStockCount():          number { return this.inventory.filter(i => i.lowStockAlert).length; }
+  get pendingRequestsCount():   number { return this.myRequests.filter(r => r.status === 'PENDING').length; }
+  get activeDeliveriesCount():  number { return this.myDeliveries.filter(d => d.status !== 'DELIVERED').length; }
+
+
   // Demo KPIs and panels to enrich dashboard
   kpis = [
     { label: 'Sales Today', value: '$12.4k' },

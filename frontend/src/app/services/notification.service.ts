@@ -14,16 +14,16 @@ import { environment } from '../../environments/environment';
  * Used for both backend-fetched and locally generated (toast) notifications.
  */
 export interface Notification {
-  id: number;                       // Unique identifier for the notification
-  message: string;                  // The main notification message text
-  title?: string;                   // Optional title for the notification
-  type: 'success' | 'error' | 'warning' | 'info'; // Notification severity/type
-  timestamp: Date;                  // When the notification was created
-  read: boolean;                    // Whether the user has read this notification
-  relatedEntityType?: string;       // Optional: type of related entity (e.g., 'DELIVERY', 'STOCK_REQUEST')
-  relatedEntityId?: number;         // Optional: ID of the related entity for navigation
-  fromBackend?: boolean;            // Flag to distinguish backend notifications from local toasts
-  toastHidden?: boolean;            // Flag to hide local toasts after timeout while keeping them in bell
+  id: number;
+  message: string;
+  title?: string;
+  type: 'success' | 'error' | 'warning' | 'info' | 'loading';
+  timestamp: Date;
+  read: boolean;
+  relatedEntityType?: string;
+  relatedEntityId?: number;
+  fromBackend?: boolean;
+  toastHidden?: boolean;
 }
 
 /**
@@ -36,7 +36,7 @@ export interface Notification {
 })
 export class NotificationService implements OnDestroy {
   // Base URL for the notifications API endpoint
-  private apiUrl = `${environment.apiBase}/api/notifications`;
+  private apiUrl = `${environment.apiBase}/notifications`;
 
   // BehaviorSubject holding the current list of all notifications (local + backend)
   private notifications = new BehaviorSubject<Notification[]>([]);

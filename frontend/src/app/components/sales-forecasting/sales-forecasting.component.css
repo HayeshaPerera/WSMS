@@ -34,7 +34,7 @@
     /* No background by default */
     border: none;
     /* Remove default button border */
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     /* Dimmed text when inactive */
     font-weight: 600;
     /* Semi-bold text */
@@ -58,8 +58,8 @@
 
 /* Tab button hover state - slightly visible */
 .tab-btn:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.05);
+    color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Active tab button - gold accent with glow */
@@ -126,19 +126,19 @@
 /* Gold for revenue */
 .gradient-blue {
     background: linear-gradient(135deg, #36A2EB, #2196F3);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Blue for units */
 .gradient-green {
     background: linear-gradient(135deg, #4BC0C0, #4CAF50);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Green for avg value */
 .gradient-purple {
     background: linear-gradient(135deg, #9966FF, #7C4DFF);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Purple for top product */
@@ -156,7 +156,7 @@
     /* Large text for the value */
     font-weight: 700;
     /* Bold */
-    color: #fff;
+    color: var(--text-primary);
     /* White text */
     white-space: nowrap;
     /* Don't wrap to next line */
@@ -169,7 +169,7 @@
 /* KPI label text - small uppercase subtitle */
 .kpi-label {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -202,13 +202,13 @@
     /* Full width of container */
     padding: 10px 10px 10px 36px;
     /* Extra left padding for the search icon */
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
     /* Subtle dark background */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     /* Subtle border */
     border-radius: 10px;
     /* Rounded corners */
-    color: #fff;
+    color: var(--text-primary);
     /* White text */
     font-size: 0.9rem;
     /* Readable font size */
@@ -220,7 +220,7 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(0, 0, 0, 0.3);
 }
 
 /* Filter controls group - horizontal row of dropdowns */
@@ -245,13 +245,13 @@
     /* Full width */
     padding: 8px 12px;
     /* Inner padding */
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
     /* Subtle dark background */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     /* Subtle border */
     border-radius: 8px;
     /* Rounded corners */
-    color: #fff;
+    color: var(--text-primary);
     /* White text */
     font-size: 0.85rem;
     /* Slightly smaller text */
@@ -295,7 +295,7 @@
 .chart-card h4 {
     margin-bottom: 16px;
     font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(0, 0, 0, 0.7);
 }
 
 /* Chart canvas wrapper - fixed height for consistent sizing */
@@ -322,7 +322,7 @@
 /* Form title */
 .record-form h3 {
     font-size: 1.1rem;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* 3-column grid for form fields */
@@ -342,7 +342,7 @@
 /* Form field label - small uppercase */
 .form-group label {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(0, 0, 0, 0.6);
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -352,13 +352,13 @@
 .form-group input {
     padding: 10px 14px;
     /* Comfortable input padding */
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
     /* Subtle dark background */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     /* Subtle border */
     border-radius: 10px;
     /* Rounded corners */
-    color: #fff;
+    color: var(--text-primary);
     /* White text */
     font-size: 0.9rem;
     /* Readable font size */
@@ -435,13 +435,13 @@
 .stat-value {
     font-size: 1.4rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Stat label - small subtitle */
 .stat-label {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 /* ========================
@@ -492,7 +492,7 @@
     /* Vertical center */
     gap: 4px;
     /* Space between icon and text */
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05);
     /* Subtle background */
 }
 
@@ -516,7 +516,7 @@
     /* Small gap between label and value */
     padding: 10px;
     /* Inner padding */
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.03);
     /* Very subtle background */
     border-radius: 8px;
     /* Rounded corners */
@@ -525,7 +525,7 @@
 /* Metric label - tiny uppercase text */
 .metric-label {
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(0, 0, 0, 0.4);
     text-transform: uppercase;
 }
 
@@ -555,7 +555,7 @@
     /* Take remaining space */
     height: 6px;
     /* Thin bar */
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
     /* Dark track background */
     border-radius: 3px;
     /* Rounded ends */
@@ -614,9 +614,9 @@ thead th {
     /* UPPERCASE labels */
     letter-spacing: 0.5px;
     /* Slightly spaced letters */
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(0, 0, 0, 0.4);
     /* Dimmed text */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     /* Subtle bottom border */
     background: rgba(0, 0, 0, 0.2);
     /* Slightly darker background */
@@ -625,7 +625,7 @@ thead th {
 /* Table body cells */
 tbody td {
     padding: 12px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     font-size: 0.9rem;
 }
 
@@ -658,7 +658,7 @@ tbody tr:hover {
 
 /* Empty state heading */
 .empty-placeholder h3 {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 /* ========================

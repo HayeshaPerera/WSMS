@@ -12,7 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JwtResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
+    @Builder.Default
     private String type = "Bearer";
     private Long id;
     private String username;
@@ -22,4 +24,7 @@ public class JwtResponse {
     private List<String> roles;
     private Long warehouseId;
     private Long supermarketId;
+
+    // Backward-compat alias — some frontend components still use "token"
+    public String getToken() { return accessToken; }
 }

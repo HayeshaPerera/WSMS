@@ -39,7 +39,7 @@ export interface SaleRecord {
 })
 export class SalesService {
     // Base URL for sales API endpoints, constructed from environment configuration
-    private apiUrl = `${environment.apiBase}/api/sales`;
+    private apiUrl = `${environment.apiBase}/sales`;
 
     // Inject HttpClient for making HTTP requests
     constructor(private http: HttpClient) { }

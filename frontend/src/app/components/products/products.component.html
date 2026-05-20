@@ -1,149 +1,190 @@
-<div class="products-container animate-fade-in">
-  <header class="page-header mb-4">
-    <div class="header-info">
+<div class="animate-fade-up">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
       <h1>Product Catalog</h1>
-      <p class="text-secondary">Master Inventory Definitions & Specifications</p>
+      <p class="subtitle">Master inventory definitions and global pricing specifications</p>
     </div>
-    <div class="header-actions">
+    <div class="d-flex gap-2">
       <button class="btn btn-primary" (click)="toggleAddForm()" *ngIf="auth.isAdmin() || auth.isWarehouseStaff()">
-        <i class="fas" [ngClass]="showAddForm ? 'fa-times' : 'fa-plus'"></i>
-        {{ showAddForm ? 'Cancel' : 'Register New Product' }}
+        <span class="material-symbols-outlined" style="font-size:16px">{{ showAddForm ? 'close' : 'add' }}</span>
+        {{ showAddForm ? 'Cancel' : 'Define New Product' }}
       </button>
     </div>
-  </header>
-
-  <!-- Add/Edit Product Form -->
-  <section class="glass-card mb-4 animate-slide-in" *ngIf="showAddForm">
-    <h3 class="mb-4">{{ editingProduct ? 'Edit Product: ' + editingProduct.name : 'Product Registration' }}</h3>
-    <div class="modern-form">
-      <div class="form-grid mb-4">
-        <div class="form-group">
-          <label class="form-label">SKU</label>
-          <input type="text" class="form-control" [(ngModel)]="newProduct.sku" placeholder="e.g. SKU-100">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Full Product Name</label>
-          <input type="text" class="form-control" [(ngModel)]="newProduct.name" placeholder="Official product name">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Category Classification</label>
-          <div class="select-wrapper glass">
-            <select [(ngModel)]="newProduct.category">
-              <option value="">Select Category</option>
-              <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-grid mb-4">
-        <div class="form-group">
-          <label class="form-label">Market Unit Price (LKR)</label>
-          <input type="number" class="form-control" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Reorder Threshold</label>
-          <input type="number" class="form-control" [(ngModel)]="newProduct.reorderLevel" placeholder="10">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Minimum Safety Stock</label>
-          <input type="number" class="form-control" [(ngModel)]="newProduct.minStockLevel" placeholder="5">
-        </div>
-      </div>
-
-      <div class="form-grid align-items-end mb-4">
-        <div class="form-group">
-          <label class="form-label">Product Description</label>
-          <textarea class="form-control" [(ngModel)]="newProduct.description" rows="2"
-            placeholder="Key specifications and handling notes..."></textarea>
-        </div>
-        <div class="form-group glass p-3 border-radius-md">
-          <label class="custom-checkbox">
-            <input type="checkbox" [(ngModel)]="newProduct.perishable">
-            <span class="checkmark"></span>
-            <span class="fs-sm fw-bold">MARK AS PERISHABLE</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-actions border-top pt-4">
-        <button class="btn btn-secondary glass" (click)="toggleAddForm()">Discard</button>
-        <button class="btn btn-primary" (click)="saveProduct()">{{ editingProduct ? 'Update Product' : 'Add to Catalog'
-          }}</button>
-      </div>
-    </div>
-  </section>
-
-  <div *ngIf="loading" class="p-5 text-center">
-    <div class="spinner"></div>
-    <p class="text-secondary mt-2">Synchronizing product indices...</p>
   </div>
 
-  <div class="glass-card p-0 overflow-hidden mb-4" *ngIf="!loading">
-    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-      <span class="text-secondary fs-xs text-uppercase fw-bold">Global Catalog Index</span>
-      <span class="badge glass text-accent fw-bold">{{products.length}} RECORDS</span>
-    </div>
+  <!-- Registration Form (Modern Overlay style or Inline) -->
+  <div class="card mb-4 animate-fade-in" *ngIf="showAddForm">
+    <div style="font-size:15px; font-weight:700; margin-bottom:20px">{{ editingProduct ? 'Update Product Details' : 'Register New Master Product' }}</div>
+    <div class="d-flex flex-column gap-4">
+      <div class="d-flex gap-3 flex-wrap">
+        <div class="form-group" style="flex:1">
+          <label>SKU (Stock Keeping Unit)</label>
+          <input type="text" [(ngModel)]="newProduct.sku" placeholder="e.g. SKU-100">
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Product Official Name</label>
+          <input type="text" [(ngModel)]="newProduct.name" placeholder="Full descriptive name">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Classification</label>
+          <select [(ngModel)]="newProduct.category">
+            <option value="">-- Select Category --</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
+          </select>
+        </div>
+      </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>SKU / Brand</th>
-            <th>Dimensioning</th>
-            <th>Market Value</th>
-            <th>Safety Levels</th>
-            <th>Classification</th>
-            <th>Lifecycle</th>
-            <th *ngIf="auth.isAdmin()">Control</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of products">
-            <td>
-              <div class="product-cell">
-                <span class="sku text-accent">{{p.sku}}</span>
-                <span class="name text-white fw-bold">{{p.name}}</span>
-              </div>
-            </td>
-            <td><span class="category-tag glass">{{p.category}}</span></td>
-            <td><strong class="text-white">{{p.unitPrice | lkr}}</strong></td>
-            <td>
-              <div class="levels-cell">
-                <span class="reorder" title="Reorder Level">RL: {{p.reorderLevel}}</span>
-                <span class="min" title="Min Stock Level">MS: {{p.minStockLevel}}</span>
-              </div>
-            </td>
-            <td>
-              <span class="badge" [ngClass]="p.perishable ? 'badge-danger' : 'badge-info'">
-                <i class="fas" [ngClass]="p.perishable ? 'fa-hourglass-half' : 'fa-infinity'"></i>
-                {{p.perishable ? 'PERISHABLE' : 'STABLE'}}
-              </span>
-            </td>
-            <td>
-              <span class="badge" [ngClass]="p.active ? 'badge-success' : 'badge-logout'">
-                {{ p.active ? 'ACTIVE' : 'DEPRECATED' }}
-              </span>
-            </td>
-            <td *ngIf="auth.isAdmin()">
-              <div class="d-flex gap-1">
-                <button class="btn btn-icon btn-primary glass" (click)="editProduct(p)" title="Edit Product">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-icon btn-logout glass" (click)="deleteProduct(p)" title="Retire Product">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="d-flex gap-3 flex-wrap">
+        <div class="form-group" style="flex:1">
+          <label>Market Unit Price (LKR)</label>
+          <input type="number" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Reorder Threshold</label>
+          <input type="number" [(ngModel)]="newProduct.reorderLevel" placeholder="20">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Min. Safety Stock</label>
+          <input type="number" [(ngModel)]="newProduct.minStockLevel" placeholder="10">
+        </div>
+        <div class="form-group d-flex align-items-center" style="flex:1; padding-top:24px">
+           <label class="d-flex align-items-center gap-2" style="cursor:pointer; margin-bottom:0">
+             <input type="checkbox" [(ngModel)]="newProduct.perishable" style="width:18px; height:18px">
+             <span style="font-size:13px; font-weight:600">Mark as Perishable</span>
+           </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Technical Description / Specifications</label>
+        <textarea [(ngModel)]="newProduct.description" rows="2" placeholder="Material handling, storage temperature, or other notes..."></textarea>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end border-top pt-3">
+        <button class="btn btn-ghost" (click)="toggleAddForm()">Discard Changes</button>
+        <button class="btn btn-primary" (click)="saveProduct()">
+          {{ editingProduct ? 'Commit Updates' : 'Add to Master Catalog' }}
+        </button>
+      </div>
     </div>
   </div>
 
-  <div *ngIf="products.length === 0 && !loading" class="empty-placeholder p-5 text-center text-muted glass-card">
-    <i class="fas fa-box-open mb-3 fs-xl d-block"></i>
-    <h3>Catalog is empty</h3>
-    <p>Register new products to start inventory tracking.</p>
+  <!-- KPI Quick Stats -->
+  <div class="kpi-grid mb-4">
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Active Products</div>
+        <div class="kpi-value">{{ activeCount }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">check_circle</span>
+          Catalog health
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">dataset</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Perishables</div>
+        <div class="kpi-value">{{ perishableCount }}</div>
+        <div class="kpi-trend" style="color:var(--text-muted)">
+          <span class="material-symbols-outlined" style="font-size:13px">hourglass_empty</span>
+          Requires FIFO
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">emergency_heat</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Average Value</div>
+        <div class="kpi-value" style="font-size:1.2rem">{{ (getAveragePrice()) | lkr }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">payments</span>
+          Unit benchmark
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">request_quote</span></div>
+    </div>
   </div>
+
+  <!-- Table View -->
+  <div class="table-wrapper">
+    <div class="table-toolbar">
+      <div class="d-flex gap-3 align-items-center flex-wrap">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" placeholder="Search Master Catalog by SKU or Name..." style="width:340px">
+        </div>
+        <span class="badge badge-approved">{{ products.length }} Defined Records</span>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="empty-state">
+      <div class="spin" style="font-size:32px; color:var(--green-primary)">
+        <span class="material-symbols-outlined">refresh</span>
+      </div>
+      <p>Synchronizing global product index...</p>
+    </div>
+
+    <div *ngIf="!loading && products.length === 0" class="empty-state">
+      <span class="material-symbols-outlined empty-icon">box_open</span>
+      <h3>Catalog is empty</h3>
+      <p>Start defining master products to begin inventory operations.</p>
+    </div>
+
+    <table *ngIf="!loading && products.length > 0">
+      <thead>
+        <tr>
+          <th>Product Specification</th>
+          <th>Classification</th>
+          <th>Safety Par</th>
+          <th>Unit Price</th>
+          <th>Handling</th>
+          <th>Lifecycle</th>
+          <th *ngIf="auth.isAdmin()">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products">
+          <td>
+            <div style="font-weight:700">{{ p.name }}</div>
+            <div style="font-size:11px; color:var(--text-muted); display:flex; gap:8px">
+              <span class="mono" style="background:var(--bg-page); padding:1px 4px; border-radius:3px">{{ p.sku }}</span>
+            </div>
+          </td>
+          <td><span class="badge badge-secondary" style="font-size:10px">{{ p.category }}</span></td>
+          <td>
+             <div style="font-size:12px">Par: <strong>{{ p.reorderLevel }}</strong></div>
+             <div style="font-size:10px; color:var(--text-muted)">Min: {{ p.minStockLevel }}</div>
+          </td>
+          <td><strong style="color:var(--text-primary)">{{ p.unitPrice | lkr }}</strong></td>
+          <td>
+             <span class="badge" [ngClass]="p.perishable ? 'badge-critical' : 'badge-info'">
+               <span class="material-symbols-outlined" style="font-size:12px; margin-right:4px">
+                 {{ p.perishable ? 'warning' : 'check_circle' }}
+               </span>
+               {{ p.perishable ? 'Perishable' : 'Stable' }}
+             </span>
+          </td>
+          <td>
+             <span class="badge" [ngClass]="p.active ? 'badge-approved' : 'badge-secondary'">
+               {{ p.active ? 'Active' : 'Archived' }}
+             </span>
+          </td>
+          <td *ngIf="auth.isAdmin()">
+            <div class="d-flex gap-2">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="editProduct(p)" title="Edit Specifications">
+                <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+              </button>
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteProduct(p)" title="Retire Product">
+                <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>

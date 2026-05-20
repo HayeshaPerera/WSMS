@@ -17,6 +17,14 @@ export class DeliveriesComponent implements OnInit {
   filteredDeliveries: Delivery[] = [];
   loading = true;
   statuses = DeliveryStatus;
+  
+  get inTransitCount(): number {
+    return this.filteredDeliveries.filter(d => d.status === DeliveryStatus.IN_TRANSIT || d.status === DeliveryStatus.DISPATCHED).length;
+  }
+
+  get outForDeliveryCount(): number {
+    return this.filteredDeliveries.filter(d => d.status === DeliveryStatus.OUT_FOR_DELIVERY).length;
+  }
 
   // Filter properties
   searchTerm = '';
@@ -63,6 +71,15 @@ export class DeliveriesComponent implements OnInit {
   }
 
   private enrichDelivery(d: any, products: any[]): Delivery {
+    // Handle nested items from backend DeliveryDTO
+    if (d.items && d.items.length > 0 && !d.product) {
+      const firstItem = d.items[0];
+      d.productId = firstItem.productId;
+      d.productName = firstItem.productName;
+      d.productSku = firstItem.productSku;
+      d.quantity = firstItem.expectedQuantity || firstItem.actualQuantity || 0;
+    }
+
     if (!d.product && (d.productId || d.product_id)) {
       const pid = d.productId || d.product_id;
       const matched = products.find((p: any) => p && (p.id == pid || String(p.id) === String(pid)));
@@ -135,6 +152,15 @@ export class DeliveriesComponent implements OnInit {
         if (deliveryData && deliveryData.length >= 0) {
           const products = this.sharedData.getProducts();
           const enriched = deliveryData.map((d: any) => {
+            // Handle nested items from backend DeliveryDTO
+            if (d.items && d.items.length > 0 && !d.product) {
+              const firstItem = d.items[0];
+              d.productId = firstItem.productId;
+              d.productName = firstItem.productName;
+              d.productSku = firstItem.productSku;
+              d.quantity = firstItem.expectedQuantity || firstItem.actualQuantity || 0;
+            }
+
             if (!d.product && (d.productId || d.product_id)) {
               const pid = d.productId || d.product_id;
               d.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unknown Product', sku: 'N/A' };
@@ -323,7 +349,7 @@ export class DeliveriesComponent implements OnInit {
     Object.assign(d, updates);
 
     // Log locally
-    this.auditLog.logDeliveryStatusChange(userId, userName, d.id, d.trackingNumber, oldStatus, status);
+    this.auditLog.logDeliveryStatusChange(userId, userName, d.id, d.trackingNumber || 'Unknown', oldStatus || 'UNKNOWN', status || 'UNKNOWN');
 
     // Sync with backend and rollback on failure
     let action$;

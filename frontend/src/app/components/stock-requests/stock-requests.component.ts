@@ -18,6 +18,20 @@ export class StockRequestsComponent implements OnInit {
   filteredRequests: StockRequest[] = [];
   loading = true;
 
+  get pendingCount(): number {
+    return this.filteredRequests.filter(r => r.status === 'PENDING').length;
+  }
+
+  get approvedCount(): number {
+    return this.filteredRequests.filter(r => r.status === 'APPROVED').length;
+  }
+
+  get rejectRate(): number {
+    if (this.filteredRequests.length === 0) return 0;
+    const rejected = this.filteredRequests.filter(r => r.status === 'REJECTED').length;
+    return Math.round((rejected / this.filteredRequests.length) * 100);
+  }
+
   // Filter properties
   searchTerm = '';
   selectedStatus = '';

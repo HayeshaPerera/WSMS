@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping("/api/v1/analytics")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AnalyticsController {
 

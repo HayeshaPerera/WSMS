@@ -1,239 +1,155 @@
-<!-- ===================== -->
-<!-- TOP NAVIGATION BAR    -->
-<!-- ===================== -->
-<!-- Main navbar: fixed to top with glassmorphism effect -->
-<nav class="navbar glass">
-  <div class="navbar-container">
+<!-- FIXED SIDEBAR — 240px, dark green, role-aware nav -->
+<aside class="sidebar-aside" *ngIf="auth.isLoggedIn()">
 
-    <!-- Left Section: hamburger menu + brand logo -->
-    <div class="nav-left">
-      <!-- Hamburger menu button: opens the sidebar (only visible when logged in) -->
-      <button class="menu-trigger glass" (click)="toggleSidebar()" *ngIf="auth.isLoggedIn()">
-        <i class="fas fa-bars"></i>
-      </button>
+  <!-- Brand -->
+  <div class="sidebar-header">
+    <span class="material-symbols-outlined brand-icon">local_shipping</span>
+    <span class="sidebar-brand">WSMS ERP</span>
+  </div>
 
-      <!-- Brand logo and name: links back to home page -->
-      <a class="brand-link" routerLink="/">
-        <!-- Logo icon in a glass box -->
-        <div class="brand-logo glass">
-          <i class="fas fa-box-open"></i>
-        </div>
-        <!-- Brand text: app name and version label -->
-        <div class="brand-text">
-          <span class="brand-name">WSMS</span>
-          <span class="brand-version">PREMIUM</span>
-        </div>
+  <nav class="sidebar-nav">
+
+    <!-- ── SHARED ───────────────────────────── -->
+    <span class="sidebar-section-label">Overview</span>
+    <a routerLink="/admin"       routerLinkActive="active" *ngIf="auth.isAdmin()">
+      <span class="material-symbols-outlined">dashboard</span> <span class="nav-text">Admin Dashboard</span>
+    </a>
+    <a routerLink="/warehouse"   routerLinkActive="active" *ngIf="auth.isWarehouseStaff() && !auth.isAdmin()">
+      <span class="material-symbols-outlined">dashboard</span> <span class="nav-text">Dashboard</span>
+    </a>
+    <a routerLink="/supermarket" routerLinkActive="active" *ngIf="auth.isSupermarketManager() && !auth.isAdmin()">
+      <span class="material-symbols-outlined">dashboard</span> <span class="nav-text">Dashboard</span>
+    </a>
+
+    <!-- ── ADMIN ────────────────────────────── -->
+    <ng-container *ngIf="auth.isAdmin()">
+      <span class="sidebar-section-label">Management</span>
+      <a routerLink="/users"        routerLinkActive="active">
+        <span class="material-symbols-outlined">group</span> <span class="nav-text">Users</span>
       </a>
+      <a routerLink="/products"     routerLinkActive="active">
+        <span class="material-symbols-outlined">category</span> <span class="nav-text">Products</span>
+      </a>
+      <a routerLink="/warehouses"   routerLinkActive="active">
+        <span class="material-symbols-outlined">warehouse</span> <span class="nav-text">Warehouses</span>
+      </a>
+      <a routerLink="/supermarkets" routerLinkActive="active">
+        <span class="material-symbols-outlined">storefront</span> <span class="nav-text">Supermarkets</span>
+      </a>
+
+      <span class="sidebar-section-label">Operations</span>
+      <a routerLink="/inventory"     routerLinkActive="active">
+        <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Inventory</span>
+      </a>
+      <a routerLink="/stock-requests" routerLinkActive="active">
+        <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
+        <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
+      </a>
+      <a routerLink="/deliveries" routerLinkActive="active">
+        <span class="material-symbols-outlined">local_shipping</span> <span class="nav-text">Deliveries</span>
+      </a>
+      <a routerLink="/sales" routerLinkActive="active">
+        <span class="material-symbols-outlined">point_of_sale</span> <span class="nav-text">Sales</span>
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active">
+        <span class="material-symbols-outlined">bar_chart</span> <span class="nav-text">Analytics</span>
+      </a>
+    </ng-container>
+
+    <!-- ── WAREHOUSE STAFF ──────────────────── -->
+    <ng-container *ngIf="auth.isWarehouseStaff() && !auth.isAdmin()">
+      <span class="sidebar-section-label">Operations</span>
+      <a routerLink="/inventory"      routerLinkActive="active">
+        <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Inventory</span>
+      </a>
+      <a routerLink="/grns"           routerLinkActive="active">
+        <span class="material-symbols-outlined">receipt_long</span> <span class="nav-text">Goods Received</span>
+      </a>
+      <a routerLink="/stock-requests" routerLinkActive="active">
+        <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
+        <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
+      </a>
+      <a routerLink="/deliveries"     routerLinkActive="active">
+        <span class="material-symbols-outlined">local_shipping</span> <span class="nav-text">Deliveries</span>
+      </a>
+      <a routerLink="/analytics"      routerLinkActive="active">
+        <span class="material-symbols-outlined">bar_chart</span> <span class="nav-text">Reports</span>
+      </a>
+    </ng-container>
+
+    <!-- ── SUPERMARKET MANAGER ──────────────── -->
+    <ng-container *ngIf="auth.isSupermarketManager() && !auth.isAdmin()">
+      <span class="sidebar-section-label">My Store</span>
+      <a routerLink="/inventory"      routerLinkActive="active">
+        <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Stock Monitor</span>
+      </a>
+      <a routerLink="/stock-requests" routerLinkActive="active">
+        <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
+        <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
+      </a>
+      <a routerLink="/deliveries"     routerLinkActive="active">
+        <span class="material-symbols-outlined">local_shipping</span> <span class="nav-text">Deliveries</span>
+      </a>
+      <a routerLink="/sales"          routerLinkActive="active">
+        <span class="material-symbols-outlined">point_of_sale</span> <span class="nav-text">Sales</span>
+      </a>
+      <a routerLink="/forecasting"    routerLinkActive="active">
+        <span class="material-symbols-outlined">trending_up</span> <span class="nav-text">Forecasting</span>
+      </a>
+    </ng-container>
+
+    <div style="flex:1"></div>
+
+    <!-- ── FOOTER ───────────────────────────── -->
+    <span class="sidebar-section-label">Account</span>
+    <a (click)="toggleNotifPanel()" style="cursor:pointer; position:relative">
+      <span class="material-symbols-outlined">notifications</span> <span class="nav-text">Notifications</span>
+      <span class="nav-badge" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }}</span>
+    </a>
+    <a style="cursor:default">
+      <span class="material-symbols-outlined">account_circle</span>
+      <span class="nav-text" style="font-size:12px; overflow:hidden; text-overflow:ellipsis;">{{ auth.getCurrentUser()?.username }}</span>
+    </a>
+    <a (click)="logout()" style="cursor:pointer">
+      <span class="material-symbols-outlined">logout</span> <span class="nav-text">Logout</span>
+    </a>
+
+  </nav>
+
+  <!-- Notification panel -->
+  <div *ngIf="showNotifPanel" class="sidebar-notif-panel">
+    <div class="notif-panel-header">
+      <div class="d-flex align-items-center gap-2">
+        <span class="material-symbols-outlined" style="font-size:18px; color:var(--green-primary)">notifications</span>
+        <span>Recent Alerts</span>
+      </div>
+      <button (click)="markAllRead()" class="notif-mark-btn" *ngIf="unreadNotifCount > 0">Mark all read</button>
     </div>
 
-    <!-- ===================== -->
-    <!-- CENTER: Desktop Nav Links (hidden on mobile) -->
-    <!-- ===================== -->
-    <div class="nav-center desktop-only" *ngIf="auth.isLoggedIn()">
-      <ul class="nav-links">
-        <!-- Inventory link with low-stock badge -->
-        <li>
-          <a routerLink="/inventory" routerLinkActive="active">
-            <i class="fas fa-warehouse"></i>
-            <span>Inventory</span>
-            <!-- Red badge showing count of low-stock items -->
-            <span class="count-badge" *ngIf="lowStockCount > 0">{{lowStockCount}}</span>
-          </a>
-        </li>
-        <!-- Orders link with pending requests badge -->
-        <li>
-          <a routerLink="/stock-requests" routerLinkActive="active">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Orders</span>
-            <!-- Red badge showing count of pending stock requests -->
-            <span class="count-badge" *ngIf="pendingStockRequests > 0">{{pendingStockRequests}}</span>
-          </a>
-        </li>
-        <!-- Shipping/Deliveries link -->
-        <li>
-          <a routerLink="/deliveries" routerLinkActive="active">
-            <i class="fas fa-truck"></i>
-            <span>Shipping</span>
-          </a>
-        </li>
-        <!-- Management dropdown: only visible to admin users -->
-        <li class="dropdown" *ngIf="auth.isAdmin()">
-          <a class="dropdown-trigger" (click)="toggleManagement()">
-            <i class="fas fa-cog"></i>
-            <span>Management</span>
-          </a>
-          <!-- Dropdown menu items: Products, Warehouses, Stores, Staff -->
-          <div class="dropdown-content glass" [class.show]="showManagementDropdown">
-            <a routerLink="/products" routerLinkActive="active" (click)="showManagementDropdown = false">Products</a>
-            <a routerLink="/users" routerLinkActive="active" (click)="showManagementDropdown = false">Staff</a>
-            <a routerLink="/warehouses" routerLinkActive="active"
-              (click)="showManagementDropdown = false">Warehouses</a>
-            <a routerLink="/supermarkets" routerLinkActive="active" (click)="showManagementDropdown = false">Stores</a>
-          </div>
-        </li>
-      </ul>
+    <!-- Loading State -->
+    <div *ngIf="loadingNotifications" class="notif-loading">
+      <div class="spin-small"></div>
+      <span>Synchronizing alerts...</span>
     </div>
 
-    <!-- ===================== -->
-    <!-- RIGHT: Notifications + User Profile -->
-    <!-- ===================== -->
-    <div class="nav-right">
-      <!-- Notification Bell: shows unread count and dropdown panel -->
-      <div class="notification-bell" *ngIf="auth.isLoggedIn()">
-        <!-- Bell icon button: toggles the notification dropdown -->
-        <button class="bell-trigger glass" (click)="toggleNotifPanel()">
-          <i class="fas fa-bell"></i>
-          <!-- Red badge with unread count (shows "9+" if more than 9) -->
-          <span class="notif-badge" *ngIf="unreadNotifCount > 0">{{unreadNotifCount > 9 ? '9+' :
-            unreadNotifCount}}</span>
-        </button>
-        <!-- Notification dropdown panel: shown/hidden via toggle -->
-        <div class="notif-dropdown glass" *ngIf="showNotifPanel">
-          <!-- Header with title and "Mark all read" button -->
-          <div class="notif-header">
-            <span class="fw-bold">Notifications</span>
-            <button class="btn-link text-accent fs-xs" (click)="markAllRead()">Mark all read</button>
-          </div>
-          <!-- Scrollable list of notifications -->
-          <div class="notif-list">
-            <!-- Individual notification item: click to mark as read -->
-            <div class="notif-item" *ngFor="let n of recentNotifications" [class.unread]="!n.read"
-              (click)="readNotif(n)">
-              <!-- Icon based on notification type: success=check, error=exclamation, warning=triangle, info=circle -->
-              <i class="fas"
-                [ngClass]="{'fa-check-circle text-success': n.type === 'success', 'fa-exclamation-circle text-danger': n.type === 'error', 'fa-exclamation-triangle text-warning': n.type === 'warning', 'fa-info-circle text-info': n.type === 'info'}"></i>
-              <!-- Notification content: message and timestamp -->
-              <div class="notif-content">
-                <span class="notif-msg">{{n.message}}</span>
-                <span class="notif-time text-muted fs-xxs">{{n.timestamp | date:'shortTime'}}</span>
-              </div>
-            </div>
-            <!-- Empty state: shown when there are no notifications -->
-            <div class="notif-empty" *ngIf="recentNotifications.length === 0">
-              <i class="fas fa-bell-slash"></i>
-              <span>No notifications</span>
-            </div>
+    <!-- Content State -->
+    <div class="notif-list" *ngIf="!loadingNotifications">
+      <div *ngIf="recentNotifications.length === 0" class="notif-empty">
+        <span class="material-symbols-outlined" style="font-size:32px; opacity:0.2; display:block; margin-bottom:8px">notifications_off</span>
+        No new notifications
+      </div>
+      <div *ngFor="let n of recentNotifications" (click)="readNotif(n)"
+           class="notif-item" [class.unread]="!n.read">
+        <div class="notif-indicator" *ngIf="!n.read"></div>
+        <div class="notif-content">
+          <div class="notif-msg">{{ n.message }}</div>
+          <div class="notif-time">
+             <span class="material-symbols-outlined" style="font-size:11px; vertical-align:middle; margin-right:3px">schedule</span>
+             {{ n.timestamp | date:'shortTime' }}
           </div>
         </div>
       </div>
-
-      <!-- Theme toggle button -->
-      <button class="bell-trigger glass" (click)="toggleTheme()" title="Toggle Theme">
-        <i class="fas"
-          [ngClass]="{'fa-moon': theme.getCurrentTheme() === 'dark', 'fa-sun': theme.getCurrentTheme() === 'light'}"></i>
-      </button>
-
-      <!-- User Profile Section: avatar, username, and logout button -->
-      <div class="user-profile glass" *ngIf="auth.isLoggedIn()">
-        <!-- User avatar: displays first letter of username -->
-        <div class="user-avatar">
-          {{auth.getCurrentUser()?.username?.charAt(0) || 'U'}}
-        </div>
-        <!-- Username: only shown on desktop -->
-        <span class="user-name desktop-only">{{auth.getCurrentUser()?.username}}</span>
-        <!-- Logout button -->
-        <button class="logout-btn" (click)="logout()" title="Logout">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>
-      </div>
-
-      <!-- Login button: shown only when NOT logged in -->
-      <a class="btn btn-primary btn-sm" *ngIf="!auth.isLoggedIn()" routerLink="/login">Login</a>
     </div>
   </div>
-</nav>
 
-<!-- ===================== -->
-<!-- PREMIUM SIDEBAR       -->
-<!-- ===================== -->
-<!-- Full-screen sidebar overlay: opens from the left with backdrop blur -->
-<div class="sidebar-wrapper" [class.is-open]="sidebarOpen" *ngIf="auth.isLoggedIn()">
-  <!-- Backdrop: clicking it closes the sidebar -->
-  <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
-  <!-- Sidebar panel: slides in from the left -->
-  <aside class="sidebar-aside glass">
-
-    <!-- Sidebar Header: logo, brand name, and close button -->
-    <div class="sidebar-header">
-      <!-- Small brand logo -->
-      <div class="brand-logo sm glass">
-        <i class="fas fa-box-open"></i>
-      </div>
-      <!-- Brand name -->
-      <span class="sidebar-brand">WSMS</span>
-      <!-- Close button to hide the sidebar -->
-      <button class="sidebar-close" (click)="toggleSidebar()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <!-- Sidebar User Card: shows avatar, username, and role -->
-    <div class="sidebar-user glass-card">
-      <!-- Large avatar circle with first letter of username -->
-      <div class="avatar-lg">
-        {{auth.getCurrentUser()?.username?.charAt(0) || 'U'}}
-      </div>
-      <!-- User info: name and role (with ROLE_ prefix stripped) -->
-      <div class="user-info">
-        <span class="name">{{auth.getCurrentUser()?.username}}</span>
-        <span class="role">{{auth.getCurrentUser()?.roles?.[0]?.replace('ROLE_', '')}}</span>
-      </div>
-    </div>
-
-    <!-- Sidebar Navigation Links -->
-    <nav class="sidebar-nav">
-      <!-- MAIN section heading -->
-      <div class="nav-section">MAIN</div>
-      <!-- Inventory page link -->
-      <a routerLink="/inventory" routerLinkActive="active" (click)="toggleSidebar()">
-        <i class="fas fa-warehouse"></i> Inventory
-      </a>
-      <!-- Stock Request/Orders page link -->
-      <a routerLink="/stock-requests" routerLinkActive="active" (click)="toggleSidebar()">
-        <i class="fas fa-clipboard-list"></i> Orders
-      </a>
-      <!-- Deliveries/Shipping page link -->
-      <a routerLink="/deliveries" routerLinkActive="active" (click)="toggleSidebar()">
-        <i class="fas fa-truck"></i> Shipping
-      </a>
-
-      <!-- ADMIN section: only visible to admin users -->
-      <div *ngIf="auth.isAdmin()">
-        <div class="nav-section">ADMIN</div>
-        <!-- Sales & Forecast page link (admin only) -->
-        <a routerLink="/sales" routerLinkActive="active" (click)="toggleSidebar()">
-          <i class="fas fa-chart-line"></i> Sales & Forecast
-        </a>
-        <!-- Products management page link -->
-        <a routerLink="/products" routerLinkActive="active" (click)="toggleSidebar()">
-          <i class="fas fa-boxes"></i> Products
-        </a>
-        <!-- Staff/Users management page link -->
-        <a routerLink="/users" routerLinkActive="active" (click)="toggleSidebar()">
-          <i class="fas fa-users-cog"></i> Staff
-        </a>
-        <!-- Warehouse management link -->
-        <a routerLink="/warehouses" routerLinkActive="active" (click)="toggleSidebar()">
-          <i class="fas fa-warehouse"></i> Warehouses
-        </a>
-        <!-- Supermarket management link -->
-        <a routerLink="/supermarkets" routerLinkActive="active" (click)="toggleSidebar()">
-          <i class="fas fa-store"></i> Stores
-        </a>
-
-      </div>
-
-      <!-- Supermarket Manager section: Sales link for non-admin supermarket managers -->
-      <div *ngIf="auth.isSupermarketManager() && !auth.isAdmin()">
-        <a routerLink="/sales" routerLinkActive="active" (click)="toggleSidebar()">
-          <i class="fas fa-chart-line"></i> Sales & Forecast
-        </a>
-      </div>
-    </nav>
-
-    <!-- Sidebar Footer: copyright notice -->
-    <div class="sidebar-footer">
-      <p>&copy; 2026 WSMS Premium</p>
-    </div>
-  </aside>
-</div>
+</aside>

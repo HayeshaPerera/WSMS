@@ -1,63 +1,175 @@
-<div class="users-container animate-fade-in">
-  <header class="page-header mb-4">
-    <div class="header-info">
+<div class="animate-fade-up">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
       <h1>User Management</h1>
-      <p class="text-secondary">System Access & Role Control</p>
+      <p class="subtitle">System access, role assignment, and staff directory control</p>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-primary">
-        <i class="fas fa-user-plus"></i> Add User
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <span class="material-symbols-outlined" style="font-size:16px">person_add</span>
+        Add System User
       </button>
     </div>
-  </header>
-
-  <div *ngIf="loading" class="p-5 text-center">
-    <div class="spinner"></div>
-    <p class="text-secondary mt-2">Loading user directory...</p>
   </div>
 
-  <div class="glass-card p-0 overflow-hidden mb-4" *ngIf="!loading">
-    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-      <span class="text-secondary fs-xs text-uppercase fw-bold">Active Staff Directory</span>
-      <span class="badge glass text-accent fw-bold">{{users.length}} USERS</span>
+  <!-- KPI Quick Stats -->
+  <div class="kpi-grid mb-4">
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Active Users</div>
+        <div class="kpi-value">{{ users.length }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">group</span>
+          Authenticated staff
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">manage_accounts</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Admin Roles</div>
+        <div class="kpi-value">1</div>
+        <div class="kpi-trend" style="color:var(--text-muted)">
+          <span class="material-symbols-outlined" style="font-size:13px">security</span>
+          High privilege
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">shield_person</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Last Login</div>
+        <div class="kpi-value" style="font-size:1.1rem">2m ago</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">history</span>
+          System activity
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">person_pin</span></div>
+    </div>
+  </div>
+
+  <!-- Table View -->
+  <div class="table-wrapper">
+    <div class="table-toolbar">
+      <div class="d-flex gap-3 align-items-center flex-wrap">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" placeholder="Search staff by name or email..." style="width:300px">
+        </div>
+        <span class="badge badge-approved">{{ users.length }} Active Accounts</span>
+      </div>
     </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>User Details</th>
-            <th>Email Contact</th>
-            <th>Role Assignment</th>
-            <th>Control</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let u of users">
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <div class="avatar-sm glass d-flex justify-content-center align-items-center fw-bold"
-                  style="width: 32px; height: 32px; border-radius: 50%; color: var(--accent);">
-                  {{u.username?.charAt(0) | uppercase}}
-                </div>
-                <div class="d-flex flex-column">
-                  <span class="name text-white fw-bold">{{u.fullName || u.username}}</span>
-                  <span class="text-secondary fs-xs">&#64;{{u.username}}</span>
-                </div>
+    <div *ngIf="loading" class="empty-state">
+      <div class="spin" style="font-size:32px; color:var(--green-primary)">
+        <span class="material-symbols-outlined">refresh</span>
+      </div>
+      <p>Loading user directory...</p>
+    </div>
+
+    <table *ngIf="!loading && users.length > 0">
+      <thead>
+        <tr>
+          <th>User Details</th>
+          <th>Contact Email</th>
+          <th>Primary Role</th>
+          <th>Location Scope</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of users">
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:36px; height:36px; border-radius:50%; background:var(--green-light); color:var(--green-primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px">
+                {{ u.username.charAt(0).toUpperCase() }}
               </div>
-            </td>
-            <td><span class="text-info">{{u.email}}</span></td>
-            <td>
-              <span class="badge glass text-white">{{rolesLabel(u).replace('ROLE_', '')}}</span>
-            </td>
-            <td>
-              <button class="btn btn-icon btn-logout glass" (click)="deleteUser(u.id)" title="Remove User">
-                <i class="fas fa-trash-alt"></i>
+              <div>
+                <div style="font-weight:700">{{ u.fullName || u.username }}</div>
+                <div style="font-size:11px; color:var(--text-muted)"><span>&#64;</span>{{ u.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span style="font-size:13px; color:var(--text-primary)">{{ u.email }}</span></td>
+          <td>
+            <span class="badge badge-info" style="font-size:10px">
+              {{ getDisplayRole(u) }}
+            </span>
+          </td>
+          <td>
+            <span style="font-size:12px; color:var(--text-muted)">
+              {{ u.warehouse?.id ? 'Warehouse ' + u.warehouse?.id : (u.supermarket?.id ? 'Supermarket ' + u.supermarket?.id : 'Global') }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-approved">ACTIVE</span>
+          </td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="openEditModal(u)" title="Edit Permissions">
+                <span class="material-symbols-outlined" style="font-size:18px">edit_square</span>
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteUser(u.id)" title="Deactivate User">
+                <span class="material-symbols-outlined" style="font-size:18px; color:var(--danger)">person_remove</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- User Modal -->
+  <div class="modal-overlay" *ngIf="showUserModal" (click)="closeModal()">
+    <div class="modal-content" style="max-width: 500px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ selectedUser.id ? 'Edit System User' : 'Add System User' }}</h2>
+        <button class="btn-icon" (click)="closeModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Username <span class="text-danger">*</span></label>
+          <input type="text" [(ngModel)]="selectedUser.username" placeholder="e.g. jdoe">
+        </div>
+        <div class="form-group">
+          <label>Email Address <span class="text-danger">*</span></label>
+          <input type="email" [(ngModel)]="selectedUser.email" placeholder="e.g. jdoe@wsscms.com">
+        </div>
+        <div class="d-flex gap-3">
+          <div class="form-group" style="flex:1">
+            <label>First Name <span class="text-danger">*</span></label>
+            <input type="text" [(ngModel)]="selectedUser.firstName" placeholder="John">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Last Name <span class="text-danger">*</span></label>
+            <input type="text" [(ngModel)]="selectedUser.lastName" placeholder="Doe">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Primary Role <span class="text-danger">*</span></label>
+          <select [(ngModel)]="selectedUser.role">
+            <option value="ROLE_WAREHOUSE_STAFF">Warehouse Staff</option>
+            <option value="ROLE_SUPERMARKET_MANAGER">Supermarket Manager</option>
+            <option value="ROLE_ADMIN">System Administrator</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="!selectedUser.id">
+          <label>Temporary Password <span class="text-danger">*</span></label>
+          <input type="password" [(ngModel)]="selectedUser.password" placeholder="Must be changed on first login">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeModal()">Cancel</button>
+        <button class="btn-primary" (click)="saveUser()" [disabled]="!selectedUser.username || !selectedUser.email || (!selectedUser.id && !selectedUser.password)">
+          <span class="material-symbols-outlined">save</span>
+          {{ selectedUser.id ? 'Save Changes' : 'Create Account' }}
+        </button>
+      </div>
     </div>
   </div>
+
 </div>

@@ -43,13 +43,9 @@ export class ProductsComponent implements OnInit {
   loadProducts(): void {
     this.loading = true;
     this.service.getAll().subscribe({
-      next: (data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          this.products = data;
-          this.sharedData.setProducts(data);
-        } else {
-          this.addHardcodedProducts();
-        }
+      next: (data: any) => {
+        this.products = Array.isArray(data) ? data : (data.data || []);
+        if (this.products.length === 0) this.addHardcodedProducts();
         this.loading = false;
       },
       error: () => {
@@ -57,6 +53,20 @@ export class ProductsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  getAveragePrice(): number {
+    if (!this.products || this.products.length === 0) return 0;
+    const total = this.products.reduce((sum, p) => sum + (p.unitPrice || 0), 0);
+    return total / this.products.length;
+  }
+
+  get activeCount(): number {
+    return this.products.filter(p => p.active).length;
+  }
+
+  get perishableCount(): number {
+    return this.products.filter(p => p.perishable).length;
   }
 
   addHardcodedProducts(): void {
@@ -112,7 +122,6 @@ export class ProductsComponent implements OnInit {
     }
 
     if (this.editingProduct) {
-      // Update existing
       const updated: Product = {
         ...this.editingProduct,
         ...this.newProduct,
@@ -130,7 +139,6 @@ export class ProductsComponent implements OnInit {
         error: () => console.log('Update sync failed')
       });
     } else {
-      // Create new
       const newId = Math.max(...this.products.map(p => p.id), 0) + 1;
       const product: Product = {
         id: newId,

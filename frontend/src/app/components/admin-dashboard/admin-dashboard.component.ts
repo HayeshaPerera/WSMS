@@ -198,8 +198,8 @@ export class AdminDashboardComponent implements OnInit {
         labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
         datasets: [{
           data: [this.requestStats.pending, this.requestStats.approved, this.requestStats.rejected, this.requestStats.completed],
-          backgroundColor: ['#FFB347', '#4CAF50', '#F44336', '#2196F3'],
-          borderColor: '#fff',
+          backgroundColor: ['#D97706', '#2D7A4F', '#DC2626', '#0284C7'],
+          borderColor: '#ffffff',
           borderWidth: 2
         }]
       },
@@ -224,13 +224,13 @@ export class AdminDashboardComponent implements OnInit {
         datasets: [{
           label: 'Inventory Value ($)',
           data: this.revenueData,
-          borderColor: '#FFD700',
-          backgroundColor: 'rgba(255, 215, 0, 0.1)',
+          borderColor: '#2D7A4F',
+          backgroundColor: 'rgba(45, 122, 79, 0.1)',
           borderWidth: 3,
           fill: true,
           tension: 0.4,
-          pointBackgroundColor: '#FFD700',
-          pointBorderColor: '#000',
+          pointBackgroundColor: '#2D7A4F',
+          pointBorderColor: '#ffffff',
           pointRadius: 6,
           pointHoverRadius: 8
         }]
@@ -258,8 +258,8 @@ export class AdminDashboardComponent implements OnInit {
         datasets: [{
           label: 'Deliveries',
           data: [this.deliveryStats.pending, this.deliveryStats.inTransit, this.deliveryStats.delivered, this.deliveryStats.delayed],
-          backgroundColor: ['#FF9800', '#2196F3', '#4CAF50', '#F44336'],
-          borderColor: '#000',
+          backgroundColor: ['#D97706', '#4CAF7D', '#2D7A4F', '#DC2626'],
+          borderColor: '#ffffff',
           borderWidth: 1
         }]
       },

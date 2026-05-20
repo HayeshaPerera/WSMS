@@ -15,7 +15,7 @@ export class InventoryService {
     getWarehouseProductQuantity(productId: number, warehouseId: number = 1): Observable<number> {
       return this.http.get<number>(`${this.apiUrl}/warehouse/${warehouseId}/product/${productId}/quantity`);
     }
-  private apiUrl = `${environment.apiBase}/api/inventory`;
+  private apiUrl = `${environment.apiBase}/inventory`;
 
   constructor(private http: HttpClient) { }
 

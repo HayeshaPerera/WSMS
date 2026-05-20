@@ -1,200 +1,187 @@
-<div class="inventory-container animate-fade-in">
-  <header class="page-header mb-4">
-    <div class="header-info">
-      <h1>Inventory Management</h1>
-      <p class="text-secondary">Centralized Stock Tracking & Control</p>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-primary" (click)="toggleAddForm()"
-        *ngIf="auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.isAdmin()">
-        <i class="fas" [ngClass]="showAddForm ? 'fa-times' : 'fa-plus'"></i>
-        {{ showAddForm ? 'Cancel' : 'Add Inventory Item' }}
-      </button>
-      <button class="btn btn-secondary glass" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
-        <i class="fas fa-file-pdf"></i> Export Report
-      </button>
-    </div>
-  </header>
+<div class="animate-fade-up">
 
-  <!-- Add Inventory Form -->
-  <section class="glass-card mb-4 animate-slide-in" *ngIf="showAddForm">
-    <h3 class="mb-4">Register New Inventory</h3>
-    <div class="modern-form">
-      <div class="form-group mb-4">
-        <label class="form-label">Select Product Baseline</label>
-        <div class="select-wrapper glass">
-          <select (change)="onProductSelect($event)">
-            <option value="">-- Select Existing Product or Define New --</option>
-            <option *ngFor="let product of availableProducts" [value]="product.id">
-              {{product.sku}} - {{product.name}} ({{product.category}})
-            </option>
-            <option value="new">+ Define New Product Baseline</option>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Inventory Management</h1>
+      <p class="subtitle">Complete stock directory across all locations</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+        <span class="material-symbols-outlined" style="font-size:16px">download</span>
+        Export PDF
+      </button>
+      <button class="btn btn-primary" (click)="toggleAddForm()" *ngIf="auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.isAdmin()">
+        <span class="material-symbols-outlined" style="font-size:16px">add</span>
+        {{ showAddForm ? 'Cancel' : 'Register Stock' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Quick Stats (Optimized) -->
+  <div class="kpi-grid mb-4">
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Active SKUs</div>
+        <div class="kpi-value">{{ totalSkus }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">inventory</span>
+          Catalog breadth
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">dataset</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Stock Alerts</div>
+        <div class="kpi-value" [style.color]="lowStockCount > 0 ? 'var(--danger)' : 'inherit'">{{ lowStockCount }}</div>
+        <div class="kpi-trend" [ngClass]="lowStockCount > 0 ? 'down' : 'up'">
+          <span class="material-symbols-outlined" style="font-size:13px">{{ lowStockCount > 0 ? 'error' : 'check_circle' }}</span>
+          {{ lowStockCount > 0 ? 'Urgent reorder' : 'Levels optimal' }}
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">warning</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Total Valuation</div>
+        <div class="kpi-value" style="font-size:1.1rem">{{ totalValuation | lkr }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">payments</span>
+          Asset worth
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">account_balance_wallet</span></div>
+    </div>
+  </div>
+
+  <!-- Add Inventory Form (Modern Slide Panel style or Inline) -->
+  <div class="card mb-4 animate-fade-in" *ngIf="showAddForm">
+    <div style="font-size:15px; font-weight:700; margin-bottom:16px">Register New Inventory Entry</div>
+    <div class="d-flex gap-3 align-items-end flex-wrap">
+      <div class="form-group mb-0" style="flex:2">
+        <label>Select Product</label>
+        <select (change)="onProductSelect($event)">
+          <option value="">-- Choose existing or define new --</option>
+          <option *ngFor="let product of availableProducts" [value]="product.id">{{product.sku}} - {{product.name}}</option>
+          <option value="new">+ Define New Product</option>
+        </select>
+      </div>
+
+      <ng-container *ngIf="isNewProduct">
+        <div class="form-group mb-0" style="flex:1">
+          <label>SKU</label>
+          <input type="text" [(ngModel)]="newProduct.sku" placeholder="SKU-001">
+        </div>
+        <div class="form-group mb-0" style="flex:1.5">
+          <label>Product Name</label>
+          <input type="text" [(ngModel)]="newProduct.name" placeholder="Name">
+        </div>
+        <div class="form-group mb-0" style="flex:1">
+          <label>Category</label>
+          <select [(ngModel)]="newProduct.category">
+            <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
           </select>
         </div>
-      </div>
+        <div class="form-group mb-0" style="flex:0.8">
+          <label>Price</label>
+          <input type="number" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
+        </div>
+      </ng-container>
 
-      <!-- New Product Sub-form -->
-      <div class="new-product-form glass p-3 mb-4 animate-fade-in" *ngIf="isNewProduct">
-        <h4 class="text-accent mb-3"><i class="fas fa-cube"></i> New Product Definition</h4>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">SKU</label>
-            <input type="text" class="form-control" [(ngModel)]="newProduct.sku" placeholder="e.g. SKU-100">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Product Name</label>
-            <input type="text" class="form-control" [(ngModel)]="newProduct.name" placeholder="Name of product">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Category</label>
-            <div class="select-wrapper glass">
-              <select [(ngModel)]="newProduct.category">
-                <option value="">Select Category</option>
-                <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
-                <option value="Dairy">Dairy</option>
-                <option value="Bakery">Bakery</option>
-                <option value="Produce">Produce</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit Price (LKR)</label>
-            <input type="number" class="form-control" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
-          </div>
-        </div>
+      <div class="form-group mb-0" style="flex:0.8">
+        <label>Qty</label>
+        <input type="number" [(ngModel)]="newInventory.quantity" placeholder="0">
       </div>
-
-      <!-- Inventory Specifics -->
-      <div class="form-grid">
-        <div class="form-group d-none">
-          <label class="form-label">Target Warehouse</label>
-          <div class="select-wrapper glass">
-            <select [(ngModel)]="newInventory.warehouseId">
-              <option value="null">Select Warehouse</option>
-              <option *ngFor="let wh of warehouses; let i = index" [value]="i + 1">{{wh}}</option>
-              <option [value]="1">Central Warehouse (WH01)</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Initial Quantity</label>
-          <input type="number" class="form-control" [(ngModel)]="newInventory.quantity" placeholder="0">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Low Stock Threshold</label>
-          <input type="number" class="form-control" [(ngModel)]="newInventory.reorderLevel" placeholder="0">
-        </div>
+      <div class="form-group mb-0" style="flex:0.8">
+        <label>Par Level</label>
+        <input type="number" [(ngModel)]="newInventory.reorderLevel" placeholder="0">
       </div>
+      <button class="btn btn-primary" (click)="addInventoryItem()" style="height:40px">Save</button>
+    </div>
+  </div>
 
-      <div class="form-actions mt-4">
-        <button class="btn btn-secondary glass" (click)="toggleAddForm()">Discard</button>
-        <button class="btn btn-primary" (click)="addInventoryItem()">
-          {{ isNewProduct ? 'Create & Add to Stock' : 'Add to Stock' }}
+  <!-- Filter Toolbar -->
+  <div class="table-wrapper">
+    <div class="table-toolbar">
+      <div class="d-flex gap-3 align-items-center flex-wrap">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" placeholder="Search by SKU or Product name..." [(ngModel)]="searchTerm" (input)="applyFilters()" style="width:280px">
+        </div>
+        
+        <select [(ngModel)]="selectedCategory" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
+        </select>
+
+        <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="">All Locations</option>
+          <option *ngFor="let wh of warehouses" [value]="wh.name">{{wh.name}}</option>
+        </select>
+
+        <button class="btn btn-ghost" (click)="toggleLowStockFilter()" [class.active]="showLowStockOnly" style="font-size:13px; gap:6px">
+          <span class="material-symbols-outlined" style="font-size:18px" [style.color]="showLowStockOnly ? 'var(--danger)' : 'inherit'">warning</span>
+          Low Stock Only
+        </button>
+
+        <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedCategory || selectedWarehouse || showLowStockOnly" style="font-size:13px">
+          Clear Filters
         </button>
       </div>
     </div>
-  </section>
 
-  <!-- Filters & Controls -->
-  <section class="glass-card mb-4 filter-panel">
-    <div class="controls-layout">
-      <div class="search-box glass flex-2">
-        <i class="fas fa-search search-icon"></i>
-        <input type="search" placeholder="Search by product, SKU or category..." [(ngModel)]="searchTerm"
-          (input)="applyFilters()">
+    <div *ngIf="loading" class="empty-state">
+      <div class="spin" style="font-size:32px; color:var(--green-primary)">
+        <span class="material-symbols-outlined">refresh</span>
       </div>
-
-      <div class="filter-group flex-3">
-        <div class="filter-item">
-          <label class="fs-xxs text-muted mb-1 d-block fw-bold">CATEGORY</label>
-          <div class="select-wrapper glass">
-            <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
-              <option value="">All Categories</option>
-              <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
-            </select>
-          </div>
-        </div>
-
-
-
-        <div class="filter-item">
-          <label class="fs-xxs text-muted mb-1 d-block fw-bold">ALERTS</label>
-          <button class="btn btn-sm w-100" [ngClass]="showLowStockOnly ? 'btn-logout' : 'btn-secondary glass'"
-            (click)="toggleLowStockFilter()">
-            <i class="fas" [ngClass]="showLowStockOnly ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
-            {{showLowStockOnly ? 'Low Stock' : 'All Levels'}}
-          </button>
-        </div>
-
-        <div class="filter-item flex-0">
-          <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
-          <button class="btn btn-icon btn-secondary glass" (click)="clearFilters()" title="Reset Filters">
-            <i class="fas fa-undo-alt"></i>
-          </button>
-        </div>
-      </div>
+      <p>Synchronizing inventory data...</p>
     </div>
 
-    <div class="results-info mt-3 d-flex justify-content-between align-items-center">
-      <div class="text-secondary fs-xs text-uppercase fw-bold">
-        Showing {{filteredItems.length}} of {{items.length}} records
-      </div>
-      <div class="total-value glass px-3 py-1 border-radius-sm">
-        <span class="fs-xs text-muted mr-2">STOCK VALUE:</span>
-        <span class="text-accent fw-bold">{{getTotalValue() | lkr}}</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Data Grid -->
-  <div class="glass-card p-0 overflow-hidden mb-4">
-    <div *ngIf="loading" class="p-5 text-center">
-      <div class="spinner"></div>
-      <p class="text-secondary mt-2">Fetching global inventory...</p>
+    <div *ngIf="!loading && filteredItems.length === 0" class="empty-state">
+      <span class="material-symbols-outlined empty-icon">inventory_2</span>
+      <h3>No records found</h3>
+      <p>Adjust your filters or register new stock to see data.</p>
     </div>
 
-    <div class="table-container" *ngIf="!loading">
-      <table>
-        <thead>
-          <tr>
-            <th>SKU / Product</th>
-            <th>Category</th>
-            <th>Unit Price</th>
-            <th>Stock Level</th>
-            <th>Inventory Value</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of filteredItems" [class.row-warning]="item.quantity <= item.reorderLevel">
-            <td>
-              <div class="product-cell">
-                <span class="sku text-accent">{{item.product?.sku}}</span>
-                <span class="name text-white">{{item.product?.name}}</span>
-              </div>
-            </td>
-            <td><span class="category-tag glass">{{item.product?.category}}</span></td>
-
-            <td>{{(item.product?.unitPrice || 0) | lkr}}</td>
-            <td>
-              <div class="quantity-cell">
-                <strong>{{item.quantity}}</strong>
-                <span class="text-secondary">/ {{item.reorderLevel}}</span>
-              </div>
-            </td>
-            <td><strong class="text-accent">{{(item.quantity * (item.product?.unitPrice || 0)) | lkr}}</strong></td>
-            <td>
-              <span class="badge" [ngClass]="item.quantity <= item.reorderLevel ? 'badge-danger' : 'badge-success'">
-                {{ item.quantity <= item.reorderLevel ? 'LOW STOCK' : 'OPTIMAL' }} </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div *ngIf="filteredItems.length === 0" class="empty-placeholder p-5 text-center text-muted">
-        <i class="fas fa-search mb-2 fs-xl d-block"></i>
-        No inventory records matching your query
-      </div>
-    </div>
+    <table *ngIf="!loading && filteredItems.length > 0">
+      <thead>
+        <tr>
+          <th>Product Details</th>
+          <th>Location</th>
+          <th>Current Stock</th>
+          <th>Safety Par</th>
+          <th>Valuation</th>
+          <th>Status</th>
+          <th>Last Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredItems" [style.background]="item.quantity <= item.reorderLevel ? 'rgba(220,38,38,0.02)' : ''">
+          <td>
+            <div style="font-weight:700">{{ item.product?.name }}</div>
+            <div style="font-size:11px; color:var(--text-muted); display:flex; gap:8px">
+              <span class="mono" style="background:var(--bg-page); padding:1px 4px; border-radius:3px">{{ item.product?.sku }}</span>
+              <span>{{ item.product?.category }}</span>
+            </div>
+          </td>
+          <td style="color:var(--text-muted); font-size:13px">
+            {{ item.warehouse?.name || item.supermarket?.name || 'In Transit' }}
+          </td>
+          <td style="font-weight:800; font-size:15px" [style.color]="item.quantity <= item.reorderLevel ? 'var(--danger)' : 'inherit'">
+            {{ item.quantity }}
+          </td>
+          <td style="color:var(--text-muted)">{{ item.reorderLevel }}</td>
+          <td style="font-weight:600">{{ (item.quantity * (item.product?.unitPrice || 0)) | lkr }}</td>
+          <td>
+            <span class="badge" [ngClass]="item.quantity <= item.reorderLevel ? 'badge-critical' : 'badge-approved'">
+              {{ item.quantity <= item.reorderLevel ? 'Low Stock' : 'Optimal' }}
+            </span>
+          </td>
+          <td style="font-size:11px; color:var(--text-muted)">{{ (item.lastUpdated || item.updatedAt) | date:'MMM d, HH:mm' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+
 </div>

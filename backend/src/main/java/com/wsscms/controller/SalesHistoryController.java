@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/sales")
+@RequestMapping("/api/v1/sales")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class SalesHistoryController {
 

@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class ForecastService {
-  private apiUrl = `${environment.apiBase}/api/forecast`;
+  private apiUrl = `${environment.apiBase}/forecast`;
 
   constructor(private http: HttpClient) { }
 

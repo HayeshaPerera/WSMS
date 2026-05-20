@@ -43,6 +43,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   showManagementDropdown = false;
   sidebarOpen = false;         // Whether the mobile sidebar is currently visible
   showNotifPanel = false;      // Whether the notification dropdown panel is currently visible
+  loadingNotifications = false; // Whether the panel is currently loading data
 
   // ========== Notification Properties ==========
 
@@ -153,8 +154,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
    * Toggles the notification dropdown panel visibility.
    */
   toggleNotifPanel(): void {
-    this.showNotifPanel = !this.showNotifPanel; // Flip the panel state
-    this.showManagementDropdown = false; // Close management dropdown if notification panel opens
+    this.showNotifPanel = !this.showNotifPanel;
+    this.showManagementDropdown = false;
+
+    // If opening, simulate a quick "synchronizing" state for visual clarity
+    if (this.showNotifPanel) {
+      this.loadingNotifications = true;
+      setTimeout(() => {
+        this.loadingNotifications = false;
+      }, 600);
+    }
   }
 
   /**

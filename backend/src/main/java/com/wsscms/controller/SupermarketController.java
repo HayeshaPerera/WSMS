@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/supermarkets")
+@RequestMapping("/api/v1/supermarkets")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class SupermarketController {
 

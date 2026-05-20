@@ -30,12 +30,8 @@ public class Delivery {
     @JoinColumn(name = "supermarket_id", nullable = false)
     private Supermarket supermarket;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @Column(nullable = false)
-    private Integer quantity;
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<DeliveryItem> deliveryItems = new java.util.ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)

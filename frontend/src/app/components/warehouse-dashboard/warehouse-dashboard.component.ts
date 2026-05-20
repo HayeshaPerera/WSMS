@@ -20,6 +20,10 @@ export class WarehouseDashboardComponent implements OnInit {
   showForm = false;
   editingId?: number;
   loading = true;
+
+  get lowStockCount(): number { return this.inventory.filter(i => i.lowStockAlert).length; }
+
+
   // KPI & demo data to keep dashboard rich before live feeds
   kpis = [
     { label: 'Storage Utilization', value: '74%', accent: 'info' },

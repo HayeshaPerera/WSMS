@@ -1,141 +1,170 @@
-<div class="deliveries-container animate-fade-in">
-  <header class="page-header mb-4">
-    <div class="header-info">
-      <h1>Delivery Tracking</h1>
-      <p class="text-secondary">Global Logistics & Distribution Stream</p>
+<div class="animate-fade-up">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Logistics Tracking</h1>
+      <p class="subtitle">Global distribution stream and real-time delivery management</p>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-secondary glass" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
-        <i class="fas fa-file-invoice"></i> Export Logistics Report
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
+        <span class="material-symbols-outlined" style="font-size:16px">inventory</span>
+        Logistics Report
       </button>
     </div>
-  </header>
-
-  <div *ngIf="loading" class="p-5 text-center">
-    <div class="spinner"></div>
-    <p class="text-secondary mt-2">Connecting to logistics network...</p>
   </div>
 
-  <ng-container *ngIf="!loading">
-    <!-- Filters & Stats -->
-    <section class="glass-card mb-4 filter-panel">
-      <div class="controls-layout">
-        <div class="search-box glass flex-2">
-          <i class="fas fa-search search-icon"></i>
-          <input type="search" placeholder="Search tracking #, product..." [(ngModel)]="searchTerm"
-            (input)="applyFilters()">
-        </div>
-
-        <div class="filter-group flex-3">
-          <div class="filter-item">
-            <label class="fs-xxs text-muted mb-1 d-block fw-bold">STATUS</label>
-            <div class="select-wrapper glass">
-              <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
-                <option value="">All Statuses</option>
-                <option *ngFor="let s of statuses | keyvalue" [value]="s.value">{{s.value}}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="filter-item flex-0">
-            <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
-            <button class="btn btn-icon btn-secondary glass" (click)="clearFilters()">
-              <i class="fas fa-undo-alt"></i>
-            </button>
-          </div>
+  <!-- KPI Quick Stats -->
+  <div class="kpi-grid mb-4">
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">In Transit</div>
+        <div class="kpi-value">{{ inTransitCount }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">local_shipping</span>
+          Active loads
         </div>
       </div>
-    </section>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">moving</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Out for Delivery</div>
+        <div class="kpi-value">{{ outForDeliveryCount }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">distance</span>
+          Final mile
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">delivery_dining</span></div>
+    </div>
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Success Rate</div>
+        <div class="kpi-value">98.4%</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">trending_up</span>
+          Efficiency
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">sentiment_very_satisfied</span></div>
+    </div>
+  </div>
 
-    <div class="glass-card p-0 overflow-hidden mb-4" *ngIf="filteredDeliveries.length > 0; else emptyState">
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Tracking #</th>
-              <th>Specification</th>
-              <th>Real-time Status</th>
-              <th>Timeline</th>
-              <th>Control Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let d of filteredDeliveries">
-              <td><span class="tracking-tag glass text-accent fw-bold">{{d.trackingNumber}}</span></td>
-              <td>
-                <div class="product-info">
-                  <span class="text-white fw-bold">{{d.product?.name}}</span>
-                  <span class="qty-label fs-xs text-muted">{{d.quantity}} units</span>
-                </div>
-              </td>
+  <!-- Table & Filters -->
+  <div class="table-wrapper">
+    <div class="table-toolbar">
+      <div class="d-flex gap-3 align-items-center flex-wrap">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" placeholder="Search Tracking #, Store or Product..." [(ngModel)]="searchTerm" (input)="applyFilters()" style="width:320px">
+        </div>
+        
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="">All Statuses</option>
+          <option *ngFor="let s of statuses | keyvalue" [value]="s.value">{{s.value}}</option>
+        </select>
 
-              <td>
-                <span class="badge" [ngClass]="{
-                'badge-warning': d.status === 'PENDING',
-                'badge-info': d.status === 'DISPATCHED' || d.status === 'IN_TRANSIT',
-                'badge-primary': d.status === 'OUT_FOR_DELIVERY',
-                'badge-success': d.status === 'DELIVERED',
-                'badge-danger': d.status === 'CANCELLED' || d.status === 'FAILED'
-              }">
-                  <i class="fas fa-circle fs-xs mr-2"></i> {{d.status}}
-                </span>
-              </td>
-              <td>
-                <div class="date-cell">
-                  <div *ngIf="d.status !== 'DELIVERED' && d.estimatedDelivery">
-                    <span class="text-info fw-bold">ETA: {{d.estimatedDelivery | date:'MMM d'}}</span>
-                  </div>
-                  <div *ngIf="d.status === 'DELIVERED'">
-                    <span class="text-success fw-bold">Arrived: {{d.deliveredAt | date:'MMM d'}}</span>
-                  </div>
-                  <small class="text-muted">Origin: {{d.createdAt | date:'shortTime'}}</small>
-                </div>
-              </td>
-              <td>
-                <div class="action-buttons">
-                  <!-- Warehouse Strategy Actions -->
-                  <ng-container *ngIf="auth.isWarehouseStaff()">
-                    <button *ngIf="d.status === 'PENDING'" class="btn btn-sm btn-primary"
-                      (click)="setStatus(d, statuses.DISPATCHED)">
-                      <i class="fas fa-truck-loading"></i> Dispatch
-                    </button>
-                    <button *ngIf="d.status === 'DISPATCHED'" class="btn btn-sm btn-info"
-                      (click)="setStatus(d, statuses.IN_TRANSIT)">
-                      <i class="fas fa-truck-moving"></i> Transit
-                    </button>
-                    <button *ngIf="d.status === 'IN_TRANSIT'" class="btn btn-sm btn-warning"
-                      (click)="setStatus(d, statuses.OUT_FOR_DELIVERY)">
-                      <i class="fas fa-map-marker-alt"></i> Final Leg
-                    </button>
-                  </ng-container>
-
-                  <!-- Supermarket Receipt Controls -->
-                  <div *ngIf="isSupermarketUserForDelivery(d) && (d.status !== 'DELIVERED' && d.status !== 'FAILED')">
-                    <button class="btn btn-sm btn-success" (click)="markReceived(d, true)">
-                      <i class="fas fa-check-double"></i> Confirm
-                    </button>
-                    <button class="btn btn-sm btn-logout glass" (click)="markReceived(d, false)">
-                      <i class="fas fa-times"></i> Rejection
-                    </button>
-                  </div>
-
-                  <div *ngIf="d.status === 'DELIVERED'" class="completion-pill success glass p-1 px-3">
-                    <i class="fas fa-check-circle"></i> ARCHIVED
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedStatus" style="font-size:13px">
+          Clear Filters
+        </button>
       </div>
     </div>
 
-    <ng-template #emptyState>
-      <div class="empty-placeholder p-5 text-center text-muted glass-card">
-        <i class="fas fa-box-open mb-3 fs-xl d-block"></i>
-        <h3>Logistics channel empty</h3>
-        <p>Active delivery threads will be tracked here.</p>
+    <div *ngIf="loading" class="empty-state">
+      <div class="spin" style="font-size:32px; color:var(--green-primary)">
+        <span class="material-symbols-outlined">refresh</span>
       </div>
-    </ng-template>
-  </ng-container>
+      <p>Synchronizing logistics network...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredDeliveries.length === 0" class="empty-state">
+      <span class="material-symbols-outlined empty-icon">local_shipping</span>
+      <h3>No shipments found</h3>
+      <p>Active delivery threads will be tracked here once dispatched.</p>
+    </div>
+
+    <table *ngIf="!loading && filteredDeliveries.length > 0">
+      <thead>
+        <tr>
+          <th>Tracking ID</th>
+          <th>Shipment Details</th>
+          <th>Destination</th>
+          <th>Status</th>
+          <th>Timeline / ETA</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of filteredDeliveries">
+          <td>
+            <code style="font-size:12px; font-weight:700; background:var(--bg-page); padding:4px 8px; border-radius:6px; color:var(--green-primary)">
+              {{ d.trackingNumber }}
+            </code>
+          </td>
+          <td>
+            <div style="font-weight:700">{{ d.product?.name || d.productName || 'Unknown Product' }}</div>
+            <div style="font-size:11px; color:var(--text-muted)">{{ d.quantity || 0 }} Units &middot; {{ d.product?.sku || d.productSku || 'N/A' }}</div>
+          </td>
+          <td>
+            <div style="font-size:13px; font-weight:600">{{ d.supermarket?.name || 'Store' }}</div>
+            <div style="font-size:11px; color:var(--text-muted)">{{ d.supermarket?.location }}</div>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-pending': d.status === 'PENDING',
+              'badge-info': d.status === 'DISPATCHED' || d.status === 'IN_TRANSIT',
+              'badge-warning': d.status === 'OUT_FOR_DELIVERY',
+              'badge-approved': d.status === 'DELIVERED',
+              'badge-critical': d.status === 'CANCELLED' || d.status === 'FAILED'
+            }">
+              {{ d.status }}
+            </span>
+          </td>
+          <td>
+            <div *ngIf="d.status !== 'DELIVERED'">
+              <div style="font-size:12px; font-weight:600; color:var(--info)">ETA: {{ d.estimatedDelivery | date:'MMM d' }}</div>
+              <div style="font-size:10px; color:var(--text-muted)">Created: {{ d.createdAt | date:'HH:mm' }}</div>
+            </div>
+            <div *ngIf="d.status === 'DELIVERED'">
+              <div style="font-size:12px; font-weight:600; color:var(--green-primary)">Delivered: {{ d.deliveredAt | date:'MMM d' }}</div>
+              <div style="font-size:10px; color:var(--text-muted)">Total: 4.2h</div>
+            </div>
+          </td>
+          <td>
+            <div class="d-flex gap-2">
+              <!-- Warehouse Controls -->
+              <ng-container *ngIf="auth.isWarehouseStaff()">
+                <button *ngIf="d.status === 'PENDING'" class="btn btn-primary btn-sm" (click)="setStatus(d, statuses.DISPATCHED)">
+                  Dispatch
+                </button>
+                <button *ngIf="d.status === 'DISPATCHED'" class="btn btn-secondary btn-sm" (click)="setStatus(d, statuses.IN_TRANSIT)">
+                  Transit
+                </button>
+                <button *ngIf="d.status === 'IN_TRANSIT'" class="btn btn-secondary btn-sm" (click)="setStatus(d, statuses.OUT_FOR_DELIVERY)">
+                   Arrived
+                </button>
+              </ng-container>
+
+              <!-- Supermarket Controls -->
+              <ng-container *ngIf="isSupermarketUserForDelivery(d) && (d.status !== 'DELIVERED' && d.status !== 'FAILED')">
+                <button class="btn btn-primary btn-sm" (click)="markReceived(d, true)">
+                  Confirm Receipt
+                </button>
+                <button class="btn btn-ghost btn-sm" (click)="markReceived(d, false)">
+                  <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">close</span>
+                </button>
+              </ng-container>
+
+              <div *ngIf="d.status === 'DELIVERED'" class="d-flex align-items-center gap-1" style="color:var(--text-muted); font-size:11px">
+                <span class="material-symbols-outlined" style="font-size:14px; color:var(--green-primary)">verified</span>
+                Archived
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>

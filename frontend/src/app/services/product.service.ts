@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private apiUrl = `${environment.apiBase}/api/products`;
+  private apiUrl = `${environment.apiBase}/products`;
   constructor(private http: HttpClient) {}
   getAll(): Observable<Product[]> {
     return this.http.get<{ data: Product[] }>(this.apiUrl).pipe(

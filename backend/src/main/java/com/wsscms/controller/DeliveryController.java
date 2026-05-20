@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/deliveries")
+@RequestMapping("/api/v1/deliveries")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class DeliveryController {
 

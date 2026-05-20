@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/forecasts")
+@RequestMapping("/api/v1/forecasts")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ForecastController {
 

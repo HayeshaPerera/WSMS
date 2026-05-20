@@ -19,12 +19,8 @@ public class DeliveryDTO {
     private Long supermarketId;
     private String supermarketName;
     
-    private Long productId;
-    private String productName;
-    private String productSku;
-    
-    private Integer quantity;
-    private Delivery.DeliveryStatus status;
+    private java.util.List<DeliveryItemDTO> items;
+    private com.wsscms.entity.Delivery.DeliveryStatus status;
     
     private String driverName;
     private String vehicleNumber;

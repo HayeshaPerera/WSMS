@@ -1,5 +1,7 @@
+/* Dashboard layout shell — sidebar offset */
 .main-content {
-    padding-top: 80px;
-    /* Space for the floating navbar */
-    min-height: 100vh;
+  margin-left: 240px;
+  padding: 32px;
+  min-height: 100vh;
+  background: var(--bg-page);
 }

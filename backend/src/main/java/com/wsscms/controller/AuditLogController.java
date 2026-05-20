@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/audit-logs")
+@RequestMapping("/api/v1/audit-logs")
 @CrossOrigin(origins = "*", maxAge = 3600)
 @PreAuthorize("hasRole('ADMIN')")
 public class AuditLogController {

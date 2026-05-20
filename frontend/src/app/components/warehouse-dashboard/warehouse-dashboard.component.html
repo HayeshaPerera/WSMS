@@ -1,219 +1,227 @@
-<div class="warehouse-container animate-fade-in">
-  <header class="dashboard-header mb-4">
-    <div class="header-info">
-      <h1>Warehouse Inventory</h1>
-      <p class="text-secondary">Stock Management & Supply Logistics</p>
+<!-- Warehouse Dashboard -->
+<div class="animate-fade-up">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Warehouse Dashboard</h1>
+      <p class="subtitle">Inventory overview for your warehouse location</p>
     </div>
-    <div class="header-actions">
+    <div class="d-flex gap-2">
+      <a routerLink="/grns" class="btn btn-secondary">
+        <span class="material-symbols-outlined" style="font-size:16px">receipt_long</span>
+        New GRN
+      </a>
       <button class="btn btn-primary" (click)="toggleForm()">
-        <i class="fas" [ngClass]="showForm ? 'fa-times' : 'fa-plus'"></i>
-        {{ showForm ? 'Cancel' : 'Add Stock Item' }}
+        <span class="material-symbols-outlined" style="font-size:16px">add</span>
+        Add Inventory
       </button>
     </div>
-  </header>
+  </div>
 
-  <!-- KPI Grid -->
-  <section class="kpi-grid mb-4">
-    <div class="glass-card stat-card" *ngFor="let k of kpis" style="--primary: var(--accent)">
-      <div class="stat-icon glass">📦</div>
-      <div class="stat-content">
-        <span class="stat-label">{{k.label}}</span>
-        <div class="stat-value">{{k.value}}</div>
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Items In Stock</div>
+        <div class="kpi-value">{{ inventory.length }}</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">inventory_2</span>
+          Active SKUs
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">inventory_2</span></div>
+    </div>
+
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Pending Requests</div>
+        <div class="kpi-value">{{ pendingRequests.length }}</div>
+        <div class="kpi-trend" [class.down]="pendingRequests.length > 0" [class.up]="pendingRequests.length === 0">
+          <span class="material-symbols-outlined" style="font-size:13px">shopping_cart</span>
+          Awaiting approval
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">shopping_cart</span></div>
+    </div>
+
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Low Stock Alerts</div>
+        <div class="kpi-value" [style.color]="lowStockCount > 0 ? 'var(--danger)' : 'inherit'">
+          {{ lowStockCount }}
+        </div>
+        <div class="kpi-trend down" *ngIf="lowStockCount > 0">
+          <span class="material-symbols-outlined" style="font-size:13px">warning</span>
+          Reorder needed
+        </div>
+        <div class="kpi-trend up" *ngIf="lowStockCount === 0">
+          <span class="material-symbols-outlined" style="font-size:13px">check_circle</span>
+          All stocked
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">warning</span></div>
+    </div>
+
+    <div class="kpi-card">
+      <div>
+        <div class="kpi-label">Dispatches Today</div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-trend up">
+          <span class="material-symbols-outlined" style="font-size:13px">local_shipping</span>
+          On track
+        </div>
+      </div>
+      <div class="kpi-icon-wrap"><span class="material-symbols-outlined">local_shipping</span></div>
+    </div>
+  </div>
+
+  <!-- Main Content: Inventory Table + Pending Requests -->
+  <div style="display:grid; grid-template-columns:1fr 380px; gap:20px">
+
+    <!-- Inventory Table -->
+    <div class="table-wrapper">
+      <div class="table-toolbar">
+        <div style="font-size:15px; font-weight:700">Warehouse Inventory</div>
+        <div class="d-flex gap-2">
+          <div class="search-box">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" placeholder="Search products..." style="width:220px">
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="inventory.length === 0" class="empty-state">
+        <span class="material-symbols-outlined empty-icon">inventory_2</span>
+        <h3>No inventory items</h3>
+        <p>Add your first product to the warehouse inventory</p>
+        <button class="btn btn-primary" (click)="toggleForm()">Add Inventory</button>
+      </div>
+
+      <table *ngIf="inventory.length > 0">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Quantity</th>
+            <th>Reorder At</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of inventory" [style.background]="item.lowStockAlert ? 'rgba(220,38,38,0.03)' : ''">
+            <td style="font-weight:500">{{ item.product?.name || 'Unknown' }}</td>
+            <td><code style="font-size:11px; background:var(--bg-page); padding:2px 6px; border-radius:4px">{{ item.product?.sku }}</code></td>
+            <td style="color:var(--text-muted)">{{ item.product?.category }}</td>
+            <td style="font-weight:700" [style.color]="item.lowStockAlert ? 'var(--danger)' : 'inherit'">{{ item.quantity }}</td>
+            <td style="color:var(--text-muted)">{{ item.reorderLevel }}</td>
+            <td>
+              <span class="badge" [ngClass]="item.lowStockAlert ? 'badge-critical' : 'badge-approved'">
+                {{ item.lowStockAlert ? 'Low Stock' : 'OK' }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                <button class="btn btn-ghost btn-sm btn-icon" (click)="edit(item)" title="Edit">
+                  <span class="material-symbols-outlined" style="font-size:15px">edit</span>
+                </button>
+                <button class="btn btn-ghost btn-sm btn-icon" (click)="delete(item.id)" title="Delete">
+                  <span class="material-symbols-outlined" style="font-size:15px; color:var(--danger)">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pending Stock Requests -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+        <div style="font-size:15px; font-weight:700">Pending Requests</div>
+        <a routerLink="/stock-requests" class="btn btn-secondary btn-sm">View All</a>
+      </div>
+
+      <div *ngIf="pendingRequests.length === 0" class="empty-state" style="padding:32px">
+        <span class="material-symbols-outlined empty-icon">check_circle</span>
+        <p>No pending requests</p>
+      </div>
+
+      <div *ngFor="let req of pendingRequests.slice(0, 8)" class="request-card">
+        <div class="request-header">
+          <div style="font-size:12px; font-weight:600">{{ req.product?.name || 'Product' }}</div>
+          <span class="badge badge-pending">Pending</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin:4px 0">
+          {{ req.supermarket?.name }} · {{ req.requestedQuantity || req.requestedQty }} units
+        </div>
+        <div class="d-flex gap-2 mt-2">
+          <button class="btn btn-primary btn-sm" style="flex:1"
+            (click)="approveRequest(req.id, req.requestedQuantity || req.requestedQty)">
+            <span class="material-symbols-outlined" style="font-size:13px">check</span> Approve
+          </button>
+        </div>
       </div>
     </div>
-  </section>
 
-  <div class="dashboard-grid">
-    <div class="main-content-area">
-      <!-- Add/Edit Form -->
-      <section class="glass-card mb-4 animate-slide-in" *ngIf="showForm">
-        <h3 class="mb-3">{{ editingId ? 'Edit Inventory Item' : 'Register New Stock' }}</h3>
-        <form (ngSubmit)="onSubmit()" class="modern-form">
-          <div class="form-row">
-            <div class="form-group flex-2">
-              <label class="form-label">Product</label>
-              <div class="select-wrapper glass">
-                <select [(ngModel)]="form.productId" name="productId" required (change)="onProductSelect($event)">
-                  <option value="">Select product to stock</option>
-                  <option *ngFor="let p of products" [value]="p.id">{{ p.sku }} - {{ p.name }}</option>
-                  <option value="new">+ Create New Product Definition</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- New Product Sub-form -->
-          <div *ngIf="isNewProduct" class="new-product-form glass mt-3 mb-3 p-3 animate-fade-in">
-            <h4 class="mb-3 text-accent"><i class="fas fa-plus-circle"></i> New Product Definition</h4>
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">SKU</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.sku" name="newSku" required
-                  placeholder="e.g. WH-001">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Name</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.name" name="newName" required
-                  placeholder="Product Display Name">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Category</label>
-                <input type="text" class="form-control" [(ngModel)]="newProduct.category" name="newCategory" required
-                  placeholder="e.g. Electronics">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Unit Price (LKR)</label>
-                <input type="number" class="form-control" [(ngModel)]="newProduct.unitPrice" name="newUnitPrice"
-                  required placeholder="0.00">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Current Quantity</label>
-              <input type="number" class="form-control" [(ngModel)]="form.quantity" name="quantity" required
-                placeholder="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Reorder Alert Level</label>
-              <input type="number" class="form-control" [(ngModel)]="form.reorderLevel" name="reorderLevel" required
-                placeholder="0">
-            </div>
-          </div>
-
-          <div class="form-actions mt-4">
-            <button type="button" class="btn btn-secondary glass" (click)="resetForm(); toggleForm()">Discard</button>
-            <button type="submit" class="btn btn-primary" [disabled]="loading">
-              {{ editingId ? 'Update Stock' : 'Confirm Registration' }}
-              <div *ngIf="loading" class="btn-spinner ml-2"></div>
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <!-- Inventory Table -->
-      <section class="glass-card mb-4 overflow-hidden">
-        <div class="table-header-row mb-3">
-          <h3>Current Stock Inventory</h3>
-          <div class="search-box glass">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Filter inventory...">
-          </div>
-        </div>
-
-        <div *ngIf="loading" class="p-5 text-center">
-          <div class="spinner"></div>
-          <p class="text-secondary mt-2">Loading inventory data...</p>
-        </div>
-
-        <div class="table-container p-0" *ngIf="!loading && inventory.length; else empty">
-          <table>
-            <thead>
-              <tr>
-                <th>Product Information</th>
-                <th>Quantity</th>
-                <th>Threshold</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of inventory" [class.row-warning]="item.lowStockAlert">
-                <td>
-                  <div class="product-cell">
-                    <span class="sku text-accent">{{item.product?.sku || 'N/A'}}</span>
-                    <span class="name">{{item.product?.name || 'Unknown Product'}}</span>
-                  </div>
-                </td>
-                <td><strong class="text-white">{{item.quantity}}</strong></td>
-                <td>{{item.reorderLevel}}</td>
-                <td>
-                  <span class="badge" [ngClass]="item.lowStockAlert ? 'badge-danger' : 'badge-success'">
-                    {{ item.lowStockAlert ? 'LOW STOCK' : 'OPTIMAL' }}
-                  </span>
-                </td>
-                <td>
-                  <div class="action-btns">
-                    <button class="btn btn-icon btn-secondary glass" (click)="edit(item)" title="Edit">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-icon btn-logout glass" (click)="delete(item.id)" title="Delete">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <ng-template #empty>
-          <div class="alert-box info">
-            <i class="fas fa-info-circle"></i>
-            <span>No inventory records found. Use the 'Add Stock Item' button to start.</span>
-          </div>
-        </ng-template>
-      </section>
-    </div>
-
-    <!-- Sidebar Analytics -->
-    <aside class="side-analytics">
-      <!-- Storage Utilization -->
-      <section class="glass-card mb-4 overflow-hidden">
-        <h3 class="mb-3">Storage Capacity</h3>
-        <div class="utilization-box">
-          <div class="circular-progress-placeholder glass mb-3"
-            style="--percent: {{ (utilization.current / utilization.capacity) * 100 }}">
-            <div class="value">{{ (utilization.current / utilization.capacity) * 100 | number:'1.0-0' }}%</div>
-            <div class="label">Utilized</div>
-          </div>
-          <div class="util-meta">
-            <div class="meta-item">
-              <span class="label">Current Stock</span>
-              <span class="value">{{utilization.current}}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">Free Space</span>
-              <span class="value">{{utilization.free}}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Pending Requests -->
-      <section class="glass-card mb-4">
-        <h3 class="mb-3 text-warning"><i class="fas fa-clock"></i> Pending Orders</h3>
-        <div class="order-list">
-          <div *ngFor="let req of pendingRequests" class="order-item glass mb-2">
-            <div class="order-info">
-              <span class="id">#{{req.id}}</span>
-              <span class="supermarket text-secondary">{{req.supermarket?.name}}</span>
-            </div>
-            <div class="order-details mt-1">
-              <span class="product">{{req.product?.name}}</span>
-              <span class="qty text-accent">x{{req.requestedQuantity}}</span>
-            </div>
-            <button class="btn btn-primary btn-sm w-full mt-2" (click)="approveRequest(req.id, req.requestedQuantity)">
-              Confirm Release
-            </button>
-          </div>
-          <div *ngIf="!pendingRequests.length" class="text-center p-3 text-muted">
-            No pending release orders
-          </div>
-        </div>
-      </section>
-
-      <!-- Recent Activity -->
-      <section class="glass-card">
-        <h3 class="mb-3">Log Activity</h3>
-        <div class="activity-timeline">
-          <div *ngFor="let a of recentActivity" class="activity-item pb-3">
-            <div class="time text-muted">{{a.time}}</div>
-            <div class="text">{{a.text}}</div>
-            <div class="badge-tag" [ngClass]="a.type">{{a.type}}</div>
-          </div>
-        </div>
-      </section>
-    </aside>
   </div>
+
+  <!-- Add/Edit Inventory Panel -->
+  <div *ngIf="showForm" class="panel-overlay" (click)="toggleForm()"></div>
+  <div *ngIf="showForm" class="slide-panel">
+    <div class="slide-panel-header">
+      <h2>{{ editingId ? 'Edit Inventory' : 'Add Inventory Item' }}</h2>
+      <button class="btn btn-ghost btn-icon" (click)="toggleForm()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="slide-panel-body">
+      <div class="form-group">
+        <label>Product</label>
+        <select [(ngModel)]="form.productId" (change)="onProductSelect($event)">
+          <option value="">Select product...</option>
+          <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
+          <option value="new">+ Add New Product</option>
+        </select>
+      </div>
+      <ng-container *ngIf="isNewProduct">
+        <div class="form-group">
+          <label>SKU</label>
+          <input type="text" [(ngModel)]="newProduct.sku" placeholder="e.g. PROD-007">
+        </div>
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" [(ngModel)]="newProduct.name" placeholder="e.g. Organic Yogurt 500g">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newProduct.category">
+            <option>Dairy</option><option>Bakery</option><option>Beverages</option>
+            <option>Meat</option><option>Produce</option><option>Pantry</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Unit Price</label>
+          <input type="number" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
+        </div>
+      </ng-container>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" [(ngModel)]="form.quantity" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Reorder Level</label>
+        <input type="number" [(ngModel)]="form.reorderLevel" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="slide-panel-footer">
+      <button class="btn btn-ghost" (click)="toggleForm()">Cancel</button>
+      <button class="btn btn-primary" (click)="onSubmit()">
+        {{ editingId ? 'Save Changes' : 'Add to Inventory' }}
+      </button>
+    </div>
+  </div>
+
 </div>

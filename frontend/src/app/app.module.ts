@@ -56,6 +56,8 @@ import { NotificationsComponent } from './components/notifications/notifications
 import { AnalyticsDashboardComponent } from './components/analytics-dashboard/analytics-dashboard.component';
 // Sales Forecasting: sales analytics, KPIs, charts, and AI demand forecast
 import { SalesForecastingComponent } from './components/sales-forecasting/sales-forecasting.component';
+// GRN management: Goods Received Notes for supplier intake (warehouse)
+import { GrnComponent } from './components/grn/grn.component';
 // LKR Pipe: custom pipe for formatting Sri Lankan Rupee currency values
 import { LkrPipe } from './pipes/lkr.pipe';
 
@@ -86,6 +88,7 @@ import { LkrPipe } from './pipes/lkr.pipe';
     NotificationsComponent,        // Toast notification display
     AnalyticsDashboardComponent,   // Analytics charts
     SalesForecastingComponent,     // Sales + AI forecast page
+    GrnComponent,                  // GRN - Goods Received Notes
     LkrPipe                        // Currency formatting pipe
   ],
   // Import required Angular modules

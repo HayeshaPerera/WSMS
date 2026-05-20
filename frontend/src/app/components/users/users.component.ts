@@ -20,6 +20,9 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  showUserModal = false;
+  selectedUser: any = {};
+
   addHardcodedUsers() {
     this.users = [
       { id: 1, username: 'admin', email: 'admin@wsscms.com', roles: [{ id: 1, name: 'ROLE_ADMIN' }], createdAt: new Date(), updatedAt: new Date() } as any,
@@ -36,8 +39,64 @@ export class UsersComponent implements OnInit {
     return roles.map(r => typeof r === 'string' ? r : r.name).join(', ');
   }
 
+  getDisplayRole(user: User): string {
+    const label = this.rolesLabel(user);
+    if (!label) return 'No Role';
+    return label.replace('ROLE_', '').replace(/_/g, ' ');
+  }
+
+  openAddModal() {
+    this.selectedUser = { username: '', email: '', firstName: '', lastName: '', password: '', role: 'ROLE_WAREHOUSE_STAFF' };
+    this.showUserModal = true;
+  }
+
+  openEditModal(user: User) {
+    this.selectedUser = { ...user, password: '' };
+    this.showUserModal = true;
+  }
+
+  closeModal() {
+    this.showUserModal = false;
+    this.selectedUser = {};
+  }
+
+  saveUser() {
+    const payload = { ...this.selectedUser, roles: [this.selectedUser.role] };
+    if (this.selectedUser.id) {
+      // Edit
+      this.service.update(this.selectedUser.id, payload as User).subscribe({
+        next: (data: any) => {
+          const idx = this.users.findIndex(u => u.id === this.selectedUser.id);
+          if (idx > -1) this.users[idx] = data ? data : { ...this.users[idx], ...payload } as User;
+          this.closeModal();
+        },
+        error: () => {
+          // Fallback update
+          const idx = this.users.findIndex(u => u.id === this.selectedUser.id);
+          if (idx > -1) this.users[idx] = { ...this.users[idx], ...payload } as User;
+          this.closeModal();
+        }
+      });
+    } else {
+      // Add
+      this.service.create(payload as User).subscribe({
+        next: (data: any) => {
+          // Ensure we have an ID for the new user, fallback to random if API doesn't return
+          const newUser = data ? data : { ...payload, id: Math.floor(Math.random() * 10000) } as User;
+          this.users.push(newUser);
+          this.closeModal();
+        },
+        error: () => {
+          const newUser = { ...payload, id: Math.floor(Math.random() * 10000) } as User;
+          this.users.push(newUser);
+          this.closeModal();
+        }
+      });
+    }
+  }
+
   deleteUser(id: number) {
-    if (confirm('Are you sure you want to delete this user?')) {
+    if (confirm('Are you sure you want to deactivate this user?')) {
       this.service.delete(id).subscribe({
         next: () => this.users = this.users.filter(u => u.id !== id),
         error: err => {

@@ -127,8 +127,12 @@ export interface Delivery {
   warehouse?: Warehouse;
   supermarket?: Supermarket;
   product?: Product;
-  quantity: number;
-  status: DeliveryStatus;
+  productId?: number;
+  productName?: string;
+  productSku?: string;
+  quantity?: number;
+  items?: any[];
+  status?: DeliveryStatus | string;
   driverName?: string;
   vehicleNumber?: string;
   currentLocation?: string;
@@ -187,15 +191,20 @@ export interface LoginRequest {
 }
 
 export interface JwtResponse {
-  token: string;
+  accessToken: string;   // primary — 15min access token
+  refreshToken: string;  // 7-day refresh token
+  token?: string;        // backward-compat alias (backend exposes getToken())
   type: string;
+  id: number;
+  userId?: number;       // backward-compat alias
   username: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   roles: string[];
-  userId: number;
   warehouseId?: number;
   supermarketId?: number;
-  success?: boolean; // Added for compatibility with backend response
+  success?: boolean;
 }
 
 export interface ApiResponse {

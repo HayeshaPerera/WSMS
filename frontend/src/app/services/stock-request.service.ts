@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class StockRequestService {
-  private apiUrl = `${environment.apiBase}/api/stock-requests`;
+  private apiUrl = `${environment.apiBase}/stock-requests`;
 
   constructor(private http: HttpClient) { }
 

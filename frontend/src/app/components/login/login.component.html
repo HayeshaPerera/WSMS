@@ -1,41 +1,77 @@
-<div class="login-wrapper">
-  <div class="glass-card login-card animate-fade-in">
-    <div class="login-header">
-      <div class="logo-icon glass">
-        <i class="fas fa-warehouse"></i>
-      </div>
-      <h2 class="mt-2">WSMS</h2>
-      <p class="text-secondary">Warehouse Supply Chain Management</p>
+<div class="login-container">
+  <div class="login-card">
+    
+    <!-- Left Side: Illustration -->
+    <div class="illustration-side">
+      <img src="assets/login-illustration.png" alt="Supply Chain Illustration" class="clipart" />
     </div>
 
-    <form (ngSubmit)="onSubmit()" class="mt-4">
-      <div class="form-group">
-        <label class="form-label">Username</label>
-        <div class="input-container">
-          <input class="form-control" [(ngModel)]="credentials.username" name="username" placeholder="Enter your username" required />
+    <!-- Right Side: Form -->
+    <div class="form-side">
+      <div class="login-header">
+        <h2 class="brand-text">WSSCMS</h2>
+        <p class="subtitle">Enterprise Supply Chain Portal</p>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <span class="material-symbols-outlined" style="font-size: 16px; margin-right: 8px;">error</span>
+        {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-row">
+          <label for="username">Username</label>
+          <div class="input-with-icon">
+            <input 
+              type="text" 
+              id="username" 
+              formControlName="username" 
+              [class.error]="usernameInvalid"
+              placeholder="Enter username"
+            />
+            <span class="material-symbols-outlined icon">person</span>
+          </div>
+          <span class="field-error" *ngIf="usernameInvalid">Username is required</span>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <div class="input-container">
-          <input type="password" class="form-control" [(ngModel)]="credentials.password" name="password" placeholder="••••••••" required />
+        <div class="form-row">
+          <label for="password">Password</label>
+          <div class="input-with-icon">
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              id="password" 
+              formControlName="password" 
+              [class.error]="passwordInvalid"
+              placeholder="Enter password"
+            />
+            <button type="button" class="password-toggle" (click)="showPassword = !showPassword" tabindex="-1">
+              <span class="material-symbols-outlined icon">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="passwordInvalid">Password is required</span>
         </div>
-      </div>
 
-      <div *ngIf="error" class="alert-box error animate-fade-in">
-        <i class="fas fa-exclamation-circle"></i>
-        <span>{{error}}</span>
-      </div>
+        <div class="forgot-link-container">
+          <span class="muted-text">Forgot password? </span>
+          <a href="javascript:void(0)" class="blue-link">Click here</a>
+        </div>
 
-      <button class="btn btn-primary w-full mt-2" [disabled]="loading" type="submit">
-        <span *ngIf="!loading">Sign In</span>
-        <div *ngIf="loading" class="btn-spinner"></div>
-      </button>
-    </form>
+        <div class="demo-hint">
+          <span class="material-symbols-outlined" style="font-size:14px">info</span>
+          Demo: <strong>admin</strong> / <strong>warehouse1</strong> / <strong>manager1</strong> (pass: <strong>password</strong>)
+        </div>
 
-    <div class="login-footer mt-4">
-      <p class="text-muted">© 2026 WSMS Premium Edition</p>
+        <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading">
+          <span *ngIf="!loading">Sign In</span>
+          <span *ngIf="loading">Signing in...</span>
+        </button>
+        
+        <div class="signup-link-container">
+          <span class="muted-text">Don't have an account? </span>
+          <a href="javascript:void(0)" class="blue-link">SignUp</a>
+        </div>
+      </form>
+
     </div>
   </div>
 </div>

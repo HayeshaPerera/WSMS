@@ -21,6 +21,18 @@ export class InventoryComponent implements OnInit {
   loading = true;
   showAddForm = false;
 
+  get totalSkus(): number {
+    return this.filteredItems.length;
+  }
+
+  get lowStockCount(): number {
+    return this.filteredItems.filter(i => i.lowStockAlert).length;
+  }
+
+  get totalValuation(): number {
+    return this.filteredItems.reduce((acc, item) => acc + (item.quantity * (item.product?.unitPrice || 0)), 0);
+  }
+
   // Filter properties
   searchTerm = '';
   selectedCategory = '';
@@ -237,6 +249,14 @@ export class InventoryComponent implements OnInit {
           console.debug('Inventory: product enrichment failed for item', it.id || '(no id)', 'pid', pid, 'pname', pname, 'psku', psku, 'productsCount', products.length);
           it.product = { id: pid || null, name: pname || 'Unknown Product', sku: psku || 'N/A', unitPrice: 0 };
         }
+      }
+
+      // Map flat warehouse/supermarket fields back to nested objects for the frontend
+      if (!it.warehouse && it.warehouseId) {
+        it.warehouse = { id: it.warehouseId, name: it.warehouseName || `Warehouse ${it.warehouseId}` };
+      }
+      if (!it.supermarket && it.supermarketId) {
+        it.supermarket = { id: it.supermarketId, name: it.supermarketName || `Supermarket ${it.supermarketId}` };
       }
 
       return it as Inventory;
@@ -695,7 +715,9 @@ export class InventoryComponent implements OnInit {
     };
 
     const newId = Math.max(...this.items.map(i => i.id), 0) + 1;
-    const warehouseId = this.newInventory.warehouseId || 1;
+    const user = this.auth.getCurrentUser();
+    const userWhId = user?.warehouseId || (user as any)?.warehouseId;
+    const warehouseId = userWhId || this.newInventory.warehouseId || 1;
     const selectedWarehouse = warehouseMap[warehouseId] || warehouseMap[1];
 
     const newInventoryItem: Inventory = {

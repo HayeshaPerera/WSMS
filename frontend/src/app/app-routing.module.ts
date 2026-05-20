@@ -41,6 +41,8 @@ import { RoleLandingComponent } from './components/role-landing/role-landing.com
 import { AnalyticsDashboardComponent } from './components/analytics-dashboard/analytics-dashboard.component';
 // Sales & AI Forecasting: combined sales analytics and demand prediction
 import { SalesForecastingComponent } from './components/sales-forecasting/sales-forecasting.component';
+// GRN management: Goods Received Notes for warehouse supplier intake
+import { GrnComponent } from './components/grn/grn.component';
 
 /**
  * Application route definitions.
@@ -99,7 +101,10 @@ const routes: Routes = [
       { path: 'users', component: UsersComponent, data: { roles: ['ROLE_ADMIN'] } },
 
       // Sales & AI Forecasting route (admin and supermarket managers)
-      { path: 'sales', component: SalesForecastingComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_SUPERMARKET_MANAGER'] } }
+      { path: 'sales', component: SalesForecastingComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_SUPERMARKET_MANAGER'] } },
+
+      // GRN route (warehouse staff and admin)
+      { path: 'grns', component: GrnComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_WAREHOUSE_STAFF'] } }
     ]
   },
 

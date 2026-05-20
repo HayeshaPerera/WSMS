@@ -79,12 +79,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
    * @returns An appropriate emoji character
    */
   getIcon(type: string): string {
-    switch (type) {
-      case 'success': return '✅';   // Green checkmark for success
-      case 'error': return '❌';     // Red X for errors
-      case 'warning': return '⚠️';  // Yellow triangle for warnings
-      case 'info': return 'ℹ️';     // Blue info circle for informational
-      default: return 'ℹ️';         // Default to info icon
+    switch(type) {
+      case 'success': return '\u2713';
+      case 'error': return '\u2716';
+      case 'warning': return '\u26A0';
+      case 'loading': return '\u21BB';
+      default: return 'i';
     }
   }
 }
