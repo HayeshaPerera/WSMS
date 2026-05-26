@@ -385,7 +385,7 @@ export class PdfReportService {
     if (recommendations && recommendations.length > 0) {
       recommendationsSummary = recommendations.slice(0, 10).map(rec => `
         <tr>
-          <td><strong>${rec.product?.name || 'N/A'}</strong></td>
+          <td><strong>${rec.productName || rec.product?.name || 'N/A'}</strong></td>
           <td>${rec.daysUntilStockout || 'N/A'}</td>
           <td>${rec.recommendedQuantity || 0}</td>
           <td>LKR ${(rec.estimatedCost || 0).toLocaleString()}</td>

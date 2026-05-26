@@ -2,6 +2,7 @@ package com.wsscms.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,28 +14,30 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Where(clause = "is_deleted = false")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(name = "password_hash", nullable = false, length = 100)
+    @Column(name = "password_hash", nullable = false, length = 500)
     private String passwordHash;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "full_name", nullable = false, length = 100)
+    @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
     @Column(name = "phone_number", length = 20)
-    private String phone;
+    private String phoneNumber;
 
     @Column(name = "is_active")
-    private Boolean active = true;
+    @Builder.Default
+    private Boolean isActive = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id")
@@ -43,6 +46,9 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supermarket_id")
     private Supermarket supermarket;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -56,8 +62,12 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_deleted")
+    @Builder.Default
+    private Boolean isDeleted = false;
     
     // Helper methods for firstName/lastName compatibility
     public String getFirstName() {
@@ -71,29 +81,44 @@ public class User {
         String[] parts = fullName.split(" ", 2);
         return parts.length > 1 ? parts[1] : "";
     }
-    
-    public void setFirstName(String firstName) {
-        this.fullName = firstName + " " + getLastName();
-    }
-    
-    public void setLastName(String lastName) {
-        this.fullName = getFirstName() + " " + lastName;
-    }
-    
-    public void setFirstAndLastName(String firstName, String lastName) {
-        this.fullName = (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
-        this.fullName = this.fullName.trim();
-    }
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if (active == null) active = true;
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // Compatibility setters for firstName/lastName
+    public void setFirstName(String firstName) {
+        if (firstName == null) return;
+        String lastName = getLastName();
+        this.fullName = lastName.isEmpty() ? firstName : firstName + " " + lastName;
+    }
+
+    public void setLastName(String lastName) {
+        if (lastName == null) return;
+        String firstName = getFirstName();
+        this.fullName = lastName.isEmpty() ? firstName : firstName + " " + lastName;
+    }
+
+    public String getPhone() {
+        return phoneNumber;
+    }
+
+    public void setPhone(String phone) {
+        this.phoneNumber = phone;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
     }
 }

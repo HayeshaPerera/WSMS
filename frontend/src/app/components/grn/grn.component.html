@@ -74,7 +74,7 @@
               <button class="btn-icon" title="View" (click)="viewGrn(grn)">
                 <span class="material-symbols-outlined">visibility</span>
               </button>
-              <button class="btn-icon success" title="Confirm" *ngIf="grn.status === 'DRAFT'" (click)="confirmGrn(grn)">
+              <button class="btn-icon success" title="Confirm" *ngIf="grn.status === 'DRAFT'" (click)="requestConfirmGrn(grn)">
                 <span class="material-symbols-outlined">check_circle</span>
               </button>
             </div>
@@ -208,8 +208,29 @@
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" (click)="selectedGrn = null">Close</button>
-      <button class="btn-primary" *ngIf="selectedGrn.status === 'DRAFT'" (click)="confirmGrn(selectedGrn)">
+      <button class="btn-primary" *ngIf="selectedGrn.status === 'DRAFT'" (click)="requestConfirmGrn(selectedGrn)">
         <span class="material-symbols-outlined">check_circle</span> Confirm & Update Stock
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal for GRN -->
+<div class="modal-overlay" *ngIf="confirmGrnId !== undefined" (click)="cancelConfirmGrn()">
+  <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 450px;">
+    <div class="modal-header">
+      <h2>Confirm Goods Received Note</h2>
+      <button class="btn-icon" (click)="cancelConfirmGrn()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body">
+      <p style="margin: 0 0 16px 0; line-height: 1.5; color: var(--text-dark)">
+        Are you sure you want to confirm this Goods Received Note? This will permanently update inventory levels and cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cancelConfirmGrn()">Cancel</button>
+      <button class="btn-primary" (click)="confirmGrn()">
+        <span class="material-symbols-outlined">check_circle</span> Yes, Confirm
       </button>
     </div>
   </div>

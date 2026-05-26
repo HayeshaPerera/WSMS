@@ -8,11 +8,36 @@
             <h1>Sales & AI Demand Forecasting</h1>
             <p class="text-secondary">Revenue Analytics & Predictive Intelligence</p>
         </div>
-        <!-- Right side: Record Sale button (only visible to Admin and Supermarket Manager) -->
-        <div class="header-actions">
+        <!-- Right side: Actions container (Record Sale, Bulk Import, Seed) -->
+        <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+            <!-- Hidden File Input for CSV upload -->
+            <input type="file" #csvFileInput (change)="onCsvFileSelected($event)" accept=".csv" style="display: none;">
+            
+            <button class="btn btn-secondary" (click)="downloadCsvTemplate()"
+                *ngIf="auth.isAdmin() || auth.isSupermarketManager()"
+                title="Download standard CSV template for POS sales import">
+                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">download</span>
+                Download CSV Template
+            </button>
+
+            <button class="btn btn-secondary" (click)="csvFileInput.click()"
+                *ngIf="auth.isAdmin() || auth.isSupermarketManager()"
+                title="Upload POS Sales CSV to batch import historical sales">
+                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">upload_file</span>
+                Bulk CSV Import
+            </button>
+
+            <button class="btn btn-secondary" (click)="generateSimulatedHistory()"
+                *ngIf="auth.isAdmin() || auth.isSupermarketManager()"
+                title="Simulates 35 days of daily transactional history across all active products to train the Prophet forecasting model">
+                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">science</span>
+                Auto-Seed POS Demo Data
+            </button>
+
             <button class="btn btn-primary" (click)="toggleRecordForm()"
                 *ngIf="auth.isAdmin() || auth.isSupermarketManager()">
-                <i class="fas fa-plus-circle"></i> Record Sale
+                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">add_circle</span>
+                Record Sale
             </button>
         </div>
     </header>
@@ -46,8 +71,8 @@
                     <option *ngFor="let p of products" [value]="p.id">{{p.name}} ({{p.sku}})</option>
                 </select>
             </div>
-            <!-- Store dropdown hidden -->
-            <div class="form-group d-none">
+            <!-- Store dropdown: visible only to Admins. Hidden but auto-populated for Supermarket Managers -->
+            <div class="form-group" *ngIf="auth.isAdmin()">
                 <label>Store</label>
                 <select [(ngModel)]="newSale.supermarketId" class="glass">
                     <option [value]="0" disabled>Select store...</option>
@@ -288,15 +313,75 @@
                 </div>
             </div>
 
+            <!-- AI Filters Panel -->
+            <section class="glass-card mb-4 filter-panel">
+                <div class="controls-layout">
+                    <!-- Search box -->
+                    <div class="search-box glass flex-2">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="search" placeholder="Search product name or SKU..." [(ngModel)]="forecastSearchTerm">
+                    </div>
+                    
+                    <!-- Filter & Sort controls -->
+                    <div class="filter-group flex-3">
+                        <!-- Trend filter dropdown -->
+                        <div class="filter-item">
+                            <label class="fs-xxs text-muted mb-1 d-block fw-bold">TREND</label>
+                            <div class="select-wrapper glass">
+                                <select [(ngModel)]="forecastSelectedTrend">
+                                    <option value="">All Trends</option>
+                                    <option value="INCREASING">Increasing</option>
+                                    <option value="DECREASING">Decreasing</option>
+                                    <option value="STABLE">Stable</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sort dropdown -->
+                        <div class="filter-item">
+                            <label class="fs-xxs text-muted mb-1 d-block fw-bold">SORT BY</label>
+                            <div class="select-wrapper glass">
+                                <select [(ngModel)]="forecastSortBy">
+                                    <option value="latest">Latest Date</option>
+                                    <option value="recommended">Suggested Order</option>
+                                    <option value="confidence">AI Confidence</option>
+                                    <option value="productName">Product Name</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Reset button -->
+                        <div class="filter-item flex-0">
+                            <label class="fs-xxs text-muted mb-1 d-block fw-bold">RESET</label>
+                            <button class="btn btn-icon btn-secondary glass" (click)="forecastSearchTerm = ''; forecastSelectedTrend = ''; forecastSortBy = 'latest'">
+                                <i class="fas fa-undo-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Empty filtered state -->
+            <div class="empty-placeholder p-5 text-center text-muted glass-card mb-4"
+                *ngIf="getFilteredForecasts().length === 0">
+                <i class="fas fa-search-minus mb-3 fs-xl d-block" style="color: var(--green-secondary)"></i>
+                <h3>No predictions match your filter</h3>
+                <p>Try resetting filters to see all demand forecasting data.</p>
+            </div>
+
             <!-- Forecast Cards Grid: one card per forecasted product -->
-            <div class="forecast-grid">
-                <div class="glass-card forecast-card" *ngFor="let f of forecasts">
+            <div class="forecast-grid" *ngIf="getFilteredForecasts().length > 0">
+                <div class="glass-card forecast-card" *ngFor="let f of getFilteredForecasts()">
 
                     <!-- Card header: product name/SKU and trend badge -->
                     <div class="forecast-header">
-                        <div class="forecast-product">
+                        <div class="forecast-product" style="display: flex; flex-direction: column; gap: 4px;">
                             <span class="fw-bold text-white">{{f.productName}}</span>
                             <span class="text-accent fs-xs fw-bold">{{f.productSku}}</span>
+                            <span class="text-muted fs-xxs" *ngIf="f.forecastDate" style="display: flex; align-items: center; gap: 4px;">
+                                <i class="far fa-calendar-alt" style="color: var(--green-secondary)"></i>
+                                {{f.forecastDate | date:'mediumDate'}}
+                            </span>
                         </div>
                         <!-- Trend badge: shows direction (INCREASING/DECREASING/STABLE) with color -->
                         <div class="trend-badge" [ngClass]="getTrendColor(f.trend)">

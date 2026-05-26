@@ -80,15 +80,32 @@ export class WarehousesComponent implements OnInit {
     }
   }
 
-  deleteWarehouse(id: number) {
-    if (confirm('Are you sure you want to decommission this facility?')) {
-      this.service.delete(id).subscribe({
-        next: () => this.warehouses = this.warehouses.filter(w => w.id !== id),
-        error: err => {
-          console.error('Error deleting warehouse', err);
-          this.warehouses = this.warehouses.filter(w => w.id !== id);
-        }
-      });
-    }
+  showConfirmModal = false;
+  confirmDeleteId?: number;
+
+  requestDeleteWarehouse(id: number) {
+    this.confirmDeleteId = id;
+    this.showConfirmModal = true;
+  }
+
+  cancelDeleteWarehouse() {
+    this.showConfirmModal = false;
+    this.confirmDeleteId = undefined;
+  }
+
+  confirmDeleteWarehouse() {
+    if (!this.confirmDeleteId) return;
+    const id = this.confirmDeleteId;
+    this.service.delete(id).subscribe({
+      next: () => {
+        this.warehouses = this.warehouses.filter(w => w.id !== id);
+        this.cancelDeleteWarehouse();
+      },
+      error: err => {
+        console.error('Error deleting warehouse', err);
+        this.warehouses = this.warehouses.filter(w => w.id !== id);
+        this.cancelDeleteWarehouse();
+      }
+    });
   }
 }

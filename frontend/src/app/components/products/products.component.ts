@@ -170,17 +170,31 @@ export class ProductsComponent implements OnInit {
     this.editingProduct = null;
   }
 
-  deleteProduct(product: Product): void {
-    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      this.products = this.products.filter(p => p.id !== product.id);
-      this.sharedData.deleteProduct(product.id);
-      this.notifications.success(`Product "${product.name}" deleted`);
+  showConfirmModal = false;
+  confirmProduct?: Product;
 
-      this.service.delete(product.id).subscribe({
-        next: () => console.log('Delete synced with backend'),
-        error: () => console.log('Backend sync failed')
-      });
-    }
+  requestDeleteProduct(product: Product) {
+    this.confirmProduct = product;
+    this.showConfirmModal = true;
+  }
+
+  cancelDeleteProduct() {
+    this.showConfirmModal = false;
+    this.confirmProduct = undefined;
+  }
+
+  confirmDeleteProduct() {
+    const product = this.confirmProduct;
+    if (!product) return;
+    this.products = this.products.filter(p => p.id !== product.id);
+    this.sharedData.deleteProduct(product.id);
+    this.notifications.success(`Product "${product.name}" deleted`);
+
+    this.service.delete(product.id).subscribe({
+      next: () => console.log('Delete synced with backend'),
+      error: () => console.log('Backend sync failed')
+    });
+    this.cancelDeleteProduct();
   }
 
   resetForm(): void {

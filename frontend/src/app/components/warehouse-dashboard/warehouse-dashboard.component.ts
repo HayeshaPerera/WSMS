@@ -20,6 +20,7 @@ export class WarehouseDashboardComponent implements OnInit {
   showForm = false;
   editingId?: number;
   loading = true;
+  confirmDeleteId?: number;  // tracks which item is pending delete confirmation
 
   get lowStockCount(): number { return this.inventory.filter(i => i.lowStockAlert).length; }
 
@@ -259,7 +260,7 @@ export class WarehouseDashboardComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.form.productId || !this.form.quantity || !this.form.reorderLevel) {
-      alert('Please fill all fields');
+      this.notifications.error('Please fill all required fields');
       return;
     }
 
@@ -392,14 +393,25 @@ export class WarehouseDashboardComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  delete(id: number): void {
+  requestDelete(id: number): void {
+    this.confirmDeleteId = id;
+  }
+
+  cancelDelete(): void {
+    this.confirmDeleteId = undefined;
+  }
+
+  confirmDelete(): void {
+    const id = this.confirmDeleteId;
+    if (!id) return;
     const item = this.inventory.find(i => i.id === id);
-    if (item && confirm(`Delete ${item.product?.name || 'this item'} from inventory?`)) {
+    if (item) {
       const idx = this.inventory.findIndex(i => i.id === id);
       if (idx >= 0) {
         this.inventory.splice(idx, 1);
-        this.notifications.success(`🗑️ ${item.product?.name || 'Item'} removed from inventory`);
+        this.notifications.success(`${item.product?.name || 'Item'} removed from inventory`);
       }
     }
+    this.confirmDeleteId = undefined;
   }
 }

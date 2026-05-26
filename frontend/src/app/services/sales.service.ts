@@ -135,4 +135,22 @@ export class SalesService {
         // Make POST request to /api/sales with the sale data in the request body
         return this.http.post<ApiResponse>(this.apiUrl, sale);
     }
+
+    /**
+     * Records multiple sales in the system by sending a POST request to /api/sales/bulk.
+     */
+    recordSalesBulk(sales: SaleRecord[]): Observable<ApiResponse> {
+        return this.http.post<ApiResponse>(`${this.apiUrl}/bulk`, sales);
+    }
+
+    /**
+     * Generates simulated demo sales data for testing and forecasting visualization.
+     */
+    generateDemoSales(days: number, supermarketId?: number): Observable<ApiResponse> {
+        let params = new HttpParams().set('days', days.toString());
+        if (supermarketId) {
+            params = params.set('supermarketId', supermarketId.toString());
+        }
+        return this.http.post<ApiResponse>(`${this.apiUrl}/generate-demo`, null, { params });
+    }
 }

@@ -25,7 +25,7 @@ public class WarehouseService {
     }
 
     public List<WarehouseDTO> getActiveWarehouses() {
-        return warehouseRepository.findByActiveTrue().stream()
+        return warehouseRepository.findByIsActiveTrue().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

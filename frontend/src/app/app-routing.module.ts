@@ -43,6 +43,10 @@ import { AnalyticsDashboardComponent } from './components/analytics-dashboard/an
 import { SalesForecastingComponent } from './components/sales-forecasting/sales-forecasting.component';
 // GRN management: Goods Received Notes for warehouse supplier intake
 import { GrnComponent } from './components/grn/grn.component';
+// System audit logs: admin ledger
+import { AuditLogsComponent } from './components/audit-logs/audit-logs.component';
+// Supermarket stock monitor: AI replenishment
+import { StockMonitorComponent } from './components/stock-monitor/stock-monitor.component';
 
 /**
  * Application route definitions.
@@ -67,7 +71,7 @@ import { GrnComponent } from './components/grn/grn.component';
  * - /** (wildcard)     → Redirect to root
  */
 const routes: Routes = [
-  // Public login route: no authentication required
+// Public login route: no authentication required
   { path: 'login', component: LoginComponent },
 
   // Protected root route: requires authentication via AuthGuard
@@ -77,34 +81,53 @@ const routes: Routes = [
     canActivate: [AuthGuard],                // Guard: must be logged in to access
     canActivateChild: [AuthGuard],           // Guard: applies to all child routes too
     children: [
-      // Default child route: role-based landing page (redirects to /admin, /warehouse, or /supermarket)
+      // Default child route: role-based landing page (redirects to /admin/dashboard, /warehouse/dashboard, or /supermarket/dashboard)
       { path: '', component: RoleLandingComponent },
 
-      // Role-specific dashboard routes (with role-based access control via route data)
-      { path: 'admin', component: AdminDashboardComponent, data: { roles: ['ROLE_ADMIN'] } },
-      { path: 'warehouse', component: WarehouseDashboardComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
-      { path: 'supermarket', component: SupermarketDashboardComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      // ── ADMIN ROUTES ────────────────────────────────────────
+      { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
+      { path: 'admin/dashboard', component: AdminDashboardComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/users', component: UsersComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/products', component: ProductsComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/warehouses', component: WarehousesComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/supermarkets', component: SupermarketsComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/inventory', component: InventoryComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/stock-requests', component: StockRequestsComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/deliveries', component: DeliveriesComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/sales', component: SalesForecastingComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/analytics', component: AnalyticsDashboardComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/audit-logs', component: AuditLogsComponent, data: { roles: ['ROLE_ADMIN'] } },
 
-      // Shared feature routes (accessible to multiple roles)
-      { path: 'inventory', component: InventoryComponent },
-      { path: 'stock-requests', component: StockRequestsComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_WAREHOUSE_STAFF', 'ROLE_SUPERMARKET_MANAGER'] } },
-      { path: 'deliveries', component: DeliveriesComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_WAREHOUSE_STAFF', 'ROLE_SUPERMARKET_MANAGER'] } },
+      // ── WAREHOUSE ROUTES ────────────────────────────────────
+      { path: 'warehouse', redirectTo: 'warehouse/dashboard', pathMatch: 'full' },
+      { path: 'warehouse/dashboard', component: WarehouseDashboardComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
+      { path: 'warehouse/inventory', component: InventoryComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
+      { path: 'warehouse/grns', component: GrnComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
+      { path: 'warehouse/stock-requests', component: StockRequestsComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
+      { path: 'warehouse/deliveries', component: DeliveriesComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
+      { path: 'warehouse/analytics', component: AnalyticsDashboardComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
 
-      // Analytics and forecasting routes (admin and warehouse staff)
-      { path: 'analytics', component: AnalyticsDashboardComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_WAREHOUSE_STAFF'] } },
-      { path: 'forecasting', component: ForecastingComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_WAREHOUSE_STAFF'] } },
+      // ── SUPERMARKET ROUTES ──────────────────────────────────
+      { path: 'supermarket', redirectTo: 'supermarket/dashboard', pathMatch: 'full' },
+      { path: 'supermarket/dashboard', component: SupermarketDashboardComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      { path: 'supermarket/stock-monitor', component: StockMonitorComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      { path: 'supermarket/stock-requests', component: StockRequestsComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      { path: 'supermarket/deliveries', component: DeliveriesComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      { path: 'supermarket/sales', component: SalesForecastingComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      { path: 'supermarket/forecasting', component: ForecastingComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
 
-      // Admin-only management routes
-      { path: 'products', component: ProductsComponent, data: { roles: ['ROLE_ADMIN'] } },
-      { path: 'warehouses', component: WarehousesComponent, data: { roles: ['ROLE_ADMIN'] } },
-      { path: 'supermarkets', component: SupermarketsComponent, data: { roles: ['ROLE_ADMIN'] } },
-      { path: 'users', component: UsersComponent, data: { roles: ['ROLE_ADMIN'] } },
-
-      // Sales & AI Forecasting route (admin and supermarket managers)
-      { path: 'sales', component: SalesForecastingComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_SUPERMARKET_MANAGER'] } },
-
-      // GRN route (warehouse staff and admin)
-      { path: 'grns', component: GrnComponent, data: { roles: ['ROLE_ADMIN', 'ROLE_WAREHOUSE_STAFF'] } }
+      // Legacy fallback mapping redirects (redirect un-prefixed to default dashboards)
+      { path: 'inventory', redirectTo: 'admin/inventory', pathMatch: 'full' },
+      { path: 'stock-requests', redirectTo: 'admin/stock-requests', pathMatch: 'full' },
+      { path: 'deliveries', redirectTo: 'admin/deliveries', pathMatch: 'full' },
+      { path: 'analytics', redirectTo: 'admin/analytics', pathMatch: 'full' },
+      { path: 'forecasting', redirectTo: 'supermarket/forecasting', pathMatch: 'full' },
+      { path: 'products', redirectTo: 'admin/products', pathMatch: 'full' },
+      { path: 'warehouses', redirectTo: 'admin/warehouses', pathMatch: 'full' },
+      { path: 'supermarkets', redirectTo: 'admin/supermarkets', pathMatch: 'full' },
+      { path: 'users', redirectTo: 'admin/users', pathMatch: 'full' },
+      { path: 'sales', redirectTo: 'supermarket/sales', pathMatch: 'full' },
+      { path: 'grns', redirectTo: 'warehouse/grns', pathMatch: 'full' }
     ]
   },
 

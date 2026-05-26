@@ -61,6 +61,15 @@ import { GrnComponent } from './components/grn/grn.component';
 // LKR Pipe: custom pipe for formatting Sri Lankan Rupee currency values
 import { LkrPipe } from './pipes/lkr.pipe';
 
+// Shared Presentation Components
+import { PageHeaderComponent } from './components/shared/page-header/page-header.component';
+import { StatusBadgeComponent } from './components/shared/status-badge/status-badge.component';
+import { KpiCardComponent } from './components/shared/kpi-card/kpi-card.component';
+
+// Specialized Core Screens
+import { AuditLogsComponent } from './components/audit-logs/audit-logs.component';
+import { StockMonitorComponent } from './components/stock-monitor/stock-monitor.component';
+
 /**
  * AppModule is the root module of the WSMS Angular application.
  * It declares all components, imports required Angular modules,
@@ -89,7 +98,12 @@ import { LkrPipe } from './pipes/lkr.pipe';
     AnalyticsDashboardComponent,   // Analytics charts
     SalesForecastingComponent,     // Sales + AI forecast page
     GrnComponent,                  // GRN - Goods Received Notes
-    LkrPipe                        // Currency formatting pipe
+    LkrPipe,                       // Currency formatting pipe
+    PageHeaderComponent,           // Reusable Page Header
+    StatusBadgeComponent,          // Reusable Status Badge
+    KpiCardComponent,              // Reusable KPI Metrics Card
+    AuditLogsComponent,            // System Audit Ledger
+    StockMonitorComponent          // Supermarket Stock Replenishment Monitor
   ],
   // Import required Angular modules
   imports: [

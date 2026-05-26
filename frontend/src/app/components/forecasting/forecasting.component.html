@@ -1,162 +1,181 @@
-<div class="forecasting-container animate-fade-in">
-  <div class="forecast-header">
-    <h1>📊 Demand Forecasting</h1>
-    <p class="subtitle">AI-Powered Inventory Predictions & Analysis</p>
-  </div>
+<app-page-header 
+  title="Demand Forecasting" 
+  subtitle="AI-Powered Inventory Predictions & Analysis">
+</app-page-header>
 
-  <div *ngIf="loading" class="loading-spinner">
+<div class="forecasting-container">
+  <div *ngIf="loading" class="loading-spinner-wrapper">
     <div class="spinner"></div>
-    <p>Loading forecasts...</p>
+    <p>Calculating demand projection arrays...</p>
   </div>
 
-  <div *ngIf="!loading" class="forecast-content">
+  <div *ngIf="!loading" class="forecast-content animate-fade-up">
     <!-- Summary Cards -->
-    <div class="summary-cards">
-      <div class="summary-card">
-        <div class="summary-icon">📦</div>
-        <div class="summary-value">{{forecasts.length}}</div>
-        <div class="summary-label">Products Tracked</div>
-      </div>
-      <div class="summary-card increasing">
-        <div class="summary-icon">📈</div>
-        <div class="summary-value">{{increasingCount}}</div>
-        <div class="summary-label">Increasing Demand</div>
-      </div>
-      <div class="summary-card stable">
-        <div class="summary-icon">➡️</div>
-        <div class="summary-value">{{stableCount}}</div>
-        <div class="summary-label">Stable Demand</div>
-      </div>
-      <div class="summary-card decreasing">
-        <div class="summary-icon">📉</div>
-        <div class="summary-value">{{decreasingCount}}</div>
-        <div class="summary-label">Decreasing Demand</div>
-      </div>
+    <div class="kpi-grid">
+      <app-kpi-card 
+        label="Products Tracked" 
+        [value]="forecasts.length" 
+        icon="inventory_2" 
+        trend="Active Monitoring" 
+        trendType="neutral">
+      </app-kpi-card>
+      
+      <app-kpi-card 
+        label="Increasing Demand" 
+        [value]="increasingCount" 
+        icon="trending_up" 
+        trend="Upward Vector" 
+        trendType="positive">
+      </app-kpi-card>
+
+      <app-kpi-card 
+        label="Stable Demand" 
+        [value]="stableCount" 
+        icon="trending_flat" 
+        trend="Steady Velocity" 
+        trendType="neutral">
+      </app-kpi-card>
+
+      <app-kpi-card 
+        label="Decreasing Demand" 
+        [value]="decreasingCount" 
+        icon="trending_down" 
+        trend="Downward Vector" 
+        trendType="negative">
+      </app-kpi-card>
     </div>
 
     <!-- Forecasts Grid -->
     <div class="forecasts-grid">
-      <div *ngFor="let f of forecasts" class="forecast-card" [class.selected]="selectedForecast?.id === f.id"
+      <div 
+        *ngFor="let f of forecasts" 
+        class="forecast-card" 
+        [class.selected]="selectedForecast?.id === f.id"
         (click)="selectForecast(f)">
+        
         <div class="forecast-header-card">
-          <div class="product-name">{{f.productName}}</div>
-          <div class="trend-badge" [style.background]="getTrendColor(f.trend)">
-            {{getTrendIcon(f.trend)}} {{f.trend | uppercase}}
-          </div>
+          <div class="product-name">{{ f.productName }}</div>
+          <span class="trend-badge" [style.color]="getTrendColor(f.trend)">
+            <span class="material-symbols-outlined trend-icon">{{ getTrendIcon(f.trend) }}</span>
+            <span class="trend-label">{{ f.trend | uppercase }}</span>
+          </span>
         </div>
 
         <div class="forecast-metrics">
-          <div class="metric">
+          <div class="metric" [style.border-left-color]="getTrendColor(f.trend)">
             <label>Weekly Demand</label>
-            <span class="metric-value">{{f.predictedWeeklyDemand}} units</span>
+            <span class="metric-value">{{ f.predictedWeeklyDemand }} units</span>
           </div>
-          <div class="metric">
+          <div class="metric" [style.border-left-color]="getTrendColor(f.trend)">
             <label>Monthly Demand</label>
-            <span class="metric-value">{{f.predictedMonthlyDemand}} units</span>
-          </div>
-          <div class="metric">
-            <label>Current Stock</label>
-            <span class="metric-value" [class.low-stock]="f.currentStock < f.predictedWeeklyDemand">{{f.currentStock}}
-              units</span>
+            <span class="metric-value">{{ f.predictedMonthlyDemand }} units</span>
           </div>
         </div>
 
         <div class="forecast-confidence">
           <div class="confidence-bar">
-            <div class="confidence-fill" [style.width]="(f.confidence * 100) + '%'"></div>
+            <div class="confidence-fill" [style.background]="getTrendColor(f.trend)" [style.width]="(f.confidence * 100) + '%'"></div>
           </div>
           <div class="confidence-text">
-            <span>Accuracy: {{(f.accuracy) | number:'1.1-1'}}%</span>
-            <span>Confidence: {{(f.confidence * 100) | number:'1.0-0'}}%</span>
+            <span>Accuracy: {{ f.accuracy | number:'1.1-1' }}%</span>
+            <span>Confidence: {{ (f.confidence * 100) | number:'1.0-0' }}%</span>
           </div>
         </div>
 
-        <div class="stock-status" [class]="getStockStatus(f)">
-          {{getStockStatusText(f)}}
+        <div class="card-footer-meta">
+          <div class="sku-tag">{{ f.productSku }}</div>
+          <div class="stock-status-wrapper">
+            <app-status-badge [status]="getStockStatus(f).toUpperCase()"></app-status-badge>
+          </div>
         </div>
-
-        <div class="sku-tag">{{f.productSku}}</div>
       </div>
     </div>
 
     <!-- Detail View -->
     <div *ngIf="selectedForecast" class="detail-section">
-      <h2>Detailed Forecast: {{selectedForecast.productName}}</h2>
+      <div class="detail-header">
+        <h2>
+          <span class="material-symbols-outlined">analytics</span>
+          Detailed Forecast Analysis: {{ selectedForecast.productName }}
+        </h2>
+        <span class="sku-title-tag">{{ selectedForecast.productSku }}</span>
+      </div>
 
       <div class="detail-grid">
         <div class="detail-card">
           <h3>Product Information</h3>
           <div class="info-row">
-            <span>SKU:</span>
-            <strong>{{selectedForecast.productSku}}</strong>
+            <span>SKU Code</span>
+            <strong>{{ selectedForecast.productSku }}</strong>
           </div>
           <div class="info-row">
-            <span>Category:</span>
-            <strong>{{selectedForecast.category}}</strong>
+            <span>Product Category</span>
+            <strong>{{ selectedForecast.category }}</strong>
           </div>
           <div class="info-row">
-            <span>Unit Price:</span>
-            <strong>{{selectedForecast.unitPrice | lkr}}</strong>
+            <span>Unit Price</span>
+            <strong>{{ selectedForecast.unitPrice | lkr }}</strong>
           </div>
           <div class="info-row">
-            <span>Current Stock:</span>
-            <strong
-              [class.text-danger]="selectedForecast.currentStock < selectedForecast.predictedWeeklyDemand">{{selectedForecast.currentStock}}
-              units</strong>
+            <span>Current Stock</span>
+            <strong [class.text-danger]="selectedForecast.currentStock < selectedForecast.predictedWeeklyDemand">
+              {{ selectedForecast.currentStock }} units
+            </strong>
           </div>
         </div>
 
         <div class="detail-card">
           <h3>Forecast Metrics</h3>
           <div class="info-row">
-            <span>Weekly Demand:</span>
-            <strong>{{selectedForecast.predictedWeeklyDemand}} units</strong>
+            <span>Weekly Demand</span>
+            <strong>{{ selectedForecast.predictedWeeklyDemand }} units</strong>
           </div>
           <div class="info-row">
-            <span>Monthly Demand:</span>
-            <strong>{{selectedForecast.predictedMonthlyDemand}} units</strong>
+            <span>Monthly Demand</span>
+            <strong>{{ selectedForecast.predictedMonthlyDemand }} units</strong>
           </div>
           <div class="info-row">
-            <span>Historical Average:</span>
-            <strong>{{selectedForecast.historicalAverage}} units/week</strong>
+            <span>Historical Average</span>
+            <strong>{{ selectedForecast.historicalAverage }} units/week</strong>
           </div>
           <div class="info-row">
-            <span>Trend:</span>
-            <strong [style.color]="getTrendColor(selectedForecast.trend)">{{selectedForecast.trend | uppercase}}
-              {{getTrendIcon(selectedForecast.trend)}}</strong>
+            <span>Trend Direction</span>
+            <strong [style.color]="getTrendColor(selectedForecast.trend)" style="display: inline-flex; align-items: center; gap: 0.25rem;">
+              {{ selectedForecast.trend | uppercase }}
+              <span class="material-symbols-outlined" style="font-size: 1.15rem;">{{ getTrendIcon(selectedForecast.trend) }}</span>
+            </strong>
           </div>
           <div class="info-row">
-            <span>Forecast Method:</span>
-            <strong>{{selectedForecast.forecastMethod}}</strong>
+            <span>Forecast Algorithm</span>
+            <strong>{{ selectedForecast.forecastMethod }}</strong>
           </div>
           <div class="info-row">
-            <span>Last Updated:</span>
-            <strong>{{selectedForecast.lastUpdated | date:'short'}}</strong>
+            <span>Last Computed</span>
+            <strong>{{ selectedForecast.lastUpdated | date:'short' }}</strong>
           </div>
         </div>
 
-        <div class="detail-card">
-          <h3>Recommendations</h3>
+        <div class="detail-card highlight-card">
+          <h3>Replenishment Guidance</h3>
           <div class="recommendation">
-            <span class="rec-label">Recommended Order:</span>
-            <span class="rec-value">{{selectedForecast.recommendedOrder}} units</span>
+            <span class="rec-label">Suggested Reorder</span>
+            <span class="rec-value">{{ selectedForecast.recommendedOrder }} units</span>
           </div>
           <div class="recommendation">
-            <span class="rec-label">Safety Stock:</span>
-            <span class="rec-value">{{selectedForecast.predictedWeeklyDemand * 0.5 | number:'1.0-0'}} units</span>
+            <span class="rec-label">Required Safety Stock</span>
+            <span class="rec-value">{{ selectedForecast.predictedWeeklyDemand * 0.5 | number:'1.0-0' }} units</span>
           </div>
           <div class="recommendation">
-            <span class="rec-label">Reorder Point:</span>
-            <span class="rec-value">{{selectedForecast.predictedWeeklyDemand | number:'1.0-0'}} units</span>
+            <span class="rec-label">Calculated Reorder Point</span>
+            <span class="rec-value">{{ selectedForecast.predictedWeeklyDemand | number:'1.0-0' }} units</span>
           </div>
           <div class="recommendation">
-            <span class="rec-label">Est. Order Cost:</span>
-            <span class="rec-value">{{(selectedForecast.recommendedOrder * selectedForecast.unitPrice) | lkr}}</span>
+            <span class="rec-label">Estimated Order Cost</span>
+            <span class="rec-value-cost">{{ (selectedForecast.recommendedOrder * selectedForecast.unitPrice) | lkr }}</span>
           </div>
           <div class="recommendation">
-            <span class="rec-label">Monthly Revenue Est.:</span>
-            <span class="rec-value">{{(selectedForecast.predictedMonthlyDemand * selectedForecast.unitPrice) |
-              lkr}}</span>
+            <span class="rec-label">Est. Monthly Revenue</span>
+            <span class="rec-value-revenue">{{ (selectedForecast.predictedMonthlyDemand * selectedForecast.unitPrice) | lkr }}</span>
           </div>
         </div>
       </div>
@@ -165,11 +184,15 @@
       <div class="charts-section">
         <div class="chart-container">
           <h3>Weekly Demand Projection</h3>
-          <canvas id="demandChart" style="max-height: 300px;"></canvas>
+          <div class="canvas-wrapper">
+            <canvas id="demandChart"></canvas>
+          </div>
         </div>
         <div class="chart-container">
           <h3>Historical Sales Trend</h3>
-          <canvas id="trendChart" style="max-height: 300px;"></canvas>
+          <div class="canvas-wrapper">
+            <canvas id="trendChart"></canvas>
+          </div>
         </div>
       </div>
     </div>

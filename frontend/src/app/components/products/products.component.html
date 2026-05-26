@@ -177,7 +177,7 @@
               <button class="btn btn-ghost btn-sm btn-icon" (click)="editProduct(p)" title="Edit Specifications">
                 <span class="material-symbols-outlined" style="font-size:16px">edit</span>
               </button>
-              <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteProduct(p)" title="Retire Product">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="requestDeleteProduct(p)" title="Retire Product">
                 <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">delete</span>
               </button>
             </div>
@@ -185,6 +185,27 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Retire Product Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="cancelDeleteProduct()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Retire Product</h2>
+        <button class="btn-icon" (click)="cancelDeleteProduct()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5">
+          Are you sure you want to retire <strong>"{{ confirmProduct?.name }}"</strong>? This will remove the item definition from the active master catalog.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelDeleteProduct()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmDeleteProduct()" style="background-color: var(--danger); border-color: var(--danger)">
+          Retire Product
+        </button>
+      </div>
+    </div>
   </div>
 
 </div>

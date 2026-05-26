@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface AuditLog {
   id: number;
@@ -20,12 +23,58 @@ export interface AuditLog {
   providedIn: 'root'
 })
 export class AuditLogService {
-  private logsSubject = new BehaviorSubject<AuditLog[]>(this.loadLogs());
+  private apiUrl = `${environment.apiBase}/audit-logs`;
+  private logsSubject = new BehaviorSubject<AuditLog[]>([]);
   public logs$ = this.logsSubject.asObservable();
 
   private currentLogId = 1;
 
-  constructor() {}
+  constructor(private http: HttpClient) {
+    this.logsSubject.next(this.loadLogs());
+  }
+
+  fetchBackendLogs(): Observable<AuditLog[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(this.apiUrl).pipe(
+      map(res => {
+        const logs = (res.data || []).map(l => {
+          let oldVal = l.oldValue;
+          let newVal = l.newValue;
+          try {
+            if (typeof oldVal === 'string') oldVal = JSON.parse(oldVal);
+          } catch(e) {}
+          try {
+            if (typeof newVal === 'string') newVal = JSON.parse(newVal);
+          } catch(e) {}
+
+          return {
+            id: l.id,
+            timestamp: new Date(l.createdAt || l.timestamp),
+            userId: l.userId || (l.user ? l.user.id : 0),
+            userName: l.userName || (l.user ? l.user.fullName || l.user.username : 'system'),
+            action: l.action,
+            entityType: l.entityType,
+            entityId: l.entityId,
+            entityName: l.entityName || `${l.entityType} #${l.entityId}`,
+            oldValue: oldVal,
+            newValue: newVal,
+            ipAddress: l.ipAddress || '127.0.0.1',
+            details: l.details || `${l.action} on ${l.entityType}`
+          };
+        });
+        
+        // Sort descending by date/id
+        logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        
+        this.logsSubject.next(logs);
+        this.saveLogs(logs);
+        return logs;
+      }),
+      catchError(err => {
+        console.warn('Failed to fetch backend audit logs, using local fallback:', err);
+        return of(this.logsSubject.value);
+      })
+    );
+  }
 
   logAction(
     userId: number,

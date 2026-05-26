@@ -35,6 +35,16 @@ export class DeliveriesComponent implements OnInit {
   warehouses: any[] = [];
   supermarkets: any[] = [];
 
+  // Custom modal states
+  showForceReceiveModal = false;
+  forceReceiveDeliveryItem: Delivery | null = null;
+  forceReceiveSnapshot: any = null;
+
+  showFailureModal = false;
+  failureDeliveryItem: Delivery | null = null;
+  failureSnapshot: any = null;
+  failureReason = '';
+
   constructor(
     private service: DeliveryService,
     private notifications: NotificationService,
@@ -373,118 +383,163 @@ export class DeliveriesComponent implements OnInit {
     });
   }
 
-  markReceived(d: Delivery, received: boolean) {
+  closeForceReceiveModal() {
+    this.showForceReceiveModal = false;
+    this.forceReceiveDeliveryItem = null;
+    this.forceReceiveSnapshot = null;
+  }
+
+  confirmForceReceive() {
+    const d = this.forceReceiveDeliveryItem;
+    const snapshot = this.forceReceiveSnapshot;
+    if (!d) return;
+    const userId = this.auth.getCurrentUser()?.userId || 1;
+    this.service.forceReceiveDelivery(d.id, userId).subscribe({
+      next: (res: any) => {
+        this.notifications.success(`✅ Delivery ${d.trackingNumber} force-received.`);
+        console.log('Force receive succeeded', res);
+        const dto = res?.data ?? res;
+        if (dto) {
+          this.sharedData.updateDelivery(d.id, dto);
+          Object.assign(d, dto);
+        }
+        this.closeForceReceiveModal();
+      },
+      error: (err2: any) => {
+        console.error('Force receive failed:', err2);
+        this.sharedData.updateDelivery(d.id, { ...snapshot });
+        Object.assign(d, snapshot);
+        this.notifications.error(`Failed to force-receive: ${err2?.error?.message || err2.statusText || 'Unknown error'}`);
+        this.closeForceReceiveModal();
+      }
+    });
+  }
+
+  cancelForceReceive() {
+    const d = this.forceReceiveDeliveryItem;
+    const snapshot = this.forceReceiveSnapshot;
+    if (d && snapshot) {
+      this.sharedData.updateDelivery(d.id, { ...snapshot });
+      Object.assign(d, snapshot);
+    }
+    this.closeForceReceiveModal();
+  }
+
+  openFailureModal(d: Delivery) {
+    this.failureDeliveryItem = d;
+    this.failureSnapshot = { ...d };
+    this.failureReason = '';
+    this.showFailureModal = true;
+  }
+
+  closeFailureModal() {
+    this.showFailureModal = false;
+    this.failureDeliveryItem = null;
+    this.failureSnapshot = null;
+    this.failureReason = '';
+  }
+
+  confirmFailure() {
+    const d = this.failureDeliveryItem;
+    const snapshot = this.failureSnapshot;
+    if (!d || !snapshot) return;
+    const reason = this.failureReason.trim() || 'Delivery not received';
     const userId = this.auth.getCurrentUser()?.userId || 1;
     const userName = this.auth.getCurrentUser()?.username || 'user';
 
-    // allow attempting receipt for all visible statuses (including PENDING)
+    const updates: any = {
+      status: 'FAILED',
+      failureReason: reason,
+      failedAt: new Date()
+    };
+    this.sharedData.updateDelivery(d.id, updates);
+    Object.assign(d, updates);
+
+    // Log the rejection
+    this.auditLog.logDeliveryReceipt(userId, userName, d.id, d.trackingNumber, false, reason);
+    this.notifications.error(`❌ Delivery ${d.trackingNumber} marked as not received. Reason: ${reason}. Warehouse has been notified.`);
+
+    // Sync with backend and rollback on failure
+    this.service.failDelivery(d.id, reason).subscribe({
+      next: (res: any) => {
+        console.log('Delivery failure synced', res);
+        const dto = res?.data ?? res;
+        if (dto) {
+          this.sharedData.updateDelivery(d.id, dto);
+          Object.assign(d, dto);
+        }
+        this.closeFailureModal();
+      },
+      error: (err: any) => {
+        console.error('Failed to mark delivery as failed on server:', err);
+        this.sharedData.updateDelivery(d.id, { ...snapshot });
+        Object.assign(d, snapshot);
+        this.notifications.error(`Failed to send failure to server: ${err?.error?.message || err.statusText || 'Unknown error'}`);
+        this.closeFailureModal();
+      }
+    });
+  }
+
+  markReceived(d: Delivery, received: boolean) {
+    const userId = this.auth.getCurrentUser()?.userId || 1;
+
+    if (!received) {
+      this.openFailureModal(d);
+      return;
+    }
 
     const snapshot = { ...d };
 
-    if (received) {
-      // Mark as delivered (optimistic)
-      const updates = {
-        status: DeliveryStatus.DELIVERED,
-        deliveredAt: new Date(),
-        receivedBy: userId
-      };
-      this.sharedData.updateDelivery(d.id, updates);
-      Object.assign(d, updates);
+    // Mark as delivered (optimistic)
+    const updates = {
+      status: DeliveryStatus.DELIVERED,
+      deliveredAt: new Date(),
+      receivedBy: userId
+    };
+    this.sharedData.updateDelivery(d.id, updates);
+    Object.assign(d, updates);
 
-      // Log locally
-      this.auditLog.logDeliveryReceipt(userId, userName, d.id, d.trackingNumber, true);
-      this.notifications.success(`✅ Delivery ${d.trackingNumber} successfully received and confirmed! Warehouse has been notified.`);
+    // Log locally
+    const userName = this.auth.getCurrentUser()?.username || 'user';
+    this.auditLog.logDeliveryReceipt(userId, userName, d.id, d.trackingNumber, true);
+    this.notifications.success(`✅ Delivery ${d.trackingNumber} successfully received and confirmed! Warehouse has been notified.`);
 
-      // Sync with backend and rollback on failure
-      this.service.receiveDelivery(d.id, userId).subscribe({
-        next: (res: any) => {
-          console.log('Delivery receipt synced', res);
-          // If server returned the updated delivery, merge it into shared data
-          const dto = res?.data ?? res;
-          if (dto) {
-            this.sharedData.updateDelivery(d.id, dto);
-            Object.assign(d, dto);
-          }
-        },
-        error: (err: any) => {
-          // Authorization errors: rollback and inform
-          if (err?.status === 403 || err?.status === 401) {
-            console.error('Receive denied due to insufficient permissions:', err);
-            this.sharedData.updateDelivery(d.id, { ...snapshot });
-            Object.assign(d, snapshot);
-            this.notifications.error('Failed to confirm receipt: Access denied. Please ensure your account has supermarket permissions.');
-            return;
-          }
-
-          // Conflict (cannot receive in current status) -> offer force receive
-          if (err?.status === 409) {
-            const confirmed = confirm(`Server: ${err?.error?.message || 'Delivery cannot be received in current status'}. Force receive?`);
-            if (confirmed) {
-              this.service.forceReceiveDelivery(d.id, userId).subscribe({
-                next: (res: any) => {
-                  this.notifications.success(`✅ Delivery ${d.trackingNumber} force-received.`);
-                  console.log('Force receive succeeded', res);
-                  const dto = res?.data ?? res;
-                  if (dto) {
-                    this.sharedData.updateDelivery(d.id, dto);
-                    Object.assign(d, dto);
-                  }
-                },
-                error: (err2: any) => {
-                  console.error('Force receive failed:', err2);
-                  this.sharedData.updateDelivery(d.id, { ...snapshot });
-                  Object.assign(d, snapshot);
-                  this.notifications.error(`Failed to force-receive: ${err2?.error?.message || err2.statusText || 'Unknown error'}`);
-                }
-              });
-            } else {
-              // user cancelled force; rollback optimistic update
-              this.sharedData.updateDelivery(d.id, { ...snapshot });
-              Object.assign(d, snapshot);
-            }
-            return;
-          }
-
-          // Other errors: rollback and show message
-          console.error('Failed to confirm delivery on server:', err);
+    // Sync with backend and rollback on failure
+    this.service.receiveDelivery(d.id, userId).subscribe({
+      next: (res: any) => {
+        console.log('Delivery receipt synced', res);
+        // If server returned the updated delivery, merge it into shared data
+        const dto = res?.data ?? res;
+        if (dto) {
+          this.sharedData.updateDelivery(d.id, dto);
+          Object.assign(d, dto);
+        }
+      },
+      error: (err: any) => {
+        // Authorization errors: rollback and inform
+        if (err?.status === 403 || err?.status === 401) {
+          console.error('Receive denied due to insufficient permissions:', err);
           this.sharedData.updateDelivery(d.id, { ...snapshot });
           Object.assign(d, snapshot);
-          this.notifications.error(`Failed to confirm receipt: ${err?.error?.message || err.statusText || 'Unknown error'}`);
+          this.notifications.error('Failed to confirm receipt: Access denied. Please ensure your account has supermarket permissions.');
+          return;
         }
-      });
-    } else {
-      // Mark as not received (optimistic)
-      const reason = prompt('Please provide reason for not receiving:') || 'Delivery not received';
-      const updates: any = {
-        status: 'FAILED',
-        failureReason: reason,
-        failedAt: new Date()
-      };
-      this.sharedData.updateDelivery(d.id, updates);
-      Object.assign(d, updates);
 
-      // Log the rejection
-      this.auditLog.logDeliveryReceipt(userId, userName, d.id, d.trackingNumber, false, reason);
-      this.notifications.error(`❌ Delivery ${d.trackingNumber} marked as not received. Reason: ${reason}. Warehouse has been notified.`);
-
-      // Sync with backend and rollback on failure
-      this.service.failDelivery(d.id, reason).subscribe({
-        next: (res: any) => {
-          console.log('Delivery failure synced', res);
-          const dto = res?.data ?? res;
-          if (dto) {
-            this.sharedData.updateDelivery(d.id, dto);
-            Object.assign(d, dto);
-          }
-        },
-        error: (err: any) => {
-          console.error('Failed to mark delivery as failed on server:', err);
-          this.sharedData.updateDelivery(d.id, { ...snapshot });
-          Object.assign(d, snapshot);
-          this.notifications.error(`Failed to send failure to server: ${err?.error?.message || err.statusText || 'Unknown error'}`);
+        // Conflict (cannot receive in current status) -> offer force receive
+        if (err?.status === 409) {
+          this.forceReceiveDeliveryItem = d;
+          this.forceReceiveSnapshot = snapshot;
+          this.showForceReceiveModal = true;
+          return;
         }
-      });
-    }
+
+        // Other errors: rollback and show message
+        console.error('Failed to confirm delivery on server:', err);
+        this.sharedData.updateDelivery(d.id, { ...snapshot });
+        Object.assign(d, snapshot);
+        this.notifications.error(`Failed to confirm receipt: ${err?.error?.message || err.statusText || 'Unknown error'}`);
+      }
+    });
   }
 
   exportToPdf(): void {

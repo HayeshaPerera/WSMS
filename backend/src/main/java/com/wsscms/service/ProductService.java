@@ -59,7 +59,7 @@ public class ProductService {
     }
 
     public List<ProductDTO> getActiveProducts() {
-        return productRepository.findByActiveTrue().stream()
+        return productRepository.findByIsActiveTrue().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

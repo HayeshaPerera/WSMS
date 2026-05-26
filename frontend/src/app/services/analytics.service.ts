@@ -87,7 +87,7 @@ export class AnalyticsService {
       }
     });
 
-    this.alertsSubject.next([...this.alertsSubject.value, ...alerts]);
+    this.alertsSubject.next(alerts);
   }
 
   analyzeDeliveries(deliveries: any[]): void {
@@ -136,7 +136,7 @@ export class AnalyticsService {
     inventory.forEach(item => {
       if (item.quantity <= item.reorderLevel * 1.5) {
         const recommendedQuantity = item.reorderLevel * 2;
-        const unitPrice = item.product?.unitPrice || 100;
+        const unitPrice = item.product?.unitPrice || item.unitPrice || item.product_price || 100;
         const estimatedCost = recommendedQuantity * unitPrice;
         
         const dailyUsage = item.reorderLevel / 30;
@@ -158,9 +158,12 @@ export class AnalyticsService {
           reasoning = `Approaching reorder level - proactive reorder recommended`;
         }
         
+        const resolvedProductName = item.product?.name || item.productName || item.product_name || item.name || 'Unknown Product';
+        const resolvedProductId = item.product?.id || item.productId || item.product_id || item.id;
+
         recommendations.push({
-          productId: item.product?.id || item.id,
-          productName: item.product?.name || 'Unknown Product',
+          productId: resolvedProductId,
+          productName: resolvedProductName,
           currentStock: item.quantity,
           reorderLevel: item.reorderLevel,
           recommendedQuantity,

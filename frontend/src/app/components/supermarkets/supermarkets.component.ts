@@ -81,15 +81,32 @@ export class SupermarketsComponent implements OnInit {
     }
   }
 
-  deleteSupermarket(id: number) {
-    if (confirm('Are you sure you want to close this store?')) {
-      this.service.delete(id).subscribe({
-        next: () => this.supermarkets = this.supermarkets.filter(s => s.id !== id),
-        error: err => {
-          console.error('Error deleting supermarket', err);
-          this.supermarkets = this.supermarkets.filter(s => s.id !== id);
-        }
-      });
-    }
+  showConfirmModal = false;
+  confirmDeleteId?: number;
+
+  requestDeleteSupermarket(id: number) {
+    this.confirmDeleteId = id;
+    this.showConfirmModal = true;
+  }
+
+  cancelDeleteSupermarket() {
+    this.showConfirmModal = false;
+    this.confirmDeleteId = undefined;
+  }
+
+  confirmDeleteSupermarket() {
+    if (!this.confirmDeleteId) return;
+    const id = this.confirmDeleteId;
+    this.service.delete(id).subscribe({
+      next: () => {
+        this.supermarkets = this.supermarkets.filter(s => s.id !== id);
+        this.cancelDeleteSupermarket();
+      },
+      error: err => {
+        console.error('Error deleting supermarket', err);
+        this.supermarkets = this.supermarkets.filter(s => s.id !== id);
+        this.cancelDeleteSupermarket();
+      }
+    });
   }
 }

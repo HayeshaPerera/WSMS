@@ -19,6 +19,8 @@ export class GrnComponent implements OnInit {
   searchTerm = '';
   showCreateModal = false;
   selectedGrn: GrnDTO | null = null;
+  confirmGrnId?: number;  // tracks which GRN is pending confirmation
+  submitting = false;
 
   newGrn: GrnDTO = {
     warehouseId: 0,
@@ -143,12 +145,22 @@ export class GrnComponent implements OnInit {
   }
 
   submitGrn(): void {
+    if (this.newGrn.items.length === 0) {
+      window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'warning', title: 'Validation', message: 'Add at least one item to the GRN.' } }));
+      return;
+    }
+    this.submitting = true;
     this.grnService.createGrn(this.newGrn).subscribe({
       next: () => {
         this.loadGrns();
         this.closeModal();
+        this.submitting = false;
+        window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'success', title: 'GRN Created', message: 'Goods received note created successfully.' } }));
       },
-      error: (err) => console.error('Failed to create GRN', err)
+      error: () => {
+        this.submitting = false;
+        window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'error', title: 'Failed', message: 'Could not create GRN. Please try again.' } }));
+      }
     });
   }
 
@@ -158,14 +170,28 @@ export class GrnComponent implements OnInit {
     });
   }
 
-  confirmGrn(grn: GrnDTO): void {
-    if (!confirm(`Confirm GRN ${grn.grnNumber}? This will update warehouse inventory.`)) return;
-    this.grnService.confirmGrn(grn.id!).subscribe({
+  requestConfirmGrn(grn: GrnDTO): void {
+    this.confirmGrnId = grn.id;
+  }
+
+  cancelConfirmGrn(): void {
+    this.confirmGrnId = undefined;
+  }
+
+  confirmGrn(grn?: GrnDTO): void {
+    const targetGrn = grn || this.grns.find(g => g.id === this.confirmGrnId);
+    if (!targetGrn) return;
+    this.grnService.confirmGrn(targetGrn.id!).subscribe({
       next: () => {
         this.loadGrns();
         this.selectedGrn = null;
+        this.confirmGrnId = undefined;
+        window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'success', title: 'GRN Confirmed', message: `GRN ${targetGrn.grnNumber} confirmed — inventory updated.` } }));
       },
-      error: (err) => console.error('Failed to confirm GRN', err)
+      error: () => {
+        this.confirmGrnId = undefined;
+        window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'error', title: 'Error', message: 'Failed to confirm GRN. Please try again.' } }));
+      }
     });
   }
 }

@@ -30,7 +30,7 @@ public class SupermarketService {
     }
 
     public List<SupermarketDTO> getActiveSupermarkets() {
-        return supermarketRepository.findByActiveTrue().stream()
+        return supermarketRepository.findByIsActiveTrue().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

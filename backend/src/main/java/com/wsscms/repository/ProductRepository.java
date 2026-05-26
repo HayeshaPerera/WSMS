@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findBySku(String sku);
     boolean existsBySku(String sku);
-    List<Product> findByActiveTrue();
+    List<Product> findByIsActiveTrue();
     List<Product> findByCategory(String category);
     List<Product> findByNameContainingIgnoreCase(String name);
 

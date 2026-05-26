@@ -167,4 +167,53 @@
     </table>
   </div>
 
+  <!-- Force Receive Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showForceReceiveModal" (click)="cancelForceReceive()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Force Receive Shipment</h2>
+        <button class="btn-icon" (click)="cancelForceReceive()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 13.5px; line-height: 1.5; color: #475569">
+          The server reports that this shipment (Tracking #<strong>{{ forceReceiveDeliveryItem?.trackingNumber }}</strong>) cannot be received in its current status.
+        </p>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #475569; font-weight: 600">
+          Do you want to override and force-receive this delivery anyway?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="cancelForceReceive()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmForceReceive()" style="background-color: var(--green-primary); border-color: var(--green-primary)">
+          Yes, Force Receive
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rejection / Failure Report Modal -->
+  <div class="modal-overlay" *ngIf="showFailureModal" (click)="closeFailureModal()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Report Delivery Issue</h2>
+        <button class="btn-icon" (click)="closeFailureModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 1.5; color: #475569">
+          Please provide the reason why delivery #<strong>{{ failureDeliveryItem?.trackingNumber }}</strong> was not received. This will notify the warehouse team.
+        </p>
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 6px; color: #334155">Issue / Failure Reason</label>
+          <textarea [(ngModel)]="failureReason" rows="3" class="form-control" placeholder="e.g. Damaged goods / Driver never arrived / Wrong quantities" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeFailureModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmFailure()" [disabled]="!failureReason.trim()" style="background-color: var(--danger); border-color: var(--danger)">
+          Submit Issue
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

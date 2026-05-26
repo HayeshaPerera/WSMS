@@ -95,15 +95,32 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  deleteUser(id: number) {
-    if (confirm('Are you sure you want to deactivate this user?')) {
-      this.service.delete(id).subscribe({
-        next: () => this.users = this.users.filter(u => u.id !== id),
-        error: err => {
-          console.error('Error deleting user', err);
-          this.users = this.users.filter(u => u.id !== id);
-        }
-      });
-    }
+  showConfirmModal = false;
+  confirmDeleteId?: number;
+
+  requestDeleteUser(id: number) {
+    this.confirmDeleteId = id;
+    this.showConfirmModal = true;
+  }
+
+  cancelDeleteUser() {
+    this.showConfirmModal = false;
+    this.confirmDeleteId = undefined;
+  }
+
+  confirmDeleteUser() {
+    if (!this.confirmDeleteId) return;
+    const id = this.confirmDeleteId;
+    this.service.delete(id).subscribe({
+      next: () => {
+        this.users = this.users.filter(u => u.id !== id);
+        this.cancelDeleteUser();
+      },
+      error: err => {
+        console.error('Error deleting user', err);
+        this.users = this.users.filter(u => u.id !== id);
+        this.cancelDeleteUser();
+      }
+    });
   }
 }

@@ -11,47 +11,50 @@
 
     <!-- ── SHARED ───────────────────────────── -->
     <span class="sidebar-section-label">Overview</span>
-    <a routerLink="/admin"       routerLinkActive="active" *ngIf="auth.isAdmin()">
+    <a routerLink="/admin/dashboard"       routerLinkActive="active" *ngIf="auth.isAdmin()">
       <span class="material-symbols-outlined">dashboard</span> <span class="nav-text">Admin Dashboard</span>
     </a>
-    <a routerLink="/warehouse"   routerLinkActive="active" *ngIf="auth.isWarehouseStaff() && !auth.isAdmin()">
+    <a routerLink="/warehouse/dashboard"   routerLinkActive="active" *ngIf="auth.isWarehouseStaff() && !auth.isAdmin()">
       <span class="material-symbols-outlined">dashboard</span> <span class="nav-text">Dashboard</span>
     </a>
-    <a routerLink="/supermarket" routerLinkActive="active" *ngIf="auth.isSupermarketManager() && !auth.isAdmin()">
+    <a routerLink="/supermarket/dashboard" routerLinkActive="active" *ngIf="auth.isSupermarketManager() && !auth.isAdmin()">
       <span class="material-symbols-outlined">dashboard</span> <span class="nav-text">Dashboard</span>
     </a>
 
     <!-- ── ADMIN ────────────────────────────── -->
     <ng-container *ngIf="auth.isAdmin()">
       <span class="sidebar-section-label">Management</span>
-      <a routerLink="/users"        routerLinkActive="active">
+      <a routerLink="/admin/users"        routerLinkActive="active">
         <span class="material-symbols-outlined">group</span> <span class="nav-text">Users</span>
       </a>
-      <a routerLink="/products"     routerLinkActive="active">
+      <a routerLink="/admin/products"     routerLinkActive="active">
         <span class="material-symbols-outlined">category</span> <span class="nav-text">Products</span>
       </a>
-      <a routerLink="/warehouses"   routerLinkActive="active">
+      <a routerLink="/admin/warehouses"   routerLinkActive="active">
         <span class="material-symbols-outlined">warehouse</span> <span class="nav-text">Warehouses</span>
       </a>
-      <a routerLink="/supermarkets" routerLinkActive="active">
+      <a routerLink="/admin/supermarkets" routerLinkActive="active">
         <span class="material-symbols-outlined">storefront</span> <span class="nav-text">Supermarkets</span>
+      </a>
+      <a routerLink="/admin/audit-logs"   routerLinkActive="active">
+        <span class="material-symbols-outlined">receipt_long</span> <span class="nav-text">Audit Logs</span>
       </a>
 
       <span class="sidebar-section-label">Operations</span>
-      <a routerLink="/inventory"     routerLinkActive="active">
+      <a routerLink="/admin/inventory"     routerLinkActive="active">
         <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Inventory</span>
       </a>
-      <a routerLink="/stock-requests" routerLinkActive="active">
+      <a routerLink="/admin/stock-requests" routerLinkActive="active">
         <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
         <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
       </a>
-      <a routerLink="/deliveries" routerLinkActive="active">
+      <a routerLink="/admin/deliveries" routerLinkActive="active">
         <span class="material-symbols-outlined">local_shipping</span> <span class="nav-text">Deliveries</span>
       </a>
-      <a routerLink="/sales" routerLinkActive="active">
+      <a routerLink="/admin/sales" routerLinkActive="active">
         <span class="material-symbols-outlined">point_of_sale</span> <span class="nav-text">Sales</span>
       </a>
-      <a routerLink="/analytics" routerLinkActive="active">
+      <a routerLink="/admin/analytics" routerLinkActive="active">
         <span class="material-symbols-outlined">bar_chart</span> <span class="nav-text">Analytics</span>
       </a>
     </ng-container>
@@ -59,20 +62,20 @@
     <!-- ── WAREHOUSE STAFF ──────────────────── -->
     <ng-container *ngIf="auth.isWarehouseStaff() && !auth.isAdmin()">
       <span class="sidebar-section-label">Operations</span>
-      <a routerLink="/inventory"      routerLinkActive="active">
+      <a routerLink="/warehouse/inventory"      routerLinkActive="active">
         <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Inventory</span>
       </a>
-      <a routerLink="/grns"           routerLinkActive="active">
+      <a routerLink="/warehouse/grns"           routerLinkActive="active">
         <span class="material-symbols-outlined">receipt_long</span> <span class="nav-text">Goods Received</span>
       </a>
-      <a routerLink="/stock-requests" routerLinkActive="active">
+      <a routerLink="/warehouse/stock-requests" routerLinkActive="active">
         <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
         <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
       </a>
-      <a routerLink="/deliveries"     routerLinkActive="active">
+      <a routerLink="/warehouse/deliveries"     routerLinkActive="active">
         <span class="material-symbols-outlined">local_shipping</span> <span class="nav-text">Deliveries</span>
       </a>
-      <a routerLink="/analytics"      routerLinkActive="active">
+      <a routerLink="/warehouse/analytics"      routerLinkActive="active">
         <span class="material-symbols-outlined">bar_chart</span> <span class="nav-text">Reports</span>
       </a>
     </ng-container>
@@ -80,20 +83,20 @@
     <!-- ── SUPERMARKET MANAGER ──────────────── -->
     <ng-container *ngIf="auth.isSupermarketManager() && !auth.isAdmin()">
       <span class="sidebar-section-label">My Store</span>
-      <a routerLink="/inventory"      routerLinkActive="active">
+      <a routerLink="/supermarket/stock-monitor"      routerLinkActive="active">
         <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Stock Monitor</span>
       </a>
-      <a routerLink="/stock-requests" routerLinkActive="active">
+      <a routerLink="/supermarket/stock-requests" routerLinkActive="active">
         <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
         <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
       </a>
-      <a routerLink="/deliveries"     routerLinkActive="active">
+      <a routerLink="/supermarket/deliveries"     routerLinkActive="active">
         <span class="material-symbols-outlined">local_shipping</span> <span class="nav-text">Deliveries</span>
       </a>
-      <a routerLink="/sales"          routerLinkActive="active">
+      <a routerLink="/supermarket/sales"          routerLinkActive="active">
         <span class="material-symbols-outlined">point_of_sale</span> <span class="nav-text">Sales</span>
       </a>
-      <a routerLink="/forecasting"    routerLinkActive="active">
+      <a routerLink="/supermarket/forecasting"    routerLinkActive="active">
         <span class="material-symbols-outlined">trending_up</span> <span class="nav-text">Forecasting</span>
       </a>
     </ng-container>

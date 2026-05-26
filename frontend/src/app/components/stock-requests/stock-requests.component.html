@@ -140,7 +140,7 @@
               <button class="btn btn-primary btn-sm" (click)="approve(r)" title="Approve & Generate Delivery">
                 <span class="material-symbols-outlined" style="font-size:16px">check</span>
               </button>
-              <button class="btn btn-ghost btn-sm" (click)="reject(r)" title="Reject Request">
+              <button class="btn btn-ghost btn-sm" (click)="openRejectModal(r)" title="Reject Request">
                 <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">close</span>
               </button>
             </div>
@@ -151,6 +151,31 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Rejection Reason Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2>Reject Stock Request</h2>
+        <button class="btn-icon" (click)="closeRejectModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 1.5; color: #475569">
+          Provide a reason for rejecting request <strong>#{{ rejectingRequest?.requestNumber || rejectingRequest?.id }}</strong>. This will notify the supermarket staff.
+        </p>
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 6px; color: #334155">Rejection Reason</label>
+          <textarea [(ngModel)]="rejectionReason" rows="3" class="form-control" placeholder="e.g. Insufficient stock / Item discontinued" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeRejectModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmReject()" [disabled]="!rejectionReason.trim()" style="background-color: var(--danger); border-color: var(--danger)">
+          Confirm Rejection
+        </button>
+      </div>
+    </div>
   </div>
 
 </div>

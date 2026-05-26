@@ -1,6 +1,6 @@
 /* Dashboard layout shell — sidebar offset */
 .main-content {
-  margin-left: 240px;
+  margin-left: 68px;
   padding: 32px;
   min-height: 100vh;
   background: var(--bg-page);

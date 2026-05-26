@@ -1,0 +1,106 @@
+.kpi-card {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--green-primary);
+  opacity: 0.8;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--green-mid);
+}
+
+.kpi-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.kpi-trend-container {
+  margin-top: 0.4rem;
+}
+
+.kpi-trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.trend-icon {
+  font-size: 0.9rem;
+}
+
+.trend-positive {
+  background: rgba(45, 122, 79, 0.1);
+  color: var(--green-primary);
+}
+
+.trend-negative {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--danger);
+}
+
+.trend-neutral {
+  background: rgba(107, 114, 128, 0.1);
+  color: var(--text-muted);
+}
+
+.kpi-card-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  background: var(--green-light);
+  border-radius: 50%;
+  color: var(--green-primary);
+  transition: all 0.3s ease;
+}
+
+.kpi-card:hover .kpi-card-icon-wrapper {
+  background: var(--green-primary);
+  color: #ffffff;
+  transform: rotate(-10deg);
+}
+
+.kpi-icon {
+  font-size: 1.5rem;
+}

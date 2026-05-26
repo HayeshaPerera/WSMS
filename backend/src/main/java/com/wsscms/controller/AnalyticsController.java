@@ -45,13 +45,13 @@ public class AnalyticsController {
         Map<String, Object> stats = new HashMap<>();
         
         stats.put("totalWarehouses", warehouseRepository.count());
-        stats.put("activeWarehouses", warehouseRepository.findByActiveTrue().size());
+        stats.put("activeWarehouses", warehouseRepository.findByIsActiveTrue().size());
         stats.put("totalSupermarkets", supermarketRepository.count());
-        stats.put("activeSupermarkets", supermarketRepository.findByActiveTrue().size());
+        stats.put("activeSupermarkets", supermarketRepository.findByIsActiveTrue().size());
         stats.put("totalProducts", productRepository.count());
-        stats.put("activeProducts", productRepository.findByActiveTrue().size());
+        stats.put("activeProducts", productRepository.findByIsActiveTrue().size());
         stats.put("totalUsers", userRepository.count());
-        stats.put("activeUsers", userRepository.findByActiveTrue().size());
+        stats.put("activeUsers", userRepository.findByIsActiveTrue().size());
         stats.put("pendingRequests", stockRequestRepository.findPendingRequests().size());
         stats.put("activeDeliveries", deliveryRepository.findActiveDeliveries().size());
         stats.put("lowStockItems", inventoryRepository.findLowStockItems().size());

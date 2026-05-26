@@ -58,6 +58,11 @@ export class SalesForecastingComponent implements OnInit {
     selectedSupermarket = '';            // Currently selected supermarket filter (supermarket ID as string)
     startDate = '';                      // Start date filter value (YYYY-MM-DD format)
     endDate = '';                        // End date filter value (YYYY-MM-DD format)
+    
+    // ========== AI Forecast Filters ==========
+    forecastSearchTerm = '';
+    forecastSelectedTrend = '';
+    forecastSortBy = 'latest';           // Default to showing latest forecasts first
 
     // ========== Dropdown Data ==========
 
@@ -112,6 +117,7 @@ export class SalesForecastingComponent implements OnInit {
         this.loadDropdowns();   // Load product and supermarket dropdown options
         this.loadSales();       // Load all sales records from the backend
         this.loadForecasts();   // Load AI demand forecast data
+        this.resetNewSaleForm(); // Initialize form with correct user supermarket ID
     }
 
     /**
@@ -275,6 +281,25 @@ export class SalesForecastingComponent implements OnInit {
      */
     toggleRecordForm(): void {
         this.showRecordForm = !this.showRecordForm; // Toggle form visibility
+        if (this.showRecordForm) {
+            this.resetNewSaleForm();
+        }
+    }
+
+    /**
+     * Resets the form inputs to defaults.
+     * Auto-populates the store ID if the user is a supermarket manager.
+     */
+    resetNewSaleForm(): void {
+        const user = this.auth.getCurrentUser();
+        const defaultSupermarketId = this.auth.isSupermarketManager() ? (user?.supermarketId || 1) : 0;
+        this.newSale = {
+            productId: 0,
+            supermarketId: defaultSupermarketId,
+            saleDate: new Date().toISOString().split('T')[0],
+            quantitySold: 1,
+            unitPrice: 0
+        };
     }
 
     /**
@@ -310,21 +335,136 @@ export class SalesForecastingComponent implements OnInit {
             next: () => {
                 this.notifications.success('Sale recorded successfully!'); // Show success toast
                 this.showRecordForm = false; // Hide the form
-
-                // Reset the form to default values for the next entry
-                this.newSale = {
-                    productId: 0,
-                    supermarketId: 0,
-                    saleDate: new Date().toISOString().split('T')[0], // Reset to today's date
-                    quantitySold: 1,
-                    unitPrice: 0
-                };
-
+                this.resetNewSaleForm(); // Reset the form to default values for the next entry
                 this.loadSales(); // Reload sales data to include the new record
             },
             error: (err: any) => {
                 // Show error toast with the error message from the backend
                 this.notifications.error('Failed to record sale: ' + (err.error?.message || err.message));
+            }
+        });
+    }
+
+    /**
+     * Handles file selection for CSV import.
+     */
+    onCsvFileSelected(event: any): void {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            const content = e.target.result;
+            this.parseAndUploadSalesCsv(content);
+        };
+        reader.readAsText(file);
+        // Clear input value so same file can be selected again
+        event.target.value = '';
+    }
+
+    /**
+     * Parses the raw CSV text, maps product SKUs to database IDs, and uploads to the backend bulk endpoint.
+     */
+    parseAndUploadSalesCsv(csvText: string): void {
+        const lines = csvText.split('\n');
+        if (lines.length <= 1) {
+            this.notifications.warning('CSV file is empty or invalid.');
+            return;
+        }
+
+        const user = this.auth.getCurrentUser();
+        const activeSupermarketId = this.auth.isSupermarketManager() ? (user?.supermarketId || 1) : 0;
+        const targetSupermarketId = activeSupermarketId || 1;
+
+        const importedSales: SaleRecord[] = [];
+        const errors: string[] = [];
+
+        // Parse line-by-line skipping header
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            // Split by comma
+            const cols = line.split(',');
+            if (cols.length < 3) {
+                errors.push(`Line ${i + 1}: Insufficient columns`);
+                continue;
+            }
+
+            const sku = cols[0].trim();
+            const dateStr = cols[1].trim();
+            const qty = Number(cols[2].trim());
+            const price = cols[3] ? Number(cols[3].trim()) : 0;
+            const notes = cols[4] ? cols[4].trim() : 'POS Import';
+
+            // Find product by SKU case-insensitively
+            const product = this.products.find((p: any) => p.sku.toLowerCase() === sku.toLowerCase());
+            if (!product) {
+                errors.push(`Line ${i + 1}: Product SKU "${sku}" not found in system`);
+                continue;
+            }
+
+            if (isNaN(qty) || qty <= 0) {
+                errors.push(`Line ${i + 1}: Invalid quantity "${cols[2]}"`);
+                continue;
+            }
+
+            importedSales.push({
+                productId: product.id,
+                supermarketId: targetSupermarketId,
+                saleDate: dateStr || new Date().toISOString().split('T')[0],
+                quantitySold: qty,
+                unitPrice: price || product.unitPrice,
+                notes: notes
+            });
+        }
+
+        if (errors.length > 0 && importedSales.length === 0) {
+            this.notifications.error('Import failed:\n' + errors.slice(0, 5).join('\n'));
+            return;
+        }
+
+        if (importedSales.length === 0) {
+            this.notifications.warning('No valid sales records found to import.');
+            return;
+        }
+
+        this.loading = true;
+        this.salesService.recordSalesBulk(importedSales).subscribe({
+            next: (res: any) => {
+                this.notifications.success(`Successfully imported ${importedSales.length} sales records!`);
+                if (errors.length > 0) {
+                    this.notifications.info(`Skipped ${errors.length} invalid rows. See console for details.`);
+                    console.warn('Import warnings:', errors);
+                }
+                this.loadSales();
+            },
+            error: (err: any) => {
+                this.loading = false;
+                this.notifications.error('Failed to import sales: ' + (err.error?.message || err.message));
+            }
+        });
+    }
+
+    /**
+     * Triggers backend demo simulation to generate 35 days of daily transaction patterns.
+     */
+    generateSimulatedHistory(): void {
+        const user = this.auth.getCurrentUser();
+        const activeSupermarketId = this.auth.isSupermarketManager() ? (user?.supermarketId || 1) : 1;
+
+        this.loading = true;
+        this.notifications.info('Simulating 35 days of POS transaction patterns...');
+
+        this.salesService.generateDemoSales(35, activeSupermarketId).subscribe({
+            next: (res: any) => {
+                this.notifications.success(res.message || 'Simulated sales history seeded successfully!');
+                this.loadSales();
+                this.loadForecasts(); // Reload forecasts as they will now have enough data to compute!
+            },
+            error: (err: any) => {
+                this.loading = false;
+                this.notifications.error('Failed to generate simulated sales: ' + (err.error?.message || err.message));
             }
         });
     }
@@ -534,5 +674,65 @@ export class SalesForecastingComponent implements OnInit {
         if (confidence >= 0.8) return 'badge-success';       // Green for high confidence (80%+)
         if (confidence >= 0.6) return 'badge-warning';       // Orange for medium confidence (60-79%)
         return 'badge-danger';                                // Red for low confidence (below 60%)
+    }
+
+    /**
+     * Downloads a standard CSV template for POS sales import.
+     */
+    downloadCsvTemplate(): void {
+        const csvContent = "Product SKU,Sale Date,Quantity Sold,Unit Price,Notes\n" +
+                           "PROD001,2026-05-25,12,899.00,Morning rush sale\n" +
+                           "PROD002,2026-05-25,8,449.00,Store checkout\n" +
+                           "PROD003,2026-05-25,4,2499.00,Weekend promo";
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "sales_import_template.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    /**
+     * Returns the filtered list of AI forecasts based on the active search term,
+     * trend filters, and sorting option.
+     */
+    getFilteredForecasts(): any[] {
+        let result = [...this.forecasts];
+
+        // Filter by search term (product name or SKU)
+        if (this.forecastSearchTerm) {
+            const term = this.forecastSearchTerm.toLowerCase();
+            result = result.filter(f =>
+                (f.productName || '').toLowerCase().includes(term) ||
+                (f.productSku || '').toLowerCase().includes(term)
+            );
+        }
+
+        // Filter by trend (INCREASING, DECREASING, STABLE)
+        if (this.forecastSelectedTrend) {
+            result = result.filter(f => f.trend === this.forecastSelectedTrend);
+        }
+
+        // Sort
+        if (this.forecastSortBy === 'latest') {
+            // No explicit date in DemandForecast, sort by productId as fallback
+            result.sort((a, b) => {
+                return (b.productId || 0) - (a.productId || 0);
+            });
+        } else if (this.forecastSortBy === 'confidence') {
+            result.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+        } else if (this.forecastSortBy === 'recommended') {
+            result.sort((a, b) => (b.recommendedOrder || 0) - (a.recommendedOrder || 0));
+        } else if (this.forecastSortBy === 'productName') {
+            result.sort((a, b) => (a.productName || '').localeCompare(b.productName || ''));
+        }
+
+        return result;
     }
 }

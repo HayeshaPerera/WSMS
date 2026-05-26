@@ -113,7 +113,7 @@
               <button class="btn btn-ghost btn-sm btn-icon" (click)="openEditModal(u)" title="Edit Permissions">
                 <span class="material-symbols-outlined" style="font-size:18px">edit_square</span>
               </button>
-              <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteUser(u.id)" title="Deactivate User">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="requestDeleteUser(u.id)" title="Deactivate User">
                 <span class="material-symbols-outlined" style="font-size:18px; color:var(--danger)">person_remove</span>
               </button>
             </div>
@@ -167,6 +167,27 @@
         <button class="btn-primary" (click)="saveUser()" [disabled]="!selectedUser.username || !selectedUser.email || (!selectedUser.id && !selectedUser.password)">
           <span class="material-symbols-outlined">save</span>
           {{ selectedUser.id ? 'Save Changes' : 'Create Account' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deactivate User Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="cancelDeleteUser()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirm Deactivation</h2>
+        <button class="btn-icon" (click)="cancelDeleteUser()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5">
+          Are you sure you want to deactivate this system user? This will instantly revoke their access and disable their active session.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelDeleteUser()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmDeleteUser()" style="background-color: var(--danger); border-color: var(--danger)">
+          Deactivate User
         </button>
       </div>
     </div>

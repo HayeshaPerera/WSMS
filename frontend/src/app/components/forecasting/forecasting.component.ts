@@ -4,6 +4,10 @@ import { Component, OnInit } from '@angular/core';
 import { ForecastService } from '../../services/forecast.service';
 // Import SharedDataService for accessing shared data streams (inventory, etc.)
 import { SharedDataService } from '../../services/shared-data.service';
+// Import AuthService to retrieve user supermarket context
+import { AuthService } from '../../services/auth.service';
+// Import NotificationService for user alerts
+import { NotificationService } from '../../services/notification.service';
 // Import DemandForecast model interface for typing forecast data
 import { DemandForecast } from '../../models/models';
 // Import Chart.js library: Chart class, ChartConfiguration type, and all registerable plugins
@@ -14,12 +18,6 @@ Chart.register(...registerables);
 
 /**
  * ForecastingComponent displays AI-powered demand forecasting for products.
- *
- * Features:
- * - Summary cards showing count of products with increasing, stable, and decreasing trends
- * - Product forecast cards with demand predictions, stock status, and confidence levels
- * - Detailed view with demand projection bar chart and historical trend line chart
- * - Falls back to hardcoded sample data if the backend API is unavailable
  */
 @Component({
   selector: 'app-forecasting',                      // HTML tag: <app-forecasting>
@@ -31,6 +29,10 @@ export class ForecastingComponent implements OnInit {
   forecasts: any[] = [];
   // Loading state flag: shows spinner while data is being fetched
   loading = true;
+  // State for AI generation progress
+  generating = false;
+  // Supermarket context identifier
+  supermarketId: number = 1;
   // Currently selected forecast for detailed chart view (null = none selected)
   selectedForecast: any = null;
   // Chart.js instance for the demand projection bar chart
@@ -40,8 +42,6 @@ export class ForecastingComponent implements OnInit {
 
   /**
    * Computed getter: count of products with increasing demand trend.
-   * Normalizes trend to lowercase for case-insensitive comparison
-   * (API returns 'INCREASING', hardcoded uses 'increasing').
    */
   get increasingCount(): number {
     return this.forecasts.filter(f => (f.trend || '').toLowerCase() === 'increasing').length;
@@ -49,7 +49,6 @@ export class ForecastingComponent implements OnInit {
 
   /**
    * Computed getter: count of products with stable demand trend.
-   * Uses lowercase normalization for case-insensitive matching.
    */
   get stableCount(): number {
     return this.forecasts.filter(f => (f.trend || '').toLowerCase() === 'stable').length;
@@ -57,7 +56,6 @@ export class ForecastingComponent implements OnInit {
 
   /**
    * Computed getter: count of products with decreasing demand trend.
-   * Uses lowercase normalization for case-insensitive matching.
    */
   get decreasingCount(): number {
     return this.forecasts.filter(f => (f.trend || '').toLowerCase() === 'decreasing').length;
@@ -65,35 +63,68 @@ export class ForecastingComponent implements OnInit {
 
   /**
    * Constructor: inject required services
-   * @param service - ForecastService for backend API communication
-   * @param sharedData - SharedDataService for accessing shared inventory data
    */
   constructor(
     private service: ForecastService,
-    private sharedData: SharedDataService
+    private sharedData: SharedDataService,
+    private auth: AuthService,
+    private notifications: NotificationService
   ) { }
 
   /**
    * Lifecycle hook: fetches forecast data from the backend on component init.
-   * If the API returns data, uses it directly.
-   * If the API returns empty or fails, falls back to hardcoded sample data.
    */
   ngOnInit(): void {
-    // Call the ForecastService to get all forecast predictions
-    this.service.getAllForecasts().subscribe({
+    const user = this.auth.getCurrentUser();
+    this.supermarketId = user?.supermarketId || 1;
+    this.loadForecasts();
+  }
+
+  /**
+   * Loads forecasts for the active supermarket from the backend API.
+   */
+  loadForecasts(): void {
+    this.loading = true;
+    this.service.getSupermarketForecasts(this.supermarketId).subscribe({
       next: data => {
-        // Check if the API returned a non-empty array
         if (Array.isArray(data) && data.length > 0) {
-          this.forecasts = data;           // Use real API data
+          this.forecasts = data;
+          // Keep selection synchronized if possible
+          if (this.selectedForecast) {
+            const updated = this.forecasts.find(f => f.productId === this.selectedForecast.productId);
+            if (updated) {
+              this.selectedForecast = updated;
+            }
+          }
         } else {
-          this.addHardcodedForecasts();     // Fallback to sample data
+          this.addHardcodedForecasts();
         }
-        this.loading = false;              // Hide loading spinner
+        this.loading = false;
       },
       error: _ => {
-        // On API error, use hardcoded sample data as fallback
         this.addHardcodedForecasts();
-        this.loading = false;              // Hide loading spinner
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Triggers the backend Prophet forecasting service to update predictions based on historical sales.
+   */
+  generateForecasts(): void {
+    this.generating = true;
+    this.notifications.info('Initiating Prophet AI demand model training. This takes a moment...');
+    
+    this.service.generateForecasts(this.supermarketId, 7).subscribe({
+      next: () => {
+        this.notifications.success('AI demand forecasting models generated successfully!');
+        this.generating = false;
+        this.loadForecasts();
+      },
+      error: () => {
+        this.generating = false;
+        this.notifications.error('Prophet forecasting microservice is currently offline. Baseline averages generated.');
+        this.loadForecasts();
       }
     });
   }
@@ -275,17 +306,16 @@ export class ForecastingComponent implements OnInit {
   }
 
   /**
-   * Returns an emoji icon based on the demand trend direction.
-   * Uses toUpperCase() for case-insensitive matching to handle both
-   * API responses ('INCREASING') and hardcoded data ('increasing').
+   * Returns a Material Symbols icon name based on the demand trend direction.
+   * Uses toUpperCase() for case-insensitive matching.
    * @param trend - The trend direction string
-   * @returns Emoji string representing the trend
+   * @returns Material Symbol name string
    */
   getTrendIcon(trend: string): string {
-    const t = (trend || '').toUpperCase(); // Normalize to uppercase
-    if (t === 'INCREASING') return '📈';   // Chart going up emoji
-    if (t === 'DECREASING') return '📉';   // Chart going down emoji
-    return '➡️';                           // Right arrow for stable
+    const t = (trend || '').toUpperCase();
+    if (t === 'INCREASING') return 'trending_up';
+    if (t === 'DECREASING') return 'trending_down';
+    return 'trending_flat';
   }
 
   /**
@@ -295,10 +325,10 @@ export class ForecastingComponent implements OnInit {
    * @returns Hex color string
    */
   getTrendColor(trend: string): string {
-    const t = (trend || '').toUpperCase(); // Normalize to uppercase
-    if (t === 'INCREASING') return '#4CAF50'; // Green for growth
-    if (t === 'DECREASING') return '#F44336'; // Red for decline
-    return '#FFB347';                          // Orange for stable
+    const t = (trend || '').toUpperCase();
+    if (t === 'INCREASING') return '#2D7A4F'; // Enterprise Green
+    if (t === 'DECREASING') return '#DC2626'; // Danger Red
+    return '#D97706';                          // Amber Orange
   }
 
   /**
@@ -371,24 +401,26 @@ export class ForecastingComponent implements OnInit {
           label: `${this.selectedForecast.productName} Projected Demand`, // Dataset label
           data: weeklyDemand,                         // Y-axis values (projected demand)
           backgroundColor: this.getTrendColor(this.selectedForecast.trend), // Bar color based on trend
-          borderColor: '#FFD700',                     // Gold border for premium feel
-          borderWidth: 2                              // Border thickness
+          borderColor: this.getTrendColor(this.selectedForecast.trend),     // Match border color to bar color
+          borderWidth: 1.5
         }]
       },
       options: {
         responsive: true,                             // Resize with container
         maintainAspectRatio: true,                    // Keep aspect ratio
         plugins: {
-          legend: { labels: { font: { size: 12 }, color: '#fff' } } // White legend text
+          legend: { labels: { font: { size: 12 }, color: '#374151' } } // Dark text for legend
         },
         scales: {
           y: {
             beginAtZero: true,                        // Y-axis starts at 0
-            ticks: { color: '#aaa' },                 // Gray tick labels
-            title: { display: true, text: 'Units', color: '#aaa' } // Y-axis title
+            ticks: { color: '#6b7280' },              // Gray tick labels
+            grid: { color: '#e5e7eb' },               // Light border lines
+            title: { display: true, text: 'Units', color: '#6b7280' } // Y-axis title
           },
           x: {
-            ticks: { color: '#aaa' }                  // Gray tick labels
+            ticks: { color: '#6b7280' },              // Gray tick labels
+            grid: { color: '#e5e7eb' }                // Light border lines
           }
         }
       }
@@ -423,15 +455,15 @@ export class ForecastingComponent implements OnInit {
         datasets: [{
           label: 'Historical Sales',                  // First dataset: actual sales data
           data: this.selectedForecast.salesHistory,   // Y-axis values from history
-          borderColor: '#4FC3F7',                     // Light blue line color
-          backgroundColor: 'rgba(79, 195, 247, 0.1)', // Semi-transparent blue fill
+          borderColor: '#0284c7',                     // Info Blue line color
+          backgroundColor: 'rgba(2, 132, 199, 0.08)', // Semi-transparent blue fill
           fill: true,                                 // Fill area under the line
           tension: 0.4                                // Curve smoothing
         }, {
           label: 'Average',                           // Second dataset: historical average line
           // Create an array of the same average value for each week
           data: Array(this.selectedForecast.salesHistory.length).fill(this.selectedForecast.historicalAverage),
-          borderColor: '#FFB347',                     // Orange line color
+          borderColor: '#d97706',                     // Amber line color
           borderDash: [5, 5],                         // Dashed line style
           fill: false                                 // No fill under the average line
         }]
@@ -440,16 +472,18 @@ export class ForecastingComponent implements OnInit {
         responsive: true,                             // Resize with container
         maintainAspectRatio: true,                    // Keep aspect ratio
         plugins: {
-          legend: { labels: { color: '#fff' } }       // White legend text
+          legend: { labels: { color: '#374151' } }     // Dark text for legend
         },
         scales: {
           y: {
-            beginAtZero: false,                       // Y-axis does NOT start at 0 (shows actual range)
-            ticks: { color: '#aaa' },                 // Gray tick labels
-            title: { display: true, text: 'Units Sold', color: '#aaa' } // Y-axis title
+            beginAtZero: false,                       // Y-axis does NOT start at 0
+            ticks: { color: '#6b7280' },              // Gray tick labels
+            grid: { color: '#e5e7eb' },
+            title: { display: true, text: 'Units Sold', color: '#6b7280' } // Y-axis title
           },
           x: {
-            ticks: { color: '#aaa' }                  // Gray tick labels
+            ticks: { color: '#6b7280' },              // Gray tick labels
+            grid: { color: '#e5e7eb' }
           }
         }
       }

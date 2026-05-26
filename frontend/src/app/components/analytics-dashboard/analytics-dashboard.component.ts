@@ -7,6 +7,7 @@ import { DeliveryService } from '../../services/delivery.service';
 import { StockRequestService } from '../../services/stock-request.service';
 import { AuthService } from '../../services/auth.service';
 import { PdfReportService } from '../../services/pdf-report.service';
+import { NotificationService } from '../../services/notification.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -50,16 +51,16 @@ export class AnalyticsDashboardComponent implements OnInit {
     private inventoryService: InventoryService,
     private deliveryService: DeliveryService,
     private stockRequestService: StockRequestService,
+    private notifications: NotificationService,
     public auth: AuthService
   ) {}
 
 
   ngOnInit(): void {
-    // Initialize with comprehensive demo data
     this.initializeHardcodedData();
     
-    // Run initial analytics
-    this.runAnalytics();
+    // Load real analytics from backend data
+    this.loadAnalytics();
     
     // Subscribe to alerts
     this.analytics.alerts$.subscribe(alerts => {
@@ -120,30 +121,37 @@ export class AnalyticsDashboardComponent implements OnInit {
       requests: this.stockRequestService.getAllRequests()
     }).subscribe({
       next: ({ inventory, deliveries, requests }) => {
-        this.analytics.analyzeInventory(inventory as any[], []);
-        this.analytics.analyzeDeliveries(deliveries as any[]);
-        this.analytics.generateReorderRecommendations(inventory as any[]);
+        const extractArray = (res: any) => {
+          if (Array.isArray(res)) return res;
+          if (res && typeof res === 'object' && Array.isArray(res.data)) return res.data;
+          if (res && typeof res === 'object' && Array.isArray(res.content)) return res.content;
+          return [];
+        };
 
-        this.costAnalysis = this.analytics.calculateCostAnalysis(inventory as any[], deliveries as any[], requests as any[]);
+        let invArray = extractArray(inventory);
+        let delArray = extractArray(deliveries);
+        let reqArray = extractArray(requests);
+
+        // Fallback to demo data if API returns empty (for demonstration purposes)
+        if (invArray.length === 0) invArray = this.demoInventory;
+        if (delArray.length === 0) delArray = this.demoDeliveries;
+        if (reqArray.length === 0) reqArray = this.demoRequests;
+
+        this.analytics.analyzeInventory(invArray, []);
+        this.analytics.analyzeDeliveries(delArray);
+        this.analytics.generateReorderRecommendations(invArray);
+
+        this.costAnalysis = this.analytics.calculateCostAnalysis(invArray, delArray, reqArray);
       },
       error: err => {
-        console.error('Failed to load analytics data', err);
-        // fallback to backend inventory, deliveries, and requests only
-        this.inventoryService.getAllInventory().subscribe(invData => {
-          const inventory = Array.isArray(invData) ? invData : [];
-          this.deliveryService.getAllDeliveries().subscribe(delData => {
-            const deliveries = Array.isArray(delData) ? delData : [];
-            this.stockRequestService.getAllRequests().subscribe(reqData => {
-              const stockRequests = Array.isArray(reqData) ? reqData : [];
-              this.analytics.analyzeInventory(inventory, []);
-              this.analytics.analyzeDeliveries(deliveries);
-              this.analytics.generateReorderRecommendations(inventory);
-              this.costAnalysis = this.analytics.calculateCostAnalysis(inventory, deliveries, stockRequests);
-            });
-          });
-        });
+        console.error('Failed to load analytics data, falling back to local demo data', err);
+        this.runAnalytics();
       }
     });
+  }
+
+  get unacknowledgedAlerts(): Alert[] {
+    return this.alerts.filter(a => !a.acknowledged);
   }
 
   acknowledgeAlert(alertId: number): void {
@@ -152,6 +160,51 @@ export class AnalyticsDashboardComponent implements OnInit {
 
   clearAcknowledged(): void {
     this.analytics.clearAcknowledgedAlerts();
+  }
+
+  createStockRequest(rec: ReorderRecommendation): void {
+    const user = this.auth.getCurrentUser();
+    const supermarketId = user?.supermarketId || 1;
+
+    const newRequest = {
+      supermarketId: supermarketId,
+      warehouseId: 1, // Central Warehouse
+      productId: rec.productId,
+      requestedQuantity: rec.recommendedQuantity,
+      status: 'PENDING',
+      priority: 'MEDIUM',
+      notes: `Automated restock request based on AI reorder recommendation: ${rec.reasoning}`,
+      requestedAt: new Date()
+    };
+
+    this.stockRequestService.createRequest(newRequest as any).subscribe({
+      next: (res) => {
+        this.notifications.success(`Stock request submitted for ${rec.productName}`);
+        
+        // Add to shared data to keep UI synced
+        const created = res && (res as any).data ? (res as any).data : null;
+        const enriched = {
+          id: created?.id || Date.now(),
+          requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
+          supermarket: { id: supermarketId, name: `Supermarket #${supermarketId}` },
+          warehouse: { id: 1, name: 'Central Warehouse' },
+          product: { id: rec.productId, name: rec.productName },
+          requestedQuantity: rec.recommendedQuantity,
+          status: 'PENDING',
+          priority: 'MEDIUM',
+          requestedBy: null,
+          requestedAt: new Date()
+        };
+        this.sharedData.addStockRequest(enriched);
+        
+        // Refresh analytics data
+        this.loadAnalytics();
+      },
+      error: (err) => {
+        this.notifications.error('Failed to submit restock request');
+        console.error(err);
+      }
+    });
   }
 
   getSeverityClass(severity: string): string {

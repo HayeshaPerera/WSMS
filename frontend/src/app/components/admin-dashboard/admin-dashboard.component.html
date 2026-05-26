@@ -8,11 +8,11 @@
       <p class="subtitle">System overview — live data from all locations</p>
     </div>
     <div class="d-flex gap-2">
-      <a routerLink="/analytics" class="btn btn-secondary">
+      <a routerLink="/admin/analytics" class="btn btn-secondary">
         <span class="material-symbols-outlined" style="font-size:16px">bar_chart</span>
         View Reports
       </a>
-      <a routerLink="/users" class="btn btn-primary">
+      <a routerLink="/admin/users" class="btn btn-primary">
         <span class="material-symbols-outlined" style="font-size:16px">person_add</span>
         Add User
       </a>
@@ -119,7 +119,7 @@
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
         <div style="font-size:15px; font-weight:700">Low Stock Alerts</div>
-        <a routerLink="/inventory" class="btn btn-secondary btn-sm">View All</a>
+        <a routerLink="/admin/inventory" class="btn btn-secondary btn-sm">View All</a>
       </div>
 
       <div *ngIf="inventoryWarnings.length === 0" class="empty-state" style="padding:32px">

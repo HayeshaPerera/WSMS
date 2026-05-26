@@ -80,7 +80,7 @@ public class ProphetClientService {
                     .retrieve()
                     .bodyToFlux(Map.class)
                     .collectList()
-                    .block(Duration.ofSeconds(60));
+                    .block(Duration.ofSeconds(3));
 
             if (rawResult == null) {
                 throw new RuntimeException("Prophet service returned empty response");

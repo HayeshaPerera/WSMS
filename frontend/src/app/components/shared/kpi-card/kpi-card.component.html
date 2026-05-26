@@ -1,0 +1,16 @@
+<div class="kpi-card">
+  <div class="kpi-card-content">
+    <span class="kpi-label">{{ label }}</span>
+    <span class="kpi-value">{{ value }}</span>
+    <div class="kpi-trend-container" *ngIf="trend">
+      <span class="kpi-trend-badge" [ngClass]="'trend-' + trendType">
+        <span class="material-symbols-outlined trend-icon" *ngIf="trendType === 'positive'">trending_up</span>
+        <span class="material-symbols-outlined trend-icon" *ngIf="trendType === 'negative'">trending_down</span>
+        <span class="trend-text">{{ trend }}</span>
+      </span>
+    </div>
+  </div>
+  <div class="kpi-card-icon-wrapper">
+    <span class="material-symbols-outlined kpi-icon">{{ icon }}</span>
+  </div>
+</div>

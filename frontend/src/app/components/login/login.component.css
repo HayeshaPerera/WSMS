@@ -127,6 +127,11 @@ input.error {
   display: flex;
   align-items: center;
   color: var(--text-muted);
+  z-index: 5;
+}
+
+.password-toggle .icon {
+  pointer-events: auto !important;
 }
 
 .password-toggle:hover .icon {

@@ -3,10 +3,10 @@
 -- Adds support for multi-item deliveries and Goods Received Notes
 -- ============================================================
 
--- 1. Modify deliveries to drop single-item columns and handle multiple items
+-- 1. Modify deliveries to drop single-item columns if they exist
 ALTER TABLE deliveries
-DROP COLUMN product_id,
-DROP COLUMN quantity;
+DROP COLUMN IF EXISTS product_id,
+DROP COLUMN IF EXISTS quantity;
 
 -- 2. Delivery Items Table
 CREATE TABLE IF NOT EXISTS delivery_items (

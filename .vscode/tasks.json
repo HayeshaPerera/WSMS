@@ -11,6 +11,18 @@
 				"$javac"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Start Backend Server",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"cd backend; mvn spring-boot:run"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

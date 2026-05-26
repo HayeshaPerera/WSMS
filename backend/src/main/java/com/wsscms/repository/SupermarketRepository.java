@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface SupermarketRepository extends JpaRepository<Supermarket, Long> {
     Optional<Supermarket> findByCode(String code);
     boolean existsByCode(String code);
-    List<Supermarket> findByActiveTrue();
+    List<Supermarket> findByIsActiveTrue();
     
     @Query("SELECT s FROM Supermarket s WHERE s.assignedWarehouse.id = :warehouseId")
     List<Supermarket> findByWarehouseId(@Param("warehouseId") Long warehouseId);

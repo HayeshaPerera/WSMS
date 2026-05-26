@@ -39,6 +39,11 @@ export class StockRequestsComponent implements OnInit {
 
   supermarkets: any[] = [];
 
+  // Rejection modal state
+  showRejectModal = false;
+  rejectingRequest: StockRequest | null = null;
+  rejectionReason = '';
+
   constructor(
     private service: StockRequestService,
     private deliveryService: DeliveryService,
@@ -141,9 +146,7 @@ export class StockRequestsComponent implements OnInit {
           this.sharedData.setStockRequests(requestData);
         }
       },
-      error: () => {
-        console.log('Using hardcoded stock requests');
-      }
+      error: () => { /* keep hardcoded data on API error */ }
     });
   }
 
@@ -251,13 +254,28 @@ export class StockRequestsComponent implements OnInit {
     );
   }
 
-  reject(sr: StockRequest): void {
+  openRejectModal(sr: StockRequest): void {
+    this.rejectingRequest = sr;
+    this.rejectionReason = '';
+    this.showRejectModal = true;
+  }
+
+  closeRejectModal(): void {
+    this.showRejectModal = false;
+    this.rejectingRequest = null;
+    this.rejectionReason = '';
+  }
+
+  confirmReject(): void {
+    const sr = this.rejectingRequest;
+    if (!sr) return;
+    const reason = this.rejectionReason.trim() || 'Insufficient stock';
     const approverId = this.auth.getCurrentUser()?.userId || 1;
     const approverName = this.auth.getCurrentUser()?.username || 'warehouse1';
-    const reason = prompt('Enter rejection reason:') || 'Insufficient stock';
     this.service.rejectRequest(sr.id, reason, approverId).subscribe({
       next: () => {
-        this.notifications.warning(`⚠️ Request #${sr.id} rejected: ${reason}`);
+        this.notifications.warning(`Request #${sr.id} rejected`);
+        this.closeRejectModal();
         this.refreshRequests();
       },
       error: (err: any) => {

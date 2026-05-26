@@ -70,13 +70,13 @@
       </button>
     </div>
 
-    <div *ngIf="alerts.length === 0" class="empty-placeholder p-5 text-center text-muted">
+    <div *ngIf="unacknowledgedAlerts.length === 0" class="empty-placeholder p-5 text-center text-muted">
       <i class="fas fa-check-circle mb-2 fs-xl d-block text-success"></i>
       No active alerts - System operating normally
     </div>
 
-    <div class="alerts-container" *ngIf="alerts.length > 0">
-      <div *ngFor="let alert of alerts" class="glass-card alert-item mb-3" [ngClass]="getSeverityClass(alert.severity)">
+    <div class="alerts-container" *ngIf="unacknowledgedAlerts.length > 0">
+      <div *ngFor="let alert of unacknowledgedAlerts" class="glass-card alert-item mb-3" [ngClass]="getSeverityClass(alert.severity)">
         <div class="alert-icon">{{getAlertIcon(alert.type)}}</div>
         <div class="alert-content">
           <div class="alert-header">
@@ -142,7 +142,7 @@
           <strong><i class="fas fa-chart-line text-accent"></i> Analysis:</strong> {{rec.reasoning}}
         </div>
 
-        <button class="btn btn-primary w-100 mt-3" disabled>
+        <button class="btn btn-primary w-100 mt-3" (click)="createStockRequest(rec)">
           <i class="fas fa-file-invoice"></i> Create Stock Request
         </button>
       </div>

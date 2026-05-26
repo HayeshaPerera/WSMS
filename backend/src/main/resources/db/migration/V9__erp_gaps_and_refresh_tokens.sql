@@ -29,11 +29,22 @@ ALTER TABLE notifications
 ALTER TABLE grn_headers
     ADD COLUMN IF NOT EXISTS reference_number VARCHAR(100);
 
--- 5. sales_history: add recorded_by FK
+-- 5. sales_history: add recorded_by FK (with safe constraint handling)
 ALTER TABLE sales_history
-    ADD COLUMN IF NOT EXISTS recorded_by BIGINT,
-    ADD CONSTRAINT fk_sales_recorded_by
-        FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL;
+    ADD COLUMN IF NOT EXISTS recorded_by BIGINT;
+
+-- Add constraint only if it doesn't already exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS(
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name='sales_history' AND constraint_name='fk_sales_recorded_by'
+    ) THEN
+        ALTER TABLE sales_history
+            ADD CONSTRAINT fk_sales_recorded_by
+            FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- 6. Soft-delete (is_deleted) on tables not already covered by V2 deleted_at
 --    V2 added deleted_at to: products, warehouses, supermarkets, users, inventory

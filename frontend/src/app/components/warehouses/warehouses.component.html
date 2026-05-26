@@ -91,7 +91,7 @@
               <button class="btn btn-ghost btn-sm btn-icon" (click)="openEditModal(w)" title="Edit Details">
                 <span class="material-symbols-outlined" style="font-size:18px">edit_square</span>
               </button>
-              <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteWarehouse(w.id)" title="Decommission">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="requestDeleteWarehouse(w.id)" title="Decommission">
                 <span class="material-symbols-outlined" style="font-size:18px; color:var(--danger)">delete</span>
               </button>
             </div>
@@ -139,6 +139,27 @@
         <button class="btn-primary" (click)="saveWarehouse()" [disabled]="!selectedWarehouse.code || !selectedWarehouse.name || !selectedWarehouse.capacity">
           <span class="material-symbols-outlined">save</span>
           {{ selectedWarehouse.id ? 'Save Changes' : 'Register Facility' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decommission Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="cancelDeleteWarehouse()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirm Decommission</h2>
+        <button class="btn-icon" (click)="cancelDeleteWarehouse()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5">
+          Are you sure you want to decommission this facility? This will remove the warehouse from the active distribution topology.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelDeleteWarehouse()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmDeleteWarehouse()" style="background-color: var(--danger); border-color: var(--danger)">
+          Decommission Facility
         </button>
       </div>
     </div>

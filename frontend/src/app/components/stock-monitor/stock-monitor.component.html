@@ -1,0 +1,242 @@
+<app-page-header 
+  title="Stock Monitor & AI Replenishment" 
+  [subtitle]="'Real-time inventory levels, AI-predicted demand trends, and auto-replenishment loops for ' + supermarketName">
+  
+  <button 
+    (click)="generateAIForecasts()" 
+    [disabled]="generatingForecast" 
+    class="btn-trigger-ai">
+    <span class="material-symbols-outlined btn-icon-spin" [class.spinning]="generatingForecast">psychology</span>
+    {{ generatingForecast ? 'Running AI Engine...' : 'Run Prophet AI Forecast' }}
+  </button>
+</app-page-header>
+
+<div class="monitor-container">
+  <!-- KPI Metrics Grid -->
+  <div class="metrics-grid">
+    <app-kpi-card 
+      label="Total Tracked SKUs" 
+      [value]="totalItemsCount" 
+      icon="inventory_2" 
+      trend="Active Monitoring" 
+      trendType="neutral">
+    </app-kpi-card>
+
+    <app-kpi-card 
+      label="Low Stock Items" 
+      [value]="lowStockItemsCount" 
+      icon="warning" 
+      [trend]="lowStockItemsCount > 0 ? 'Requires Action' : 'Healthy Levels'" 
+      [trendType]="lowStockItemsCount > 0 ? 'negative' : 'positive'">
+    </app-kpi-card>
+
+    <app-kpi-card 
+      label="Critical / Out of Stock" 
+      [value]="criticalItemsCount" 
+      icon="gpp_bad" 
+      [trend]="criticalItemsCount > 0 ? 'Immediate Replenish' : 'Fully Stocked'" 
+      [trendType]="criticalItemsCount > 0 ? 'negative' : 'positive'">
+    </app-kpi-card>
+
+    <app-kpi-card 
+      label="AI Forecast Coverage" 
+      [value]="aiForecastedCount + ' / ' + totalItemsCount" 
+      icon="insights" 
+      trend="Prophet Engine" 
+      trendType="positive">
+    </app-kpi-card>
+  </div>
+
+  <!-- Filters Panel -->
+  <div class="filters-card">
+    <div class="search-box-wrapper">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        placeholder="Filter by product name, SKU..." 
+        class="search-input"
+      />
+    </div>
+
+    <div class="filter-controls">
+      <div class="select-wrapper">
+        <select [(ngModel)]="selectedStatus" class="filter-select">
+          <option value="">All Stock Levels</option>
+          <option value="adequate">Adequate Stock</option>
+          <option value="low">Low Stock</option>
+          <option value="critical">Critical Stock</option>
+          <option value="out-of-stock">Out of Stock</option>
+        </select>
+      </div>
+
+      <button (click)="loadData()" class="btn-refresh" title="Reload Inventory">
+        <span class="material-symbols-outlined">refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div class="loading-spinner-wrapper" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Calculating replenishment recommendation vectors...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state-card" *ngIf="!loading && getFilteredInventory().length === 0">
+    <span class="material-symbols-outlined empty-icon">check_circle_outline</span>
+    <h3>All Systems Operational</h3>
+    <p>No products match the selected filters, or your supermarket has no inventory assigned.</p>
+  </div>
+
+  <!-- Monitor Table -->
+  <div class="table-wrapper" *ngIf="!loading && getFilteredInventory().length > 0">
+    <table class="monitor-table">
+      <thead>
+        <tr>
+          <th>Product details</th>
+          <th class="text-center">Current Stock</th>
+          <th class="text-center">Reorder Trigger</th>
+          <th>Stock Status</th>
+          <th>AI Weekly Demand</th>
+          <th class="text-center">AI Confidence</th>
+          <th class="text-center">AI Suggested Order</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of getFilteredInventory()" class="monitor-row">
+          <td class="product-cell">
+            <div class="product-info-wrapper">
+              <span class="product-name">{{ item.product?.name }}</span>
+              <span class="product-sku">{{ item.product?.sku }} • {{ item.product?.category }}</span>
+            </div>
+          </td>
+          
+          <td class="text-center stock-qty-cell" [class.warning-text]="item.stockStatus === 'low'" [class.danger-text]="item.stockStatus === 'critical' || item.stockStatus === 'out-of-stock'">
+            {{ item.quantity }}
+          </td>
+          
+          <td class="text-center reorder-trigger-cell">
+            {{ item.reorderLevel }}
+          </td>
+
+          <td>
+            <app-status-badge [status]="item.stockStatus.toUpperCase().replace('-', ' ')"></app-status-badge>
+          </td>
+
+          <td class="demand-cell">
+            <div class="ai-vector-wrapper">
+              <span class="material-symbols-outlined ai-icon-brain">psychology</span>
+              <span class="demand-value">{{ item.weeklyDemand }} units</span>
+            </div>
+          </td>
+
+          <td class="text-center confidence-cell">
+            <div class="confidence-bar-container">
+              <span class="confidence-percentage">{{ (item.confidence * 100) | number:'1.0-1' }}%</span>
+              <div class="confidence-progress">
+                <div class="confidence-fill" [style.width]="(item.confidence * 100) + '%'"></div>
+              </div>
+            </div>
+          </td>
+
+          <td class="text-center recommended-cell">
+            <span class="order-recommendation-badge" [class.highlight]="item.recommendedOrder > 0">
+              {{ item.recommendedOrder }}
+            </span>
+          </td>
+
+          <td class="text-center actions-cell">
+            <button 
+              (click)="openRestockModal(item)" 
+              class="btn-action-restock" 
+              [class.urgent]="item.recommendedOrder > 0"
+              title="Initiate replenishment request">
+              <span class="material-symbols-outlined">add_shopping_cart</span>
+              Replenish
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Replenishment Modal -->
+<div class="modal-backdrop" *ngIf="showRequestModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>
+        <span class="material-symbols-outlined header-icon">shopping_cart_checkout</span>
+        Supermarket Stock Replenishment Request
+      </h3>
+      <button (click)="closeModal()" class="btn-close-modal">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedProductForRequest">
+      <div class="product-quick-card">
+        <div class="card-left">
+          <span class="card-label">Product Name</span>
+          <span class="card-val">{{ selectedProductForRequest.name }}</span>
+          <span class="card-sku">{{ selectedProductForRequest.sku }}</span>
+        </div>
+        <div class="card-right">
+          <span class="card-label">Warehouse Availability</span>
+          <span class="card-val highlight-green">
+            {{ availableWarehouseQuantity !== null ? availableWarehouseQuantity + ' units' : 'Checking...' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group-grid">
+        <div class="form-group">
+          <label for="reqQty">Replenishment Quantity</label>
+          <input 
+            type="number" 
+            id="reqQty" 
+            [(ngModel)]="requestQuantity" 
+            placeholder="Enter quantity" 
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="reqPriority">Request Priority</label>
+          <div class="select-wrapper">
+            <select id="reqPriority" [(ngModel)]="requestPriority" class="form-select">
+              <option value="LOW">LOW</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HIGH">HIGH</option>
+              <option value="URGENT">URGENT</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="reqNotes">Justification Notes</label>
+        <textarea 
+          id="reqNotes" 
+          [(ngModel)]="requestNotes" 
+          placeholder="Optional notes or details..." 
+          class="form-textarea"
+          rows="3">
+        </textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button (click)="closeModal()" class="btn-modal-cancel">Cancel</button>
+      <button 
+        (click)="submitRestockRequest()" 
+        [disabled]="requestQuantity <= 0" 
+        class="btn-modal-submit">
+        <span class="material-symbols-outlined">send</span>
+        Submit Request
+      </button>
+    </div>
+  </div>
+</div>

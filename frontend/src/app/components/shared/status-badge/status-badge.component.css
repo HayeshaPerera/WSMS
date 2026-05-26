@@ -1,0 +1,57 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  box-shadow: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.status-icon {
+  font-size: 0.95rem;
+}
+
+.status-text {
+  line-height: 1;
+}
+
+/* Warning State (Gold / Amber) */
+.badge-warning {
+  background: rgba(219, 119, 6, 0.08);
+  color: var(--warning);
+  border-color: rgba(219, 119, 6, 0.2);
+}
+
+/* Info State (Cyan / Blue) */
+.badge-info {
+  background: rgba(2, 132, 199, 0.08);
+  color: var(--info);
+  border-color: rgba(2, 132, 199, 0.2);
+}
+
+/* Success State (Emerald Green) */
+.badge-success {
+  background: rgba(45, 122, 79, 0.08);
+  color: var(--success);
+  border-color: rgba(45, 122, 79, 0.2);
+}
+
+/* Danger State (Vivid Red / Rose) */
+.badge-danger {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--danger);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+/* Secondary State (Muted Gray) */
+.badge-secondary {
+  background: rgba(107, 114, 128, 0.08);
+  color: var(--text-muted);
+  border-color: rgba(107, 114, 128, 0.2);
+}

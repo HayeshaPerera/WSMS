@@ -81,16 +81,17 @@ export class SupermarketDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-      // Force all variables to be arrays before rendering
-      this.products = Array.isArray(this.products) ? this.products : [];
-      this.inventory = Array.isArray(this.inventory) ? this.inventory : [];
-      this.myRequests = Array.isArray(this.myRequests) ? this.myRequests : [];
-      this.myDeliveries = Array.isArray(this.myDeliveries) ? this.myDeliveries : [];
+    // Ensure arrays are initialized before rendering
+    this.products     = [];
+    this.inventory    = [];
+    this.myRequests   = [];
+    this.myDeliveries = [];
+
     this.supermarketId = this.auth.getCurrentUser()?.supermarketId || 1;
     this.sharedData.initializeDefaultData();
     this.loadData();
 
-    // Subscribe to shared data updates
+    // Subscribe to shared data updates (single subscription each)
     this.sharedData.stockRequests$.subscribe((requests: any[] | ApiResponse) => {
       const arr: any[] = Array.isArray(requests)
         ? requests
@@ -107,8 +108,7 @@ export class SupermarketDashboardComponent implements OnInit {
       this.myDeliveries = arr.filter((d: any) => d.supermarket?.id === this.supermarketId);
     });
 
-    // For stock request dropdown, load only products available in warehouses
-    // Always set demo products first for guaranteed dropdown functionality
+    // Load products for stock request dropdown (demo fallback first)
     this.addHardcodedProducts();
     this.products = this.sharedData.getProducts ? this.sharedData.getProducts() : [];
     this.productService.getAvailableInWarehouses().subscribe({
@@ -116,47 +116,9 @@ export class SupermarketDashboardComponent implements OnInit {
         const arr = Array.isArray(products)
           ? products
           : (products && typeof products === 'object' && 'data' in products ? (products as ApiResponse).data ?? [] : []);
-        if (arr && arr.length > 0) {
-          this.products = arr;
-        }
-        // If arr is empty, keep demo products
-        console.log('products', this.products, Array.isArray(this.products));
+        if (arr && arr.length > 0) { this.products = arr; }
       },
-      error: _ => {
-        // On error, keep demo products
-      }
-    });
-
-    this.inventoryService.getSupermarketInventory(this.supermarketId!).subscribe(
-      (res: any[] | ApiResponse) => {
-        this.inventory = Array.isArray(res)
-          ? res
-          : (res && typeof res === 'object' && 'data' in res ? (res as ApiResponse).data ?? [] : []);
-        console.log('inventory', this.inventory, Array.isArray(this.inventory));
-        // Publish supermarket-scoped inventory so navbar and other components show correct scoped data
-        if (Array.isArray(this.inventory) && this.inventory.length > 0) {
-          this.sharedData.setInventory(this.inventory);
-        }
-      },
-      _ => this.addHardcodedInventory()
-    );
-
-    this.sharedData.stockRequests$.subscribe((requests: any[] | ApiResponse) => {
-      const arr: any[] = Array.isArray(requests)
-        ? requests
-        : (requests && typeof requests === 'object' && 'data' in requests ? (requests as ApiResponse).data ?? [] : []);
-      this.myRequests = arr
-        .map(r => this.enrichStockRequest(r))
-        .filter((r: any) => (r.supermarket?.id || r.supermarketId) === this.supermarketId);
-      console.log('myRequests', this.myRequests, Array.isArray(this.myRequests));
-    });
-
-    this.sharedData.deliveries$.subscribe((deliveries: any[] | ApiResponse) => {
-      const arr: any[] = Array.isArray(deliveries)
-        ? deliveries
-        : (deliveries && typeof deliveries === 'object' && 'data' in deliveries ? (deliveries as ApiResponse).data ?? [] : []);
-      this.myDeliveries = arr.filter((d: any) => d.supermarket?.id === this.supermarketId);
-      console.log('myDeliveries', this.myDeliveries, Array.isArray(this.myDeliveries));
+      error: () => { /* keep demo products */ }
     });
   }
 
@@ -295,13 +257,15 @@ export class SupermarketDashboardComponent implements OnInit {
 
   getStatusBadge(status: string): string {
     const badges: any = {
-      'PENDING': 'badge-warning',
-      'APPROVED': 'badge-success',
-      'REJECTED': 'badge-danger',
-      'IN_TRANSIT': 'badge-info',
-      'DELIVERED': 'badge-success'
+      'PENDING':   'badge-pending',
+      'APPROVED':  'badge-approved',
+      'REJECTED':  'badge-rejected',
+      'IN_TRANSIT': 'badge-in_transit',
+      'DELIVERED': 'badge-delivered',
+      'COMPLETED': 'badge-completed',
+      'CANCELLED': 'badge-cancelled'
     };
-    return badges[status] || 'badge-secondary';
+    return badges[status] || 'badge-pending';
   }
 
   addHardcodedInventory(): void {

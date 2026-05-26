@@ -1,0 +1,126 @@
+<app-page-header title="System Audit Logs" subtitle="Inspect actions, state changes, and security events across the entire ERP ecosystem"></app-page-header>
+
+<div class="audit-dashboard-container">
+  <!-- Filters Bar -->
+  <div class="filters-card">
+    <div class="search-box-wrapper">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFilters()" 
+        placeholder="Search logs by action, user, entity, or details..."
+        class="search-input"
+      />
+    </div>
+
+    <div class="filter-controls">
+      <div class="select-wrapper">
+        <select [(ngModel)]="selectedEntityType" (change)="applyFilters()" class="filter-select">
+          <option value="">All Entity Types</option>
+          <option *ngFor="let type of entityTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+      <button (click)="loadLogs()" class="btn-refresh" title="Reload Logs">
+        <span class="material-symbols-outlined">refresh</span>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-spinner-wrapper" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Retrieving secure ledger entries...</p>
+  </div>
+
+  <!-- No Records State -->
+  <div class="empty-state-card" *ngIf="!loading && filteredLogs.length === 0">
+    <span class="material-symbols-outlined empty-icon">assignment_late</span>
+    <h3>No Audit Records Found</h3>
+    <p>Adjust your filters or query terms to expand the search scope.</p>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="logs-table-wrapper" *ngIf="!loading && filteredLogs.length > 0">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;"></th>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Target Entity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let log of filteredLogs">
+          <!-- Main Log Row -->
+          <tr class="log-row" [class.expanded]="expandedLogId === log.id" (click)="toggleExpand(log.id)">
+            <td class="expand-cell">
+              <span class="material-symbols-outlined expand-arrow" *ngIf="hasDetails(log)">
+                {{ expandedLogId === log.id ? 'keyboard_arrow_down' : 'keyboard_arrow_right' }}
+              </span>
+            </td>
+            <td class="timestamp-cell">
+              {{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
+            </td>
+            <td class="user-cell">
+              <span class="user-pill">
+                <span class="material-symbols-outlined user-icon">person</span>
+                {{ log.userName }}
+              </span>
+            </td>
+            <td class="action-cell">
+              <app-status-badge [status]="log.action"></app-status-badge>
+            </td>
+            <td class="entity-cell">
+              <span class="entity-type-badge">{{ log.entityType }}</span>
+              <span class="entity-name">{{ log.entityName }}</span>
+            </td>
+            <td class="details-cell">
+              {{ log.details }}
+            </td>
+          </tr>
+
+          <!-- Expanded Details Row -->
+          <tr class="details-row" *ngIf="expandedLogId === log.id && hasDetails(log)">
+            <td colspan="6">
+              <div class="expanded-details-container">
+                <div class="metadata-grid">
+                  <div class="meta-item">
+                    <span class="meta-label">IP Address:</span>
+                    <span class="meta-value">{{ log.ipAddress || 'N/A' }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Entity Reference:</span>
+                    <span class="meta-value">{{ log.entityType }} #{{ log.entityId }}</span>
+                  </div>
+                </div>
+
+                <div class="diff-container">
+                  <div class="diff-box before-box" *ngIf="log.oldValue">
+                    <h4>
+                      <span class="material-symbols-outlined diff-title-icon">history</span>
+                      Prior State (Old Value)
+                    </h4>
+                    <pre class="json-payload"><code>{{ formatJson(log.oldValue) }}</code></pre>
+                  </div>
+                  <div class="diff-box after-box" *ngIf="log.newValue">
+                    <h4>
+                      <span class="material-symbols-outlined diff-title-icon">update</span>
+                      Updated State (New Value)
+                    </h4>
+                    <pre class="json-payload"><code>{{ formatJson(log.newValue) }}</code></pre>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

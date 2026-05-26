@@ -91,7 +91,7 @@
               <button class="btn btn-ghost btn-sm btn-icon" (click)="openEditModal(s)" title="Edit Details">
                 <span class="material-symbols-outlined" style="font-size:18px">edit_square</span>
               </button>
-              <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteSupermarket(s.id)" title="Close Store">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="requestDeleteSupermarket(s.id)" title="Close Store">
                 <span class="material-symbols-outlined" style="font-size:18px; color:var(--danger)">remove_shopping_cart</span>
               </button>
             </div>
@@ -139,6 +139,27 @@
         <button class="btn-primary" (click)="saveSupermarket()" [disabled]="!selectedSupermarket.code || !selectedSupermarket.name || !selectedSupermarket.storageCapacity">
           <span class="material-symbols-outlined">save</span>
           {{ selectedSupermarket.id ? 'Save Changes' : 'Register Store' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Close Store Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="cancelDeleteSupermarket()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirm Store Closure</h2>
+        <button class="btn-icon" (click)="cancelDeleteSupermarket()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5">
+          Are you sure you want to close this supermarket outlet? This will deactivate the store and remove it from active replenishment schedules.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelDeleteSupermarket()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmDeleteSupermarket()" style="background-color: var(--danger); border-color: var(--danger)">
+          Close Store Outlet
         </button>
       </div>
     </div>
