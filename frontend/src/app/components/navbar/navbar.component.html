@@ -27,9 +27,7 @@
       <a routerLink="/admin/users"        routerLinkActive="active">
         <span class="material-symbols-outlined">group</span> <span class="nav-text">Users</span>
       </a>
-      <a routerLink="/admin/products"     routerLinkActive="active">
-        <span class="material-symbols-outlined">category</span> <span class="nav-text">Products</span>
-      </a>
+
       <a routerLink="/admin/warehouses"   routerLinkActive="active">
         <span class="material-symbols-outlined">warehouse</span> <span class="nav-text">Warehouses</span>
       </a>
@@ -44,6 +42,9 @@
       <a routerLink="/admin/inventory"     routerLinkActive="active">
         <span class="material-symbols-outlined">inventory_2</span> <span class="nav-text">Inventory</span>
       </a>
+      <a routerLink="/admin/reconciliation" routerLinkActive="active">
+        <span class="material-symbols-outlined">fact_check</span> <span class="nav-text">Reconciliation</span>
+      </a>
       <a routerLink="/admin/stock-requests" routerLinkActive="active">
         <span class="material-symbols-outlined">shopping_cart</span> <span class="nav-text">Stock Requests</span>
         <span class="nav-badge" *ngIf="pendingStockRequests > 0">{{ pendingStockRequests }}</span>
@@ -56,6 +57,12 @@
       </a>
       <a routerLink="/admin/analytics" routerLinkActive="active">
         <span class="material-symbols-outlined">bar_chart</span> <span class="nav-text">Analytics</span>
+      </a>
+      <a routerLink="/admin/reports" routerLinkActive="active">
+        <span class="material-symbols-outlined">picture_as_pdf</span> <span class="nav-text">Reports</span>
+      </a>
+      <a routerLink="/supermarket/pos" routerLinkActive="active">
+        <span class="material-symbols-outlined">point_of_sale</span> <span class="nav-text">Retail POS</span>
       </a>
     </ng-container>
 
@@ -78,6 +85,9 @@
       <a routerLink="/warehouse/analytics"      routerLinkActive="active">
         <span class="material-symbols-outlined">bar_chart</span> <span class="nav-text">Reports</span>
       </a>
+      <a routerLink="/warehouse/reconciliation" routerLinkActive="active">
+        <span class="material-symbols-outlined">fact_check</span> <span class="nav-text">Reconciliation</span>
+      </a>
     </ng-container>
 
     <!-- ── SUPERMARKET MANAGER ──────────────── -->
@@ -98,6 +108,9 @@
       </a>
       <a routerLink="/supermarket/forecasting"    routerLinkActive="active">
         <span class="material-symbols-outlined">trending_up</span> <span class="nav-text">Forecasting</span>
+      </a>
+      <a routerLink="/supermarket/pos"            routerLinkActive="active">
+        <span class="material-symbols-outlined">point_of_sale</span> <span class="nav-text">Retail POS</span>
       </a>
     </ng-container>
 

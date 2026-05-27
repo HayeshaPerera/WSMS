@@ -10,20 +10,20 @@ export class PdfReportService {
   private getBaseStyle(): string {
     return `
       <style>
-        @page { margin: 0.5in; }
+        @page { margin: 0.6in; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-          padding: 40px;
-          color: #2c3e50;
-          line-height: 1.6;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          padding: 20px;
+          color: #1A1A1A;
+          line-height: 1.5;
         }
         .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           padding-bottom: 20px;
-          border-bottom: 3px solid #3498db;
+          border-bottom: 2px solid rgba(45, 122, 79, 0.15);
           margin-bottom: 30px;
         }
         .logo-container {
@@ -32,99 +32,114 @@ export class PdfReportService {
           gap: 15px;
         }
         .logo-text {
-          font-size: 28px;
-          font-weight: 700;
-          color: #3498db;
-          letter-spacing: 1px;
+          font-size: 24px;
+          font-weight: 800;
+          color: #2D7A4F;
+          letter-spacing: -0.02em;
         }
         .logo-subtitle {
-          font-size: 11px;
-          color: #7f8c8d;
+          font-size: 10px;
+          color: #6B7280;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.15em;
+          font-weight: 600;
         }
         .date-generated {
           text-align: right;
-          color: #7f8c8d;
-          font-size: 12px;
+          color: #6B7280;
+          font-size: 11px;
+        }
+        .date-generated strong {
+          color: #1A1A1A;
+          display: block;
+          margin-bottom: 4px;
         }
         h1 {
-          color: #2c3e50;
-          font-size: 24px;
+          color: #1A1A1A;
+          font-size: 22px;
           font-weight: 700;
-          margin: 20px 0 15px 0;
-          padding-left: 10px;
-          border-left: 5px solid #3498db;
+          margin: 0 0 20px 0;
+          letter-spacing: -0.01em;
         }
         .summary {
-          background: #ecf0f1;
-          padding: 15px 20px;
-          border-radius: 8px;
-          margin-bottom: 25px;
+          background: rgba(45, 122, 79, 0.05);
+          padding: 16px 20px;
+          border-radius: 12px;
+          margin-bottom: 30px;
+          border: 1px solid rgba(45, 122, 79, 0.1);
+          font-size: 13px;
         }
         .summary strong {
-          color: #2c3e50;
+          color: #1A1A1A;
           font-weight: 600;
+          margin-right: 4px;
         }
         table {
           width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-          font-size: 13px;
+          border-collapse: separate;
+          border-spacing: 0;
+          margin-top: 10px;
+          font-size: 12px;
         }
         th {
-          background: #34495e;
-          color: white;
-          padding: 14px 12px;
+          background: rgba(45, 122, 79, 0.08);
+          color: #2D7A4F;
+          padding: 12px 16px;
           text-align: left;
           font-weight: 600;
           text-transform: uppercase;
-          font-size: 11px;
-          letter-spacing: 0.5px;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          border-bottom: 2px solid rgba(45, 122, 79, 0.15);
         }
+        th:first-child { border-top-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; }
         td {
-          padding: 12px;
-          border-bottom: 1px solid #ecf0f1;
+          padding: 12px 16px;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+          color: #4B5563;
         }
-        tr:nth-child(even) {
-          background: #f8f9fa;
+        tr:last-child td {
+          border-bottom: none;
         }
-        tr:hover {
-          background: #e8f4f8;
+        tr:nth-child(even) td {
+          background: rgba(0, 0, 0, 0.01);
         }
         .status-badge {
-          padding: 4px 12px;
-          border-radius: 12px;
-          font-size: 11px;
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 10px;
           font-weight: 600;
           text-transform: uppercase;
-          display: inline-block;
+          letter-spacing: 0.05em;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
-        .status-low { background: #ffe0e0; color: #e74c3c; }
-        .status-ok { background: #d4edda; color: #27ae60; }
-        .status-pending { background: #fff3cd; color: #f39c12; }
-        .status-approved { background: #d4edda; color: #27ae60; }
-        .status-rejected { background: #ffe0e0; color: #e74c3c; }
-        .status-in-transit { background: #d6eaff; color: #2980b9; }
-        .status-delivered { background: #d4edda; color: #27ae60; }
+        .status-low { background: rgba(220, 38, 38, 0.1); color: #DC2626; border: 1px solid rgba(220, 38, 38, 0.2); }
+        .status-ok { background: rgba(45, 122, 79, 0.1); color: #2D7A4F; border: 1px solid rgba(45, 122, 79, 0.2); }
+        .status-pending { background: rgba(217, 119, 6, 0.1); color: #D97706; border: 1px solid rgba(217, 119, 6, 0.2); }
+        .status-approved { background: rgba(45, 122, 79, 0.1); color: #2D7A4F; border: 1px solid rgba(45, 122, 79, 0.2); }
+        .status-rejected { background: rgba(220, 38, 38, 0.1); color: #DC2626; border: 1px solid rgba(220, 38, 38, 0.2); }
+        .status-in-transit { background: rgba(2, 132, 199, 0.1); color: #0284C7; border: 1px solid rgba(2, 132, 199, 0.2); }
+        .status-delivered { background: rgba(45, 122, 79, 0.1); color: #2D7A4F; border: 1px solid rgba(45, 122, 79, 0.2); }
         .footer {
-          margin-top: 40px;
+          margin-top: 50px;
           padding-top: 20px;
-          border-top: 2px solid #ecf0f1;
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
           text-align: center;
-          color: #95a5a6;
-          font-size: 11px;
+          color: #9CA3AF;
+          font-size: 10px;
         }
-        .text-danger { color: #e74c3c; font-weight: 600; }
-        .text-success { color: #27ae60; font-weight: 600; }
-        .text-warning { color: #f39c12; font-weight: 600; }
-        .text-muted { color: #95a5a6; }
+        .text-danger { color: #DC2626; font-weight: 600; }
+        .text-success { color: #2D7A4F; font-weight: 600; }
+        .text-warning { color: #D97706; font-weight: 600; }
+        .text-muted { color: #6B7280; }
       </style>
     `;
   }
 
-  generateInventoryReport(): void {
-    const inventory = this.sharedData.getInventory();
+  generateInventoryReport(inventory: any[]): void {
     const lowStockCount = inventory.filter(item => item.quantity <= item.reorderLevel).length;
     
     let content = `
@@ -198,8 +213,7 @@ export class PdfReportService {
     this.downloadPdf(content, 'Inventory_Report.pdf');
   }
 
-  generateStockRequestsReport(): void {
-    const requests = this.sharedData.getStockRequests();
+  generateStockRequestsReport(requests: any[]): void {
     const pending = requests.filter(r => r.status === 'PENDING').length;
     const approved = requests.filter(r => r.status === 'APPROVED').length;
     const rejected = requests.filter(r => r.status === 'REJECTED').length;
@@ -276,8 +290,7 @@ export class PdfReportService {
     this.downloadPdf(content, 'Stock_Requests_Report.pdf');
   }
 
-  generateDeliveriesReport(): void {
-    const deliveries = this.sharedData.getDeliveries();
+  generateDeliveriesReport(deliveries: any[]): void {
     const inTransit = deliveries.filter(d => d.status === 'IN_TRANSIT').length;
     const delivered = deliveries.filter(d => d.status === 'DELIVERED').length;
     
@@ -475,6 +488,84 @@ export class PdfReportService {
     `;
     
     this.downloadPdf(content, 'Analytics_Report.pdf');
+  }
+
+  generateReconciliationReport(records: any[]): void {
+    const matched = records.filter(r => r.status === 'MATCHED').length;
+    const discrepancies = records.filter(r => r.status === 'DISCREPANCY').length;
+    
+    let content = `
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Stock Reconciliation Report</title>
+        ${this.getBaseStyle()}
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo-container">
+            <div>
+              <div class="logo-text">WSSCMS</div>
+              <div class="logo-subtitle">Supply Chain Management</div>
+            </div>
+          </div>
+          <div class="date-generated">
+            <div><strong>Generated:</strong></div>
+            <div>${new Date().toLocaleString()}</div>
+          </div>
+        </div>
+        
+        <h1>Stock Reconciliation Report</h1>
+        
+        <div class="summary">
+          <strong>Total Records:</strong> ${records.length} | 
+          <strong>Matched:</strong> <span class="text-success">${matched}</span> | 
+          <strong>Discrepancies:</strong> <span class="text-danger">${discrepancies}</span>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Audit Date</th>
+              <th>Product</th>
+              <th>Location</th>
+              <th>System Qty</th>
+              <th>Physical Qty</th>
+              <th>Variance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${records.map(r => {
+              const isDiscrepancy = r.status === 'DISCREPANCY';
+              return `
+                <tr>
+                  <td><strong>${new Date(r.auditDate).toLocaleDateString()}</strong></td>
+                  <td>${r.productName || 'N/A'}</td>
+                  <td>${r.locationName || 'N/A'}</td>
+                  <td>${r.systemQty}</td>
+                  <td>${r.physicalQty}</td>
+                  <td class="${isDiscrepancy ? 'text-danger' : 'text-success'}">${r.variance > 0 ? '+' + r.variance : r.variance}</td>
+                  <td>
+                    <span class="status-badge ${isDiscrepancy ? 'status-rejected' : 'status-approved'}">
+                      ${r.status}
+                    </span>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+        
+        <div class="footer">
+          <p>WSSCMS - Warehouse and Supermarket Supply Chain Management System</p>
+          <p>This is a computer-generated document. No signature required.</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    this.downloadPdf(content, 'Stock_Reconciliation_Report.pdf');
   }
 
   private createPdfDocument(): any {

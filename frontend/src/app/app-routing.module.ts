@@ -47,6 +47,12 @@ import { GrnComponent } from './components/grn/grn.component';
 import { AuditLogsComponent } from './components/audit-logs/audit-logs.component';
 // Supermarket stock monitor: AI replenishment
 import { StockMonitorComponent } from './components/stock-monitor/stock-monitor.component';
+// Reconciliation: admin stock reconciliation
+import { ReconciliationComponent } from './components/reconciliation/reconciliation.component';
+// Reports: system-wide reporting
+import { ReportsComponent } from './components/reports/reports.component';
+// Supermarket POS: processing retail sales
+import { SupermarketPosComponent } from './components/supermarkets/supermarket-pos/supermarket-pos.component';
 
 /**
  * Application route definitions.
@@ -97,6 +103,8 @@ const routes: Routes = [
       { path: 'admin/sales', component: SalesForecastingComponent, data: { roles: ['ROLE_ADMIN'] } },
       { path: 'admin/analytics', component: AnalyticsDashboardComponent, data: { roles: ['ROLE_ADMIN'] } },
       { path: 'admin/audit-logs', component: AuditLogsComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/reconciliation', component: ReconciliationComponent, data: { roles: ['ROLE_ADMIN'] } },
+      { path: 'admin/reports', component: ReportsComponent, data: { roles: ['ROLE_ADMIN'] } },
 
       // ── WAREHOUSE ROUTES ────────────────────────────────────
       { path: 'warehouse', redirectTo: 'warehouse/dashboard', pathMatch: 'full' },
@@ -106,6 +114,7 @@ const routes: Routes = [
       { path: 'warehouse/stock-requests', component: StockRequestsComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
       { path: 'warehouse/deliveries', component: DeliveriesComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
       { path: 'warehouse/analytics', component: AnalyticsDashboardComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
+      { path: 'warehouse/reconciliation', component: ReconciliationComponent, data: { roles: ['ROLE_WAREHOUSE_STAFF', 'ROLE_ADMIN'] } },
 
       // ── SUPERMARKET ROUTES ──────────────────────────────────
       { path: 'supermarket', redirectTo: 'supermarket/dashboard', pathMatch: 'full' },
@@ -114,6 +123,7 @@ const routes: Routes = [
       { path: 'supermarket/stock-requests', component: StockRequestsComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
       { path: 'supermarket/deliveries', component: DeliveriesComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
       { path: 'supermarket/sales', component: SalesForecastingComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
+      { path: 'supermarket/pos', component: SupermarketPosComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_SUPERMARKET_STAFF', 'ROLE_ADMIN'] } },
       { path: 'supermarket/forecasting', component: ForecastingComponent, data: { roles: ['ROLE_SUPERMARKET_MANAGER', 'ROLE_ADMIN'] } },
 
       // Legacy fallback mapping redirects (redirect un-prefixed to default dashboards)

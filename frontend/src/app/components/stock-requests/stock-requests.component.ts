@@ -32,14 +32,11 @@ export class StockRequestsComponent implements OnInit {
     return Math.round((rejected / this.filteredRequests.length) * 100);
   }
 
-  // Filter properties
   searchTerm = '';
   selectedStatus = '';
   selectedSupermarket = '';
-
   supermarkets: any[] = [];
 
-  // Rejection modal state
   showRejectModal = false;
   rejectingRequest: StockRequest | null = null;
   rejectionReason = '';
@@ -56,14 +53,10 @@ export class StockRequestsComponent implements OnInit {
 
   ngOnInit(): void {
     this.sharedData.initializeDefaultData();
-    // Always load hardcoded data first to ensure visibility
     this.addHardcodedRequests();
     this.loading = false;
-
-    // Then try to load from API
     this.loadFromAPI();
 
-    // Subscribe to shared data for real-time updates
     this.sharedData.stockRequests$.subscribe(requests => {
       if (Array.isArray(requests) && requests.length > 0) {
         const products = this.sharedData.getProducts();
@@ -72,7 +65,6 @@ export class StockRequestsComponent implements OnInit {
       }
     });
 
-    // Load static lists for filters
     this.supermarkets = this.sharedData.getSupermarkets();
     this.sharedData.supermarkets$.subscribe(s => this.supermarkets = s);
   }
@@ -80,7 +72,7 @@ export class StockRequestsComponent implements OnInit {
   private enrichRequest(r: any, products: any[]): StockRequest {
     if (!r.product && (r.productId || r.product_id)) {
       const pid = r.productId || r.product_id;
-      r.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
+      r.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unresolved Item', sku: 'PENDING', unitPrice: 0 };
     }
     if (!r.supermarket && (r.supermarketId || r.supermarket_id || r.supermarket)) {
       const sid = r.supermarket?.id || r.supermarketId || r.supermarket_id;
@@ -127,14 +119,12 @@ export class StockRequestsComponent implements OnInit {
         } else if (data && data.data) {
           requestData = data.data;
         }
-        // Accept server data even if it contains flat DTOs (productId/supermarketId)
         if (requestData && requestData.length >= 0) {
-          // Enrich items with nested objects where possible using shared products
           const products = this.sharedData.getProducts();
           const enriched = requestData.map((r: any) => {
             if (!r.product && (r.productId || r.product_id)) {
               const pid = r.productId || r.product_id;
-              r.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
+              r.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unresolved Item', sku: 'PENDING', unitPrice: 0 };
             }
             if (!r.supermarket && (r.supermarketId || r.supermarket_id || r.supermarket)) {
               const sid = r.supermarket?.id || r.supermarketId || r.supermarket_id;
@@ -215,6 +205,7 @@ export class StockRequestsComponent implements OnInit {
     ] as StockRequest[];
 
     this.sharedData.setStockRequests(this.requests);
+    this.applyFilters();
   }
 
   approve(sr: StockRequest): void {
@@ -223,35 +214,22 @@ export class StockRequestsComponent implements OnInit {
     this.service.approveRequest(sr.id, sr.requestedQuantity, approverId).subscribe({
       next: () => {
         this.notifications.success(`✅ Request #${sr.id} approved!`);
-        // Delivery creation is now a manual step handled separately by the warehouse team.
         this.refreshRequests();
-        // Refresh deliveries list from server (delivery created server-side after approval)
         this.deliveryService.getAllDeliveries().subscribe({
-          next: (d: any) => {
-            this.sharedData.setDeliveries(d);
-          },
-          error: (err: any) => {
-            console.warn('Failed to refresh deliveries after approval', err);
-          }
+          next: (d: any) => { this.sharedData.setDeliveries(d); },
+          error: (err: any) => { console.warn('Failed to refresh deliveries after approval', err); }
         });
       },
       error: (err: any) => {
         const msg = err?.error?.message || err?.message || 'Unknown error';
         this.notifications.error('Backend approval failed: ' + msg);
-        // If server reports conflict (already approved or invalid state), refresh from server to update UI
         if (err?.status === 409 || err?.status === 400) {
           this.loadFromAPI();
         }
         this.loading = false;
       }
     });
-    this.auditLog.logStockRequestApproval(
-      approverId,
-      approverName,
-      sr.id,
-      sr.product?.name || 'Unknown Product',
-      sr.requestedQuantity
-    );
+    this.auditLog.logStockRequestApproval(approverId, approverName, sr.id, sr.product?.name || 'Unresolved Item', sr.requestedQuantity);
   }
 
   openRejectModal(sr: StockRequest): void {
@@ -283,13 +261,7 @@ export class StockRequestsComponent implements OnInit {
         this.loading = false;
       }
     });
-    this.auditLog.logStockRequestRejection(
-      approverId,
-      approverName,
-      sr.id,
-      sr.product?.name || 'Unknown Product',
-      reason
-    );
+    this.auditLog.logStockRequestRejection(approverId, approverName, sr.id, sr.product?.name || 'Unresolved Item', reason);
   }
 
   private createDelivery(sr: StockRequest): void {
@@ -298,7 +270,7 @@ export class StockRequestsComponent implements OnInit {
       trackingNumber,
       warehouse: sr.warehouse || { id: 1, name: 'Central Warehouse', code: 'WH-001' },
       supermarket: sr.supermarket || { id: 1, name: 'Unknown Supermarket', code: 'SM-000' },
-      product: sr.product || { id: 1, name: 'Unknown Product', sku: 'UNKNOWN' },
+      product: sr.product || { id: 1, name: 'Unresolved Item', sku: 'PENDING' },
       stockRequest: sr,
       quantity: sr.requestedQuantity,
       status: DeliveryStatus.PENDING,
@@ -316,6 +288,6 @@ export class StockRequestsComponent implements OnInit {
   }
 
   exportToPdf(): void {
-    this.pdfReport.generateStockRequestsReport();
+    this.pdfReport.generateStockRequestsReport(this.filteredRequests);
   }
 }

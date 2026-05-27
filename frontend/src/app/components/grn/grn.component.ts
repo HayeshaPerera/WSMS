@@ -5,6 +5,8 @@ import { GrnService, GrnDTO, GrnItemDTO } from '../../services/grn.service';
 import { WarehouseService } from '../../services/warehouse.service';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
+import { InventoryService } from '../../services/inventory.service';
+import { SharedDataService } from '../../services/shared-data.service';
 
 @Component({
   selector: 'app-grn',
@@ -34,7 +36,9 @@ export class GrnComponent implements OnInit {
     private grnService: GrnService,
     private warehouseService: WarehouseService,
     private productService: ProductService,
-    public authService: AuthService
+    public authService: AuthService,
+    private inventoryService: InventoryService,
+    private sharedData: SharedDataService
   ) {}
 
   ngOnInit(): void {
@@ -187,6 +191,13 @@ export class GrnComponent implements OnInit {
         this.selectedGrn = null;
         this.confirmGrnId = undefined;
         window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'success', title: 'GRN Confirmed', message: `GRN ${targetGrn.grnNumber} confirmed — inventory updated.` } }));
+        // Refresh inventory from backend
+        this.inventoryService.getAllInventory().subscribe({
+          next: (res: any) => {
+            const data = Array.isArray(res) ? res : (res.data || res.content || []);
+            this.sharedData.setInventory(data);
+          }
+        });
       },
       error: () => {
         this.confirmGrnId = undefined;

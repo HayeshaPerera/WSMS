@@ -34,6 +34,13 @@
                 Auto-Seed POS Demo Data
             </button>
 
+            <button class="btn btn-secondary" (click)="runAiForecast()"
+                *ngIf="auth.isAdmin() || auth.isSupermarketManager()"
+                title="Manually trigger AI demand forecasting based on current sales data">
+                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">psychology</span>
+                Run AI Forecast
+            </button>
+
             <button class="btn btn-primary" (click)="toggleRecordForm()"
                 *ngIf="auth.isAdmin() || auth.isSupermarketManager()">
                 <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">add_circle</span>
@@ -236,7 +243,7 @@
                     </thead>
                     <!-- Table body: one row per filtered sale record -->
                     <tbody>
-                        <tr *ngFor="let s of filteredSales">
+                        <tr *ngFor="let s of pagedSales">
                             <!-- Sale date -->
                             <td><span class="text-muted">{{s.saleDate}}</span></td>
                             <!-- Product name and SKU -->
@@ -257,6 +264,14 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Load More button -->
+            <div class="text-center p-3 border-top border-light" *ngIf="displayLimit < filteredSales.length">
+                <button class="btn btn-secondary btn-sm" (click)="loadMoreSales()">
+                    <i class="fas fa-chevron-down mr-1"></i> Load More
+                </button>
+            </div>
+            
         </div>
 
         <!-- Empty state: shown when no sales records match the filters -->

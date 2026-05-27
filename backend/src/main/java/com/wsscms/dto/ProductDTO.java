@@ -26,5 +26,7 @@ public class ProductDTO {
     
     private String unit;
     private Integer reorderLevel;
+    private Integer initialQuantity = 0;
+    private Integer currentQuantity = 0;
     private Boolean active;
 }

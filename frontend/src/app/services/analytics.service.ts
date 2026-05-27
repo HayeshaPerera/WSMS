@@ -158,7 +158,7 @@ export class AnalyticsService {
           reasoning = `Approaching reorder level - proactive reorder recommended`;
         }
         
-        const resolvedProductName = item.product?.name || item.productName || item.product_name || item.name || 'Unknown Product';
+        const resolvedProductName = item.product?.name || item.productName || item.product_name || item.name || 'Unresolved Item';
         const resolvedProductId = item.product?.id || item.productId || item.product_id || item.id;
 
         recommendations.push({

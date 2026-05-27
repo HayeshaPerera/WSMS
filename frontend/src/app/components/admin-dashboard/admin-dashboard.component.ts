@@ -155,7 +155,7 @@ export class AdminDashboardComponent implements OnInit {
 
         if (warningItems.length > 0) {
           this.inventoryWarnings = warningItems.slice(0, 5).map((i: any) => ({
-            product: i.product?.name || 'Unknown Item',
+            product: i.product?.name || 'Unresolved Item',
             current: i.quantity,
             minimum: i.reorderLevel || 10,
             warehouse: i.warehouse?.name || 'N/A',

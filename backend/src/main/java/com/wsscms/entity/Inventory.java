@@ -2,6 +2,7 @@ package com.wsscms.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Where(clause = "is_deleted = false")
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,6 +60,10 @@ public class Inventory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_deleted")
+    @Builder.Default
+    private Boolean isDeleted = false;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -66,6 +72,7 @@ public class Inventory {
         if (quantity == null) quantity = 0;
         if (reorderLevel == null) reorderLevel = 50;
         if (lowStockAlert == null) lowStockAlert = false;
+        if (isDeleted == null) isDeleted = false;
     }
 
     @PreUpdate

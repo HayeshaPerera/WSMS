@@ -22,6 +22,7 @@
         <div class="form-row">
           <label for="username">Username</label>
           <div class="input-with-icon">
+            <span class="material-symbols-outlined icon left-icon">person</span>
             <input 
               type="text" 
               id="username" 
@@ -29,7 +30,6 @@
               [class.error]="usernameInvalid"
               placeholder="Enter username"
             />
-            <span class="material-symbols-outlined icon">person</span>
           </div>
           <span class="field-error" *ngIf="usernameInvalid">Username is required</span>
         </div>
@@ -37,6 +37,7 @@
         <div class="form-row">
           <label for="password">Password</label>
           <div class="input-with-icon">
+            <span class="material-symbols-outlined icon left-icon">lock</span>
             <input 
               [type]="showPassword ? 'text' : 'password'" 
               id="password" 
@@ -51,25 +52,15 @@
           <span class="field-error" *ngIf="passwordInvalid">Password is required</span>
         </div>
 
-        <div class="forgot-link-container">
-          <span class="muted-text">Forgot password? </span>
-          <a href="javascript:void(0)" class="blue-link">Click here</a>
-        </div>
-
         <div class="demo-hint">
           <span class="material-symbols-outlined" style="font-size:14px">info</span>
-          Demo: <strong>admin</strong> / <strong>warehouse1</strong> / <strong>manager1</strong> (pass: <strong>password</strong>)
+          Demo: <strong>admin</strong> / <strong>warehouse1</strong> / <strong>supermarket1</strong> (pass: <strong>password</strong>)
         </div>
 
         <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading">
           <span *ngIf="!loading">Sign In</span>
           <span *ngIf="loading">Signing in...</span>
         </button>
-        
-        <div class="signup-link-container">
-          <span class="muted-text">Don't have an account? </span>
-          <a href="javascript:void(0)" class="blue-link">SignUp</a>
-        </div>
       </form>
 
     </div>

@@ -8,6 +8,10 @@
       <p class="subtitle">Inventory overview for your warehouse location</p>
     </div>
     <div class="d-flex gap-2">
+      <a routerLink="/warehouse/reconciliation" class="btn btn-secondary">
+        <span class="material-symbols-outlined" style="font-size:16px">fact_check</span>
+        Stock Reconciliation
+      </a>
       <a routerLink="/warehouse/grns" class="btn btn-secondary">
         <span class="material-symbols-outlined" style="font-size:16px">receipt_long</span>
         New GRN
@@ -107,7 +111,6 @@
             <th>Quantity</th>
             <th>Reorder At</th>
             <th>Status</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -121,20 +124,6 @@
               <span class="badge" [ngClass]="item.lowStockAlert ? 'badge-critical' : 'badge-approved'">
                 {{ item.lowStockAlert ? 'Low Stock' : 'OK' }}
               </span>
-            </td>
-            <td>
-              <div class="d-flex gap-2" *ngIf="confirmDeleteId !== item.id">
-                <button class="btn btn-ghost btn-sm btn-icon" (click)="edit(item)" title="Edit">
-                  <span class="material-symbols-outlined" style="font-size:15px">edit</span>
-                </button>
-                <button class="btn btn-ghost btn-sm btn-icon" (click)="requestDelete(item.id)" title="Delete">
-                  <span class="material-symbols-outlined" style="font-size:15px; color:var(--danger)">delete</span>
-                </button>
-              </div>
-              <div class="d-flex gap-2" *ngIf="confirmDeleteId === item.id">
-                <button class="btn btn-danger btn-sm" (click)="confirmDelete()">Confirm</button>
-                <button class="btn btn-ghost btn-sm" (click)="cancelDelete()">Cancel</button>
-              </div>
             </td>
           </tr>
         </tbody>

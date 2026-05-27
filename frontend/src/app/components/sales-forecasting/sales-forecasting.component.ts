@@ -44,6 +44,7 @@ export class SalesForecastingComponent implements OnInit {
 
     sales: SaleRecord[] = [];            // Full list of sales records from the backend
     filteredSales: SaleRecord[] = [];    // Sales records after applying filters (displayed in table)
+    displayLimit = 10;                   // Number of rows to show
     loading = true;                      // Whether sales data is currently being loaded
 
     // ========== Forecasting Data Properties ==========
@@ -227,8 +228,23 @@ export class SalesForecastingComponent implements OnInit {
 
         // Update the filtered list that the table displays
         this.filteredSales = result;
+        this.displayLimit = 10; // Reset display limit on filter change
         // Recalculate KPIs based on the filtered data
         this.computeKPIs();
+    }
+
+    /**
+     * Slices the filtered sales up to the display limit for rendering
+     */
+    get pagedSales(): SaleRecord[] {
+        return this.filteredSales.slice(0, this.displayLimit);
+    }
+
+    /**
+     * Expands the table by increasing the display limit
+     */
+    loadMoreSales(): void {
+        this.displayLimit += 10;
     }
 
     /**
@@ -465,6 +481,28 @@ export class SalesForecastingComponent implements OnInit {
             error: (err: any) => {
                 this.loading = false;
                 this.notifications.error('Failed to generate simulated sales: ' + (err.error?.message || err.message));
+            }
+        });
+    }
+
+    /**
+     * Manually triggers the AI Demand Forecast generation on the backend.
+     */
+    runAiForecast(): void {
+        const user = this.auth.getCurrentUser();
+        const activeSupermarketId = this.auth.isSupermarketManager() ? (user?.supermarketId || 1) : 1;
+
+        this.forecastLoading = true;
+        this.notifications.info('Triggering AI Forecast generation...');
+
+        this.forecastService.generateForecasts(activeSupermarketId, 7).subscribe({
+            next: (res: any) => {
+                this.notifications.success('AI forecasts generated successfully!');
+                this.loadForecasts();
+            },
+            error: (err: any) => {
+                this.forecastLoading = false;
+                this.notifications.error('Failed to generate forecasts: ' + (err.error?.message || err.message));
             }
         });
     }

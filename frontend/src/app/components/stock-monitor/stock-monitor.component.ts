@@ -94,7 +94,7 @@ export class StockMonitorComponent implements OnInit {
         if (!it) return it;
         if (!it.product) {
           const found = products.find((p: any) => p && p.id === (it.productId || it.product?.id));
-          it.product = found || { id: it.productId || null, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
+          it.product = found || { id: it.productId || null, name: 'Unresolved Item', sku: 'PENDING', unitPrice: 0 };
         }
         return it;
       });
