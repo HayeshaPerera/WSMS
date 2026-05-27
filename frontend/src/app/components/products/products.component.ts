@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { SharedDataService } from '../../services/shared-data.service';
 import { NotificationService } from '../../services/notification.service';
+import { InventoryService } from '../../services/inventory.service';
 import { Product } from '../../models/models';
 import { AuthService } from '../../services/auth.service';
 
@@ -26,11 +27,13 @@ export class ProductsComponent implements OnInit {
     description: '',
     reorderLevel: 20,
     minStockLevel: 10,
+    initialQuantity: 0,
     perishable: false
   };
 
   constructor(
     private service: ProductService,
+    private inventoryService: InventoryService,
     private sharedData: SharedDataService,
     private notifications: NotificationService,
     public auth: AuthService
@@ -45,11 +48,11 @@ export class ProductsComponent implements OnInit {
     this.service.getAll().subscribe({
       next: (data: any) => {
         this.products = Array.isArray(data) ? data : (data.data || []);
-        if (this.products.length === 0) this.addHardcodedProducts();
+        this.sharedData.setProducts(this.products);
         this.loading = false;
       },
       error: () => {
-        this.addHardcodedProducts();
+        console.error('Failed to load products');
         this.loading = false;
       }
     });
@@ -69,27 +72,48 @@ export class ProductsComponent implements OnInit {
     return this.products.filter(p => p.perishable).length;
   }
 
-  addHardcodedProducts(): void {
-    const now = new Date();
-    this.products = [
-      { id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy', unitPrice: 899.00, reorderLevel: 50, minStockLevel: 30, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery', unitPrice: 449.00, reorderLevel: 40, minStockLevel: 20, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages', unitPrice: 2499.00, reorderLevel: 30, minStockLevel: 10, perishable: false, active: true, createdAt: now, updatedAt: now },
-      { id: 4, sku: 'PROD004', name: 'Cheddar Cheese Block', category: 'Dairy', unitPrice: 1199.00, reorderLevel: 25, minStockLevel: 8, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 5, sku: 'PROD005', name: 'Chicken Breast (1kg)', category: 'Meat', unitPrice: 1599.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy', unitPrice: 599.00, reorderLevel: 45, minStockLevel: 20, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 7, sku: 'PROD007', name: 'Olive Oil 500ml', category: 'Cooking', unitPrice: 1899.00, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: now, updatedAt: now },
-      { id: 8, sku: 'PROD008', name: 'Brown Rice 2kg', category: 'Grains', unitPrice: 749.00, reorderLevel: 30, minStockLevel: 12, perishable: false, active: true, createdAt: now, updatedAt: now },
-      { id: 9, sku: 'PROD009', name: 'Fresh Orange Juice 1L', category: 'Beverages', unitPrice: 649.00, reorderLevel: 50, minStockLevel: 20, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 10, sku: 'PROD010', name: 'Pasta 500g', category: 'Grains', unitPrice: 399.00, reorderLevel: 60, minStockLevel: 25, perishable: false, active: true, createdAt: now, updatedAt: now },
-      { id: 11, sku: 'PROD011', name: 'Tomato Sauce 400g', category: 'Canned Goods', unitPrice: 299.00, reorderLevel: 40, minStockLevel: 18, perishable: false, active: true, createdAt: now, updatedAt: now },
-      { id: 12, sku: 'PROD012', name: 'Greek Yogurt 500g', category: 'Dairy', unitPrice: 749.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 13, sku: 'PROD013', name: 'Honey 350g', category: 'Spreads', unitPrice: 1299.00, reorderLevel: 25, minStockLevel: 10, perishable: false, active: true, createdAt: now, updatedAt: now },
-      { id: 14, sku: 'PROD014', name: 'Strawberries 250g', category: 'Produce', unitPrice: 899.00, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: now, updatedAt: now },
-      { id: 15, sku: 'PROD015', name: 'Butter 200g', category: 'Dairy', unitPrice: 549.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: now, updatedAt: now }
-    ] as Product[];
-    this.sharedData.setProducts(this.products);
+  // Pagination and sorting
+  page = 1;
+  pageSize = 10;
+  sortBy = 'latest';
+
+  get totalPages(): number {
+    return Math.ceil(this.products.length / this.pageSize);
   }
+
+  get paginatedProducts(): Product[] {
+    let sorted = [...this.products];
+    if (this.sortBy === 'latest') {
+      sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    } else if (this.sortBy === 'oldest') {
+      sorted.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+    } else if (this.sortBy === 'nameAsc') {
+      sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } else if (this.sortBy === 'nameDesc') {
+      sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+    }
+
+    const start = (this.page - 1) * this.pageSize;
+    return sorted.slice(start, start + this.pageSize);
+  }
+
+  changePage(newPage: number): void {
+    if (newPage >= 1 && newPage <= this.totalPages) {
+      this.page = newPage;
+    }
+  }
+
+  changePageSize(event: any): void {
+    this.pageSize = parseInt(event.target.value, 10);
+    this.page = 1;
+  }
+
+  changeSort(event: any): void {
+    this.sortBy = event.target.value;
+    this.page = 1;
+  }
+
+
 
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
@@ -109,6 +133,7 @@ export class ProductsComponent implements OnInit {
       description: product.description || '',
       reorderLevel: product.reorderLevel,
       minStockLevel: product.minStockLevel,
+      initialQuantity: 0,
       perishable: product.perishable
     };
     this.showAddForm = true;
@@ -128,20 +153,15 @@ export class ProductsComponent implements OnInit {
         updatedAt: new Date()
       };
 
-      const idx = this.products.findIndex(p => p.id === updated.id);
-      if (idx !== -1) this.products[idx] = updated;
-
-      this.sharedData.updateProduct(updated.id, updated);
-      this.notifications.success(`✅ Product "${updated.name}" updated successfully`);
-
       this.service.update(updated.id, updated).subscribe({
-        next: () => console.log('Update synced with backend'),
-        error: () => console.log('Update sync failed')
+        next: () => {
+          this.notifications.success(`✅ Product "${updated.name}" updated successfully`);
+          this.loadProducts(); // Refresh from backend
+        },
+        error: () => this.notifications.error('Update sync failed')
       });
     } else {
-      const newId = Math.max(...this.products.map(p => p.id), 0) + 1;
-      const product: Product = {
-        id: newId,
+      const product: any = {
         sku: this.newProduct.sku,
         name: this.newProduct.name,
         category: this.newProduct.category,
@@ -149,19 +169,29 @@ export class ProductsComponent implements OnInit {
         description: this.newProduct.description,
         reorderLevel: this.newProduct.reorderLevel,
         minStockLevel: this.newProduct.minStockLevel,
+        initialQuantity: this.newProduct.initialQuantity, // Pass initial quantity to backend
         perishable: this.newProduct.perishable,
-        active: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        active: true
       };
 
-      this.products.unshift(product);
-      this.sharedData.addProduct(product);
-      this.notifications.success(`✅ Product "${product.name}" added successfully`);
-
       this.service.create(product).subscribe({
-        next: () => console.log('Product synced with backend'),
-        error: () => console.log('Backend sync failed, using local data')
+        next: (res: any) => {
+          this.notifications.success(`✅ Product "${product.name}" added successfully`);
+          this.loadProducts(); // Refresh from backend
+          
+          // Trigger an inventory refresh if needed
+          setTimeout(() => {
+            this.inventoryService.getAllInventory().subscribe({
+              next: (inventoryData: any) => {
+                const inventory = Array.isArray(inventoryData) ? inventoryData : (inventoryData.data || []);
+                this.sharedData.setInventory(inventory);
+              }
+            });
+          }, 500);
+        },
+        error: () => {
+          this.notifications.error('Failed to create product');
+        }
       });
     }
 
@@ -186,13 +216,21 @@ export class ProductsComponent implements OnInit {
   confirmDeleteProduct() {
     const product = this.confirmProduct;
     if (!product) return;
-    this.products = this.products.filter(p => p.id !== product.id);
-    this.sharedData.deleteProduct(product.id);
-    this.notifications.success(`Product "${product.name}" deleted`);
-
+    
     this.service.delete(product.id).subscribe({
-      next: () => console.log('Delete synced with backend'),
-      error: () => console.log('Backend sync failed')
+      next: () => {
+        this.notifications.success(`Product "${product.name}" deleted`);
+        this.loadProducts(); // Refresh from backend
+        
+        // Refresh inventory to reflect deletion
+        this.inventoryService.getAllInventory().subscribe({
+          next: (inventoryData: any) => {
+            const inventory = Array.isArray(inventoryData) ? inventoryData : (inventoryData.data || []);
+            this.sharedData.setInventory(inventory);
+          }
+        });
+      },
+      error: () => this.notifications.error('Failed to delete product')
     });
     this.cancelDeleteProduct();
   }
@@ -206,6 +244,7 @@ export class ProductsComponent implements OnInit {
       description: '',
       reorderLevel: 20,
       minStockLevel: 10,
+      initialQuantity: 0,
       perishable: false
     };
   }

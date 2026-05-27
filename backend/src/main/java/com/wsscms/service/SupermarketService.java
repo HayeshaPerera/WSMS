@@ -48,6 +48,9 @@ public class SupermarketService {
     }
 
     public SupermarketDTO createSupermarket(SupermarketDTO supermarketDTO) {
+        if (supermarketRepository.count() >= 1) {
+            throw new IllegalArgumentException("System is configured to allow only one supermarket.");
+        }
         if (supermarketRepository.existsByCode(supermarketDTO.getCode())) {
             throw new IllegalArgumentException("Supermarket code already exists");
         }

@@ -92,7 +92,6 @@
             <th>Stock</th>
             <th>Par Level</th>
             <th>Status</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -104,12 +103,6 @@
               <span class="badge" [ngClass]="item.lowStockAlert ? 'badge-critical' : 'badge-approved'">
                 {{ item.lowStockAlert ? 'Low' : 'OK' }}
               </span>
-            </td>
-            <td>
-              <button *ngIf="item.lowStockAlert" class="btn btn-primary btn-sm"
-                (click)="requestForm.productId = (item.product?.id || 0).toString(); toggleRequestForm()">
-                Request
-              </button>
             </td>
           </tr>
         </tbody>

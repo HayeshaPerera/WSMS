@@ -1,0 +1,90 @@
+<div class="pos-container">
+  <div class="header-section mb-4">
+    <h2><i class="fas fa-cash-register text-success"></i> Point of Sale</h2>
+    <p class="text-muted">Process sales and automatically update inventory stock</p>
+  </div>
+
+  <div class="pos-grid">
+    <!-- Left: Search and Product List -->
+    <div class="search-section">
+      <div class="search-bar">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search products by name or SKU..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterItems()"
+        >
+      </div>
+
+      <div class="items-grid">
+        <div class="item-card" 
+             *ngFor="let item of filteredItems" 
+             [class.selected]="selectedItem?.id === item.id"
+             (click)="selectItem(item)">
+          <div class="item-name">{{ item.product?.name || 'Unknown' }}</div>
+          <div class="item-sku">{{ item.product?.sku || 'N/A' }}</div>
+          
+          <div class="item-stock mt-2">
+            <span [class.stock-low]="item.quantity <= (item.reorderLevel || 10)" 
+                  [class.stock-ok]="item.quantity > (item.reorderLevel || 10)">
+              <i class="fas" [ngClass]="item.quantity <= (item.reorderLevel || 10) ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
+              In Stock: {{ item.quantity }}
+            </span>
+          </div>
+          
+          <div class="item-price">LKR {{ (item.product?.unitPrice || 0) | number:'1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Checkout -->
+    <div class="checkout-section">
+      <div class="checkout-header">
+        Current Sale
+      </div>
+
+      <div *ngIf="!selectedItem" class="text-center text-muted my-5 py-5">
+        <i class="fas fa-shopping-basket fa-3x mb-3 opacity-50"></i>
+        <p>Select a product to begin sale</p>
+      </div>
+
+      <div *ngIf="selectedItem" class="checkout-details">
+        <div class="selected-item-info">
+          <h4 class="m-0">{{ selectedItem.product?.name }}</h4>
+          <small class="text-white-50">SKU: {{ selectedItem.product?.sku }}</small>
+          
+          <div class="mt-2 d-flex justify-content-between">
+             <span>Price:</span>
+             <strong>LKR {{ selectedItem.product?.unitPrice | number:'1.2-2' }}</strong>
+          </div>
+          <div class="mt-1 d-flex justify-content-between text-white-50">
+             <span>Available:</span>
+             <span>{{ selectedItem.quantity }} units</span>
+          </div>
+        </div>
+
+        <label class="text-white-50 text-uppercase" style="font-size:12px; letter-spacing:1px;">Quantity</label>
+        <div class="qty-control">
+          <button class="qty-btn" (click)="quantity = quantity - 1" [disabled]="quantity <= 1 || isProcessing">
+            <i class="fas fa-minus"></i>
+          </button>
+          <input type="number" class="qty-input" [(ngModel)]="quantity" min="1" [max]="selectedItem.quantity" [disabled]="isProcessing">
+          <button class="qty-btn" (click)="quantity = quantity + 1" [disabled]="quantity >= selectedItem.quantity || isProcessing">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+
+        <div class="total-row">
+          <span>Total:</span>
+          <span>LKR {{ totalAmount | number:'1.2-2' }}</span>
+        </div>
+
+        <button class="btn-complete" (click)="completeSale()" [disabled]="isProcessing || quantity > selectedItem.quantity">
+          <span *ngIf="!isProcessing">Complete Sale <i class="fas fa-arrow-right ms-2"></i></span>
+          <span *ngIf="isProcessing" class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

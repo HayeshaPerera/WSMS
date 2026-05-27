@@ -105,23 +105,21 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        // Get current user and their warehouse
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Warehouse warehouse = user.getWarehouse();
-        if (warehouse == null) {
-            throw new IllegalArgumentException("Current user is not assigned to a warehouse");
-        }
+        Integer initialQty = productDTO.getInitialQuantity() != null ? productDTO.getInitialQuantity() : 0;
+        Integer reorderLevel = productDTO.getReorderLevel() != null ? productDTO.getReorderLevel() : 50;
+        boolean lowStockAlert = initialQty <= reorderLevel;
 
-        // Add product to this warehouse's inventory
-        Inventory inventory = new Inventory();
-        inventory.setProduct(savedProduct);
-        inventory.setWarehouse(warehouse);
-        inventory.setQuantity(0); // default quantity
-        inventory.setReorderLevel(productDTO.getReorderLevel() != null ? productDTO.getReorderLevel() : 50);
-        inventoryRepository.save(inventory);
+        List<Warehouse> warehouses = warehouseRepository.findAll();
+        for (Warehouse warehouse : warehouses) {
+            Inventory warehouseInventory = new Inventory();
+            warehouseInventory.setProduct(savedProduct);
+            warehouseInventory.setWarehouse(warehouse);
+            warehouseInventory.setQuantity(initialQty);
+            warehouseInventory.setReorderLevel(reorderLevel);
+            warehouseInventory.setLowStockAlert(lowStockAlert);
+            warehouseInventory.setIsDeleted(false);
+            inventoryRepository.save(warehouseInventory);
+        }
 
         return convertToDTO(savedProduct);
     }
@@ -152,10 +150,12 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new EntityNotFoundException("Product not found with id: " + id);
-        }
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+        
+        // Soft delete: set is_deleted flag to true
+        product.setIsDeleted(true);
+        productRepository.save(product);
     }
 
     private ProductDTO convertToDTO(Product product) {
@@ -169,6 +169,19 @@ public class ProductService {
         dto.setUnit(product.getUnit());
         dto.setReorderLevel(product.getReorderLevel());
         dto.setActive(product.getActive());
+        
+        // Get current quantity from primary warehouse inventory
+        try {
+            List<Inventory> inventories = inventoryRepository.findByProductId(product.getId());
+            if (!inventories.isEmpty()) {
+                dto.setCurrentQuantity(inventories.get(0).getQuantity());
+            } else {
+                dto.setCurrentQuantity(0);
+            }
+        } catch (Exception e) {
+            dto.setCurrentQuantity(0);
+        }
+        
         return dto;
     }
 }

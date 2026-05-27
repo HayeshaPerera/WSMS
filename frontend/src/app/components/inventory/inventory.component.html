@@ -1,6 +1,5 @@
 <div class="animate-fade-up">
 
-  <!-- Page Header -->
   <div class="page-header">
     <div class="page-header-left">
       <h1>Inventory Management</h1>
@@ -15,6 +14,14 @@
         <span class="material-symbols-outlined" style="font-size:16px">add</span>
         {{ showAddForm ? 'Cancel' : 'Register Stock' }}
       </button>
+    </div>
+  </div>
+
+  <!-- Supermarket Notice Banner -->
+  <div class="alert alert-info mb-4" *ngIf="auth.isSupermarketManager()" style="background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.2); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; color: #075985;">
+    <span class="material-symbols-outlined">info</span>
+    <div style="font-size: 13px; font-weight: 500;">
+      <strong>Note:</strong> Supermarket inventory is automatically updated when deliveries are received from the warehouse. To request more stock, use the Stock Requests module.
     </div>
   </div>
 
@@ -129,6 +136,21 @@
           Clear Filters
         </button>
       </div>
+
+      <div class="d-flex gap-2 align-items-center">
+        <select [(ngModel)]="sortBy" (change)="changeSort($event)" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="latest">Sort: Latest Update</option>
+          <option value="oldest">Sort: Oldest Update</option>
+          <option value="nameAsc">Sort: Name (A-Z)</option>
+          <option value="nameDesc">Sort: Name (Z-A)</option>
+        </select>
+        <select [(ngModel)]="pageSize" (change)="changePageSize($event)" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="10">10 per page</option>
+          <option value="20">20 per page</option>
+          <option value="50">50 per page</option>
+          <option value="10000">All</option>
+        </select>
+      </div>
     </div>
 
     <div *ngIf="loading" class="empty-state">
@@ -157,7 +179,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of filteredItems" [style.background]="item.quantity <= item.reorderLevel ? 'rgba(220,38,38,0.02)' : ''">
+        <tr *ngFor="let item of paginatedItems" [style.background]="item.quantity <= item.reorderLevel ? 'rgba(220,38,38,0.02)' : ''">
           <td>
             <div style="font-weight:700">{{ item.product?.name }}</div>
             <div style="font-size:11px; color:var(--text-muted); display:flex; gap:8px">
@@ -182,6 +204,14 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="modal-footer d-flex justify-between align-center" *ngIf="!loading && filteredItems.length > 0">
+      <span class="text-muted" style="font-size:13px">Showing page {{page}} of {{totalPages || 1}} ({{filteredItems.length}} total)</span>
+      <div class="d-flex gap-2">
+        <button class="btn btn-ghost btn-sm" [disabled]="page === 1" (click)="changePage(page - 1)">Previous</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="page >= totalPages" (click)="changePage(page + 1)">Next</button>
+      </div>
+    </div>
   </div>
 
 </div>

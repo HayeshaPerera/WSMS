@@ -37,6 +37,9 @@ public class WarehouseService {
     }
 
     public WarehouseDTO createWarehouse(WarehouseDTO warehouseDTO) {
+        if (warehouseRepository.count() >= 1) {
+            throw new IllegalArgumentException("System is configured to allow only one warehouse.");
+        }
         if (warehouseRepository.existsByCode(warehouseDTO.getCode())) {
             throw new IllegalArgumentException("Warehouse code already exists");
         }

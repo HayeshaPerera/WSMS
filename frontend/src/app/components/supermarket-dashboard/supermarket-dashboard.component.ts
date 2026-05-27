@@ -152,7 +152,7 @@ export class SupermarketDashboardComponent implements OnInit {
     return items.map(it => {
       if (!it.product) {
         const found = products.find((p: any) => p.id === (it.productId || it.product?.id));
-        it.product = found || { id: it.productId || null, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
+        it.product = found || { id: it.productId || null, name: 'Unresolved Item', sku: 'PENDING', unitPrice: 0 };
       }
       return it;
     });
@@ -307,7 +307,7 @@ export class SupermarketDashboardComponent implements OnInit {
     if (!r.product && (r.productId || r.product_id)) {
       const pid = r.productId || r.product_id;
       const prod = this.sharedData.getProducts().find((p: any) => p.id === pid);
-      r.product = prod || { id: pid, name: 'Unknown Product', sku: 'N/A', unitPrice: 0 };
+      r.product = prod || { id: pid, name: 'Unresolved Item', sku: 'PENDING', unitPrice: 0 };
     }
     // Attach supermarket object if missing
     if (!r.supermarket && (r.supermarketId || r.supermarket_id || r.supermarket)) {

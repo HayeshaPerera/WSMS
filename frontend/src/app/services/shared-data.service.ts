@@ -32,12 +32,12 @@ export class SharedDataService {
         this.addDelivery(delivery);
       }
     }
-  private stockRequestsSubject = new BehaviorSubject<any[]>(this.loadFromStorage('stockRequests', []));
-  private deliveriesSubject = new BehaviorSubject<any[]>(this.loadFromStorage('deliveries', []));
-  private inventorySubject = new BehaviorSubject<any[]>(this.loadFromStorage('inventory', []));
-  private productsSubject = new BehaviorSubject<any[]>(this.loadFromStorage('products', []));
-  private warehousesSubject = new BehaviorSubject<any[]>(this.loadFromStorage('warehouses', []));
-  private supermarketsSubject = new BehaviorSubject<any[]>(this.loadFromStorage('supermarkets', []));
+  private stockRequestsSubject = new BehaviorSubject<any[]>([]);
+  private deliveriesSubject = new BehaviorSubject<any[]>([]);
+  private inventorySubject = new BehaviorSubject<any[]>([]);
+  private productsSubject = new BehaviorSubject<any[]>([]);
+  private warehousesSubject = new BehaviorSubject<any[]>([]);
+  private supermarketsSubject = new BehaviorSubject<any[]>([]);
 
   public stockRequests$ = this.stockRequestsSubject.asObservable();
   public deliveries$ = this.deliveriesSubject.asObservable();
@@ -47,53 +47,6 @@ export class SharedDataService {
   public supermarkets$ = this.supermarketsSubject.asObservable();
 
   constructor() {
-    // If no stock requests in local storage, add demo data
-    if (this.stockRequestsSubject.value.length === 0) {
-      const demoRequests = [
-        {
-          id: 1,
-          requestNumber: 'REQ-2026-001',
-          supermarket: { id: 1, name: 'Downtown Market', code: 'SM-001' },
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
-          product: { id: 1, name: 'Premium Coffee Beans', sku: 'PRD-001' },
-          requestedQuantity: 100,
-          approvedQuantity: 0,
-          status: 'PENDING',
-          priority: 'MEDIUM',
-          requestedAt: new Date('2026-02-01'),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: 2,
-          requestNumber: 'REQ-2026-002',
-          supermarket: { id: 2, name: 'Eastside Grocery', code: 'SM-002' },
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
-          product: { id: 2, name: 'Organic Honey', sku: 'PRD-002' },
-          requestedQuantity: 50,
-          approvedQuantity: 0,
-          status: 'PENDING',
-          priority: 'HIGH',
-          requestedAt: new Date('2026-02-02'),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ];
-      this.stockRequestsSubject.next(demoRequests);
-      this.saveToStorage('stockRequests', demoRequests);
-    }
-
-    // Re-normalize any stored inventory on startup so older localStorage shapes
-    // don't render as 'Unknown Product' in the UI.
-    try {
-      const currentInv = this.inventorySubject.value || [];
-      if (Array.isArray(currentInv) && currentInv.length > 0) {
-        // reuse setInventory normalization
-        this.setInventory(currentInv);
-      }
-    } catch (e) {
-      console.debug('Failed to re-normalize stored inventory on startup', e);
-    }
   }
 
   // Stock Requests Management
@@ -180,7 +133,7 @@ export class SharedDataService {
   }
 
   deleteInventoryItem(id: number): void {
-    const inventory = [...this.inventorySubject.value];
+    const inventory = this.inventorySubject.value.filter((i: any) => i.id !== id);
     this.inventorySubject.next(inventory);
     this.saveToStorage('inventory', inventory);
   }
@@ -302,7 +255,7 @@ export class SharedDataService {
         if (found) {
           item.product = { ...found };
         } else {
-          item.product = item.product || { id: pid || null, name: pname || 'Unknown Product', sku: item.productSku || item.sku || 'N/A', unitPrice: item.unitPrice || 0 };
+          item.product = item.product || { id: pid || null, name: pname || 'Standard Local Supply', sku: item.productSku || item.sku || 'N/A', unitPrice: item.unitPrice || 0 };
         }
       }
 
@@ -417,47 +370,7 @@ export class SharedDataService {
 
   // Local Storage Helpers
   private saveToStorage(key: string, data: any): void {
-    try {
-      localStorage.setItem(`wsms_${key}`, JSON.stringify(data));
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-    }
-  }
-
-  private loadFromStorage(key: string, defaultValue: any): any {
-    try {
-      const stored = localStorage.getItem(`wsms_${key}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // Convert date strings back to Date objects
-        return this.convertDates(parsed);
-      }
-    } catch (error) {
-      console.error('Failed to load from localStorage:', error);
-    }
-    return defaultValue;
-  }
-
-  private convertDates(obj: any): any {
-    if (obj === null || obj === undefined) return obj;
-    if (Array.isArray(obj)) {
-      return obj.map(item => this.convertDates(item));
-    }
-    if (typeof obj === 'object') {
-      const converted: any = {};
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          const value = obj[key];
-          if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-            converted[key] = new Date(value);
-          } else {
-            converted[key] = this.convertDates(value);
-          }
-        }
-      }
-      return converted;
-    }
-    return obj;
+    // Disabled for strict backend reliance
   }
 
   clearAll(): void {
@@ -465,9 +378,5 @@ export class SharedDataService {
     this.deliveriesSubject.next([]);
     this.inventorySubject.next([]);
     this.productsSubject.next([]);
-    localStorage.removeItem('wsms_stockRequests');
-    localStorage.removeItem('wsms_deliveries');
-    localStorage.removeItem('wsms_inventory');
-    localStorage.removeItem('wsms_products');
   }
 }

@@ -44,6 +44,8 @@ import { ProductsComponent } from './components/products/products.component';
 import { WarehousesComponent } from './components/warehouses/warehouses.component';
 // Supermarkets: CRUD management for store locations (admin only)
 import { SupermarketsComponent } from './components/supermarkets/supermarkets.component';
+// Supermarket POS
+import { SupermarketPosComponent } from './components/supermarkets/supermarket-pos/supermarket-pos.component';
 // Users: staff management and role assignment (admin only)
 import { UsersComponent } from './components/users/users.component';
 // Navbar: top navigation bar, sidebar menu, and notification bell
@@ -69,6 +71,8 @@ import { KpiCardComponent } from './components/shared/kpi-card/kpi-card.componen
 // Specialized Core Screens
 import { AuditLogsComponent } from './components/audit-logs/audit-logs.component';
 import { StockMonitorComponent } from './components/stock-monitor/stock-monitor.component';
+import { ReconciliationComponent } from './components/reconciliation/reconciliation.component';
+import { ReportsComponent } from './components/reports/reports.component';
 
 /**
  * AppModule is the root module of the WSMS Angular application.
@@ -103,7 +107,10 @@ import { StockMonitorComponent } from './components/stock-monitor/stock-monitor.
     StatusBadgeComponent,          // Reusable Status Badge
     KpiCardComponent,              // Reusable KPI Metrics Card
     AuditLogsComponent,            // System Audit Ledger
-    StockMonitorComponent          // Supermarket Stock Replenishment Monitor
+    StockMonitorComponent,         // Supermarket Stock Replenishment Monitor
+    ReconciliationComponent,       // Stock Reconciliation
+    ReportsComponent,              // Admin Reports Dashboard
+    SupermarketPosComponent        // Supermarket POS Module
   ],
   // Import required Angular modules
   imports: [

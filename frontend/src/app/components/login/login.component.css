@@ -84,8 +84,7 @@ label {
 
 input {
   width: 100%;
-  padding: 12px 14px;
-  padding-right: 42px;
+  padding: 12px 42px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border);
   background: var(--bg-page);
@@ -105,14 +104,20 @@ input.error {
   border-color: var(--danger);
 }
 
-.input-with-icon .icon {
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+.input-with-icon .left-icon {
   position: absolute;
-  right: 14px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 20px;
   color: var(--text-muted);
   pointer-events: none;
+  z-index: 2;
 }
 
 .password-toggle {
@@ -130,7 +135,10 @@ input.error {
   z-index: 5;
 }
 
+/* Reset position for the icon inside the toggle button so it doesn't fly to the left */
 .password-toggle .icon {
+  position: static !important;
+  transform: none !important;
   pointer-events: auto !important;
 }
 

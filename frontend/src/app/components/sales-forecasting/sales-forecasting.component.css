@@ -62,14 +62,14 @@
     background: rgba(0, 0, 0, 0.05);
 }
 
-/* Active tab button - gold accent with glow */
+/* Active tab button - sleek green accent with glow */
 .tab-btn.active {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
-    /* Gold gradient */
-    color: #FFD700;
-    /* Gold text color */
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.1);
-    /* Subtle gold glow */
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(46, 125, 50, 0.1));
+    /* Green gradient */
+    color: #4CAF50;
+    /* Green text color */
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+    /* Subtle green glow */
 }
 
 /* ========================

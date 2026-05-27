@@ -93,7 +93,7 @@ export class DeliveriesComponent implements OnInit {
     if (!d.product && (d.productId || d.product_id)) {
       const pid = d.productId || d.product_id;
       const matched = products.find((p: any) => p && (p.id == pid || String(p.id) === String(pid)));
-      d.product = matched || { id: pid, name: 'Unknown Product', sku: 'N/A' };
+      d.product = matched || { id: pid, name: 'Unresolved Item', sku: 'PENDING' };
     }
     if (!d.warehouse && (d.warehouseId || d.warehouse_id)) {
       const wid = d.warehouseId || d.warehouse_id;
@@ -173,7 +173,7 @@ export class DeliveriesComponent implements OnInit {
 
             if (!d.product && (d.productId || d.product_id)) {
               const pid = d.productId || d.product_id;
-              d.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unknown Product', sku: 'N/A' };
+              d.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unresolved Item', sku: 'PENDING' };
             }
             if (!d.warehouse && (d.warehouseId || d.warehouse_id)) {
               const wid = d.warehouseId || d.warehouse_id;
@@ -543,6 +543,6 @@ export class DeliveriesComponent implements OnInit {
   }
 
   exportToPdf(): void {
-    this.pdfReport.generateDeliveriesReport();
+    this.pdfReport.generateDeliveriesReport(this.filteredDeliveries);
   }
 }

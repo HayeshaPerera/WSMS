@@ -104,4 +104,8 @@ export class InventoryService {
   deleteInventory(id: number): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(`${this.apiUrl}/${id}`);
   }
+
+  adjustQuantity(id: number, adjustment: number): Observable<ApiResponse> {
+    return this.http.patch<ApiResponse>(`${this.apiUrl}/${id}/adjust?adjustment=${adjustment}`, {});
+  }
 }

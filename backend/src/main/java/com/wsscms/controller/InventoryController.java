@@ -86,7 +86,7 @@ public class InventoryController {
     }
 
     @PatchMapping("/{id}/adjust")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('WAREHOUSE_MANAGER') or hasRole('WAREHOUSE_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'WAREHOUSE_STAFF', 'SUPERMARKET_MANAGER', 'SUPERMARKET_STAFF')")
     public ResponseEntity<ApiResponse<InventoryDTO>> adjustQuantity(@PathVariable Long id, @RequestParam Integer adjustment) {
         InventoryDTO updatedInventory = inventoryService.adjustQuantity(id, adjustment);
         return ResponseEntity.ok(ApiResponse.success("Inventory adjusted successfully", updatedInventory));

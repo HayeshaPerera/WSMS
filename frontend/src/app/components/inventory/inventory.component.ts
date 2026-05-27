@@ -38,6 +38,30 @@ export class InventoryComponent implements OnInit {
   selectedCategory = '';
   selectedWarehouse = '';
   showLowStockOnly = false;
+  sortBy = 'latest'; // latest, oldest, nameAsc, nameDesc
+
+  // Pagination properties
+  page = 1;
+  pageSize = 10;
+  get totalPages(): number {
+    return Math.ceil(this.filteredItems.length / this.pageSize);
+  }
+  
+  get paginatedItems(): Inventory[] {
+    let sorted = [...this.filteredItems];
+    if (this.sortBy === 'latest') {
+      sorted.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
+    } else if (this.sortBy === 'oldest') {
+      sorted.sort((a, b) => new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime());
+    } else if (this.sortBy === 'nameAsc') {
+      sorted.sort((a, b) => (a.product?.name || '').localeCompare(b.product?.name || ''));
+    } else if (this.sortBy === 'nameDesc') {
+      sorted.sort((a, b) => (b.product?.name || '').localeCompare(a.product?.name || ''));
+    }
+
+    const start = (this.page - 1) * this.pageSize;
+    return sorted.slice(start, start + this.pageSize);
+  }
 
   categories = ['Dairy', 'Bakery', 'Beverages', 'Meat', 'Produce', 'Grains', 'Canned Goods', 'Spreads', 'Cooking', 'Snacks', 'Frozen'];
   warehouses: any[] = [];
@@ -72,45 +96,39 @@ export class InventoryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Always load hardcoded data first to ensure visibility
-    this.addHardcodedInventory();
-    this.addHardcodedProducts();
-    this.addHardcodedWarehouses();
-    this.filteredItems = [...this.items];
-    this.loading = false;
-
-    // Then try to load from API (will merge/update if successful)
-    this.loadInventoryFromAPI();
-    this.loadProductsFromAPI();
     this.loadWarehousesFromAPI();
 
-    // If admin, also fetch warehouses and supermarkets for full view
-    const user = this.auth.getCurrentUser();
-    if (user && this.auth.isAdmin()) {
-      this.supermarketService.getAll().subscribe({ next: (data: any) => this.sharedData.setSupermarkets(data), error: () => console.log('Failed to load supermarkets') });
-    }
+    // Subscribe to shared inventory - this is the authoritative live list
+    this.sharedData.inventory$.subscribe(inv => {
+      if (Array.isArray(inv)) {
+        this.items = inv;
+        this.applyFilters();
+        this.loading = false;
+      }
+    });
 
-    // Subscribe to shared warehouses to keep local list updated
+    // Subscribe to shared products for enrichment
+    this.sharedData.products$.subscribe(products => {
+      if (Array.isArray(products) && products.length > 0) {
+        this.availableProducts = products;
+      }
+    });
+
+    // Subscribe to shared warehouses
     this.sharedData.warehouses$.subscribe(whs => {
       if (Array.isArray(whs) && whs.length > 0) {
         this.warehouses = whs;
       }
     });
 
-    // Re-enrich inventory whenever products are loaded/updated (handles async arrival)
-    this.sharedData.products$.subscribe(products => {
-      if (Array.isArray(products) && products.length > 0) {
-        this.reEnrichInventory();
-      }
-    });
-  }
+    // Load data from API
+    this.loadProductsFromAPI();
 
-  addHardcodedWarehouses(): void {
-    this.warehouses = [
-      { id: 1, name: 'Central Warehouse', code: 'WH01' },
-      { id: 2, name: 'North Distribution Center', code: 'WH02' },
-      { id: 3, name: 'South Logistics Hub', code: 'WH03' }
-    ];
+    // If admin, also fetch supermarkets
+    const user = this.auth.getCurrentUser();
+    if (user && this.auth.isAdmin()) {
+      this.supermarketService.getAll().subscribe({ next: (data: any) => this.sharedData.setSupermarkets(data), error: () => {} });
+    }
   }
 
   loadWarehousesFromAPI(): void {
@@ -135,7 +153,7 @@ export class InventoryComponent implements OnInit {
       if (!Array.isArray(this.items) || this.items.length === 0) return;
       let changed = false;
       this.items = this.items.map(it => {
-        if (!it.product || !it.product.name || it.product.name === 'Unknown Product') {
+        if (!it.product || !it.product.name || it.product.name === 'Unknown Product' || it.product.name === 'Unresolved Item') {
           const pid = it.product?.id;
           const pname = it.product?.name;
           let found = null;
@@ -163,7 +181,6 @@ export class InventoryComponent implements OnInit {
   }
 
   loadInventoryFromAPI(): void {
-    // If logged-in user is a supermarket user, fetch supermarket-scoped inventory
     const user = this.auth.getCurrentUser();
     let inventory$;
     if (user && (this.auth.isSupermarketManager() || user.supermarketId)) {
@@ -187,28 +204,15 @@ export class InventoryComponent implements OnInit {
           inventoryData = data.content;
         }
 
-        // Only use API data if it has valid product information
-        const hasValidProducts = inventoryData.length > 0 &&
-          inventoryData.every(item => item.product && item.product.name && item.product.sku && item.product.unitPrice);
-
-        if (hasValidProducts) {
-          this.items = inventoryData;
+        const enriched = this.enrichInventoryWithProducts(inventoryData);
+        if (enriched) {
+          this.items = enriched;
           this.filteredItems = [...this.items];
           this.sharedData.setInventory(this.items);
-        } else {
-          // If API data lacks nested product objects, try to enrich from shared products
-          const enriched = this.enrichInventoryWithProducts(inventoryData);
-          if (enriched && enriched.length > 0) {
-            this.items = enriched;
-            this.filteredItems = [...this.items];
-            this.sharedData.setInventory(this.items);
-          }
         }
-        // Otherwise keep the hardcoded data
       },
       error: () => {
-        // Keep hardcoded data on error
-        console.log('Using hardcoded inventory data');
+        console.error('Failed to load inventory');
       }
     });
   }
@@ -247,7 +251,7 @@ export class InventoryComponent implements OnInit {
           it.product = { ...found };
         } else {
           console.debug('Inventory: product enrichment failed for item', it.id || '(no id)', 'pid', pid, 'pname', pname, 'psku', psku, 'productsCount', products.length);
-          it.product = { id: pid || null, name: pname || 'Unknown Product', sku: psku || 'N/A', unitPrice: 0 };
+          it.product = { id: pid || null, name: pname || 'Standard Local Supply', sku: psku || 'LOC-SUPPLY', unitPrice: 500 };
         }
       }
 
@@ -275,305 +279,20 @@ export class InventoryComponent implements OnInit {
           productData = products.content;
         }
 
-        // Only use API data if it has valid product information
-        const hasValidProducts = productData.length > 0 &&
-          productData.every(p => p.name && p.sku && p.unitPrice);
-
-        if (hasValidProducts) {
-          this.availableProducts = productData;
-          this.sharedData.setProducts(this.availableProducts);
-        }
-        // Otherwise keep the hardcoded data
+        this.availableProducts = productData;
+        this.sharedData.setProducts(this.availableProducts);
+        
+        // Load inventory after products are ready
+        this.loadInventoryFromAPI();
       },
       error: () => {
-        // Keep hardcoded data on error
-        console.log('Using hardcoded products data');
+        console.error('Failed to load products');
+        this.loadInventoryFromAPI();
       }
     });
   }
 
-  addHardcodedInventory(): void {
-    this.items = [
-      {
-        id: 1,
-        product: {
-          id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy',
-          unitPrice: 899.00, description: 'Fresh organic whole milk 1L',
-          reorderLevel: 50, minStockLevel: 30, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 150,
-        reorderLevel: 50,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 2,
-        product: {
-          id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery',
-          unitPrice: 449.00, description: 'Freshly baked white bread loaf',
-          reorderLevel: 40, minStockLevel: 20, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 200,
-        reorderLevel: 40,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 3,
-        product: {
-          id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages',
-          unitPrice: 2499.00, description: 'Premium arabica ground coffee 500g',
-          reorderLevel: 30, minStockLevel: 10, perishable: false, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 85,
-        reorderLevel: 30,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 4,
-        product: {
-          id: 4, sku: 'PROD004', name: 'Cheddar Cheese Block', category: 'Dairy',
-          unitPrice: 1199.00, description: 'Aged cheddar cheese 500g block',
-          reorderLevel: 25, minStockLevel: 8, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
 
-        warehouse: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 18,
-        reorderLevel: 25,
-        lastUpdated: new Date(),
-        lowStockAlert: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 5,
-        product: {
-          id: 5, sku: 'PROD005', name: 'Chicken Breast (1kg)', category: 'Meat',
-          unitPrice: 1599.00, description: 'Fresh boneless chicken breast 1kg',
-          reorderLevel: 35, minStockLevel: 15, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 65,
-        reorderLevel: 35,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 6,
-        product: {
-          id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy',
-          unitPrice: 599.00, description: 'Farm fresh eggs, dozen pack',
-          reorderLevel: 45, minStockLevel: 20, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 320,
-        reorderLevel: 45,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 7,
-        product: {
-          id: 7, sku: 'PROD007', name: 'Olive Oil 500ml', category: 'Cooking',
-          unitPrice: 1899.00, description: 'Extra virgin olive oil 500ml',
-          reorderLevel: 20, minStockLevel: 8, perishable: false, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 12,
-        reorderLevel: 20,
-        lastUpdated: new Date(),
-        lowStockAlert: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 8,
-        product: {
-          id: 8, sku: 'PROD008', name: 'Brown Rice 2kg', category: 'Grains',
-          unitPrice: 749.00, description: 'Organic brown rice 2kg pack',
-          reorderLevel: 30, minStockLevel: 12, perishable: false, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 3, code: 'WH03', name: 'South Logistics Hub', location: 'Galle', capacity: 6000, currentStock: 2800, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 95,
-        reorderLevel: 30,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 9,
-        product: {
-          id: 9, sku: 'PROD009', name: 'Fresh Orange Juice 1L', category: 'Beverages',
-          unitPrice: 649.00, description: 'Freshly squeezed orange juice 1L',
-          reorderLevel: 50, minStockLevel: 20, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 42,
-        reorderLevel: 50,
-        lastUpdated: new Date(),
-        lowStockAlert: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 10,
-        product: {
-          id: 10, sku: 'PROD010', name: 'Pasta 500g', category: 'Grains',
-          unitPrice: 399.00, description: 'Italian spaghetti pasta 500g',
-          reorderLevel: 60, minStockLevel: 25, perishable: false, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 180,
-        reorderLevel: 60,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 11,
-        product: {
-          id: 11, sku: 'PROD011', name: 'Tomato Sauce 400g', category: 'Canned Goods',
-          unitPrice: 299.00, description: 'Premium tomato pasta sauce 400g',
-          reorderLevel: 40, minStockLevel: 18, perishable: false, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 25,
-        reorderLevel: 40,
-        lastUpdated: new Date(),
-        lowStockAlert: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 12,
-        product: {
-          id: 12, sku: 'PROD012', name: 'Greek Yogurt 500g', category: 'Dairy',
-          unitPrice: 749.00, description: 'Creamy Greek yogurt 500g',
-          reorderLevel: 35, minStockLevel: 15, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 88,
-        reorderLevel: 35,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 13,
-        product: {
-          id: 13, sku: 'PROD013', name: 'Honey 350g', category: 'Spreads',
-          unitPrice: 1299.00, description: 'Pure natural honey 350g',
-          reorderLevel: 25, minStockLevel: 10, perishable: false, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 3, code: 'WH03', name: 'South Logistics Hub', location: 'Galle', capacity: 6000, currentStock: 2800, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 55,
-        reorderLevel: 25,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 14,
-        product: {
-          id: 14, sku: 'PROD014', name: 'Strawberries 250g', category: 'Produce',
-          unitPrice: 899.00, description: 'Fresh strawberries 250g pack',
-          reorderLevel: 30, minStockLevel: 12, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 8,
-        reorderLevel: 30,
-        lastUpdated: new Date(),
-        lowStockAlert: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 15,
-        product: {
-          id: 15, sku: 'PROD015', name: 'Butter 200g', category: 'Dairy',
-          unitPrice: 549.00, description: 'Salted butter 200g pack',
-          reorderLevel: 35, minStockLevel: 15, perishable: true, active: true,
-          createdAt: new Date(), updatedAt: new Date()
-        },
-        warehouse: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 120,
-        reorderLevel: 35,
-        lastUpdated: new Date(),
-        lowStockAlert: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ] as Inventory[];
-
-    this.sharedData.setInventory(this.items);
-    // If the logged-in user is a supermarket, attach supermarket info to demo items
-    const user = this.auth.getCurrentUser();
-    if (user && user.supermarketId) {
-      const sid = user.supermarketId;
-      this.items = this.items.map(it => ({
-        ...it,
-        supermarket: { id: sid, code: `SM-${sid}`, name: `Supermarket ${sid}` },
-        // hide warehouse from supermarket view
-        warehouse: undefined
-      } as any));
-      this.filteredItems = [...this.items];
-      this.sharedData.setInventory(this.items);
-    }
-  }
-
-  addHardcodedProducts(): void {
-    this.availableProducts = [
-      { id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy', unitPrice: 899.00, reorderLevel: 50, minStockLevel: 30, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery', unitPrice: 449.00, reorderLevel: 40, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages', unitPrice: 2499.00, reorderLevel: 30, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 4, sku: 'PROD004', name: 'Cheddar Cheese Block', category: 'Dairy', unitPrice: 1199.00, reorderLevel: 25, minStockLevel: 8, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 5, sku: 'PROD005', name: 'Chicken Breast (1kg)', category: 'Meat', unitPrice: 1599.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy', unitPrice: 599.00, reorderLevel: 45, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 7, sku: 'PROD007', name: 'Olive Oil 500ml', category: 'Cooking', unitPrice: 1899.00, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 8, sku: 'PROD008', name: 'Brown Rice 2kg', category: 'Grains', unitPrice: 749.00, reorderLevel: 30, minStockLevel: 12, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 9, sku: 'PROD009', name: 'Fresh Orange Juice 1L', category: 'Beverages', unitPrice: 649.00, reorderLevel: 50, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 10, sku: 'PROD010', name: 'Pasta 500g', category: 'Grains', unitPrice: 399.00, reorderLevel: 60, minStockLevel: 25, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 11, sku: 'PROD011', name: 'Tomato Sauce 400g', category: 'Canned Goods', unitPrice: 299.00, reorderLevel: 40, minStockLevel: 18, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 12, sku: 'PROD012', name: 'Greek Yogurt 500g', category: 'Dairy', unitPrice: 749.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 13, sku: 'PROD013', name: 'Honey 350g', category: 'Spreads', unitPrice: 1299.00, reorderLevel: 25, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 14, sku: 'PROD014', name: 'Strawberries 250g', category: 'Produce', unitPrice: 899.00, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 15, sku: 'PROD015', name: 'Butter 200g', category: 'Dairy', unitPrice: 549.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }
-    ] as Product[];
-
-    this.sharedData.setProducts(this.availableProducts);
-  }
 
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
@@ -583,7 +302,7 @@ export class InventoryComponent implements OnInit {
   }
 
   exportToPdf(): void {
-    this.pdfReport.generateInventoryReport();
+    this.pdfReport.generateInventoryReport(this.filteredItems);
   }
 
   applyFilters(): void {
@@ -621,6 +340,22 @@ export class InventoryComponent implements OnInit {
   toggleLowStockFilter(): void {
     this.showLowStockOnly = !this.showLowStockOnly;
     this.applyFilters();
+  }
+
+  changePage(newPage: number): void {
+    if (newPage >= 1 && newPage <= this.totalPages) {
+      this.page = newPage;
+    }
+  }
+
+  changePageSize(event: any): void {
+    this.pageSize = parseInt(event.target.value, 10);
+    this.page = 1; // Reset to first page
+  }
+
+  changeSort(event: any): void {
+    this.sortBy = event.target.value;
+    this.page = 1; // Reset to first page
   }
 
   onProductSelect(event: any): void {
@@ -700,76 +435,46 @@ export class InventoryComponent implements OnInit {
   }
 
   createInventoryEntry(product: Product, persistToBackend: boolean = true): void {
-    // Validate product has an ID when persisting to backend
-    if (persistToBackend && (!product || !product.id)) {
-      console.error('Invalid product - no ID for backend sync:', product);
-      this.notifications.error('Product must have a valid backend ID to sync');
-      // Add local item only, do not attempt backend sync
-      return;
-    }
+    const warehouseId = this.newInventory.warehouseId || 1;
+    
+    const existingIndex = this.items.findIndex(i => 
+      i.product?.id === product.id && i.warehouse?.id === warehouseId
+    );
 
-    const warehouseMap: { [key: number]: any } = {
-      1: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-      2: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-      3: { id: 3, code: 'WH03', name: 'South Logistics Hub', location: 'Galle', capacity: 6000, currentStock: 2800, active: true, createdAt: new Date(), updatedAt: new Date() }
-    };
-
-    const newId = Math.max(...this.items.map(i => i.id), 0) + 1;
-    const user = this.auth.getCurrentUser();
-    const userWhId = user?.warehouseId || (user as any)?.warehouseId;
-    const warehouseId = userWhId || this.newInventory.warehouseId || 1;
-    const selectedWarehouse = warehouseMap[warehouseId] || warehouseMap[1];
-
-    const newInventoryItem: Inventory = {
-      id: newId,
-      product: product,
-      warehouse: selectedWarehouse,
+    const payload = {
+      productId: product.id,
+      warehouseId: warehouseId,
       quantity: this.newInventory.quantity,
-      reorderLevel: this.newInventory.reorderLevel || product.reorderLevel || 20,
-      lastUpdated: new Date(),
-      lowStockAlert: this.newInventory.quantity <= (this.newInventory.reorderLevel || 20),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      reorderLevel: this.newInventory.reorderLevel || product.reorderLevel || 20
     };
-
-    // Add to local state immediately for UI update
-    this.items.unshift(newInventoryItem);
-    this.filteredItems = [...this.items];
-    this.sharedData.addInventoryItem(newInventoryItem);
-
-    this.notifications.success(`✅ Inventory added: ${product.name} - ${this.newInventory.quantity} units at ${selectedWarehouse.name}`);
-
-    // Sync with backend only if requested (product has backend id)
-    if (persistToBackend) {
-      const payload = {
-        productId: product.id,
-        warehouseId: warehouseId,
-        quantity: this.newInventory.quantity,
-        reorderLevel: this.newInventory.reorderLevel || product.reorderLevel || 20
+    
+    if (existingIndex > -1) {
+      const existing = this.items[existingIndex];
+      const updatedPayload = {
+        ...payload,
+        quantity: existing.quantity + this.newInventory.quantity
       };
-      console.log('Sending inventory payload:', JSON.stringify(payload));
-      this.inventoryService.createInventory(payload as any).subscribe({
-        next: (res) => {
-          console.log('Inventory synced with backend:', res);
-          const created = res?.data || res;
-          // Ensure created object has nested product for UI
-          if (created && !created.product) {
-            created.product = product;
-          }
-          // Update shared data with created inventory (replace local placeholder if needed)
-          this.sharedData.addInventoryItem(created);
+      
+      this.inventoryService.updateInventory(existing.id, updatedPayload as any).subscribe({
+        next: () => {
+          this.notifications.success(`✅ Stock updated for ${product.name}`);
+          this.loadInventoryFromAPI();
+          this.resetForm();
+          this.showAddForm = false;
         },
-        error: (err) => {
-          console.log('Backend sync info:', err?.error?.message || 'Using local storage');
-          // Keep local data - already added above, this is fine for demo
-        }
+        error: () => this.notifications.error(`Failed to update stock`)
       });
     } else {
-      console.log('Skipping backend sync for inventory — product not persisted on backend');
+      this.inventoryService.createInventory(payload as any).subscribe({
+        next: () => {
+          this.notifications.success(`✅ Stock created for ${product.name}`);
+          this.loadInventoryFromAPI();
+          this.resetForm();
+          this.showAddForm = false;
+        },
+        error: () => this.notifications.error(`Failed to create stock`)
+      });
     }
-
-    this.resetForm();
-    this.showAddForm = false;
   }
 
   resetForm(): void {
