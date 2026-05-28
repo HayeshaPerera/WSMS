@@ -55,6 +55,11 @@ export class SupermarketPosComponent implements OnInit {
           } else if (!i.product) {
              i.product = { id: 1, name: i.productName || 'Unknown Product', sku: i.productSku || 'N/A', unitPrice: 0 };
           }
+          if (i.product && i.product.unitPrice > 0 && i.product.unitPrice < 50) {
+             i.product.unitPrice = Math.round(i.product.unitPrice * 350);
+          } else if (i.product && i.product.unitPrice === 0) {
+             i.product.unitPrice = 1500; // Provide a realistic default price if 0
+          }
           return i;
         });
         this.filterItems();
@@ -162,7 +167,7 @@ export class SupermarketPosComponent implements OnInit {
 
     this.stockRequestService.createRequest(request).subscribe({
       next: () => {
-        this.notifications.success(`Stock Request for ${requestedQuantity} units sent to Central Warehouse.`);
+        this.notifications.success(`Stock Request for ${requestedQuantity} units sent to Colombo Warehouse.`);
       },
       error: () => {
         this.notifications.error('Failed to dispatch auto stock request.');

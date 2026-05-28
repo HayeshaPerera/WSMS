@@ -183,40 +183,39 @@
       </tbody>
     </table>
   </div>
+</div>
 
-  <!-- New Stock Request Slide Panel -->
-  <div *ngIf="showRequestForm" class="panel-overlay" (click)="toggleRequestForm()"></div>
-  <div *ngIf="showRequestForm" class="slide-panel">
-    <div class="slide-panel-header">
-      <h2>New Stock Request</h2>
-      <button class="btn btn-ghost btn-icon" (click)="toggleRequestForm()">
-        <span class="material-symbols-outlined">close</span>
-      </button>
+<!-- New Stock Request Slide Panel -->
+<div *ngIf="showRequestForm" class="panel-overlay" (click)="toggleRequestForm()"></div>
+<div *ngIf="showRequestForm" class="slide-panel">
+  <div class="slide-panel-header">
+    <h2>New Stock Request</h2>
+    <button class="btn btn-ghost btn-icon" (click)="toggleRequestForm()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="slide-panel-body">
+    <div class="form-group">
+      <label>Product</label>
+      <select [(ngModel)]="requestForm.productId" (change)="onProductSelect(requestForm.productId)">
+        <option value="">Select a product...</option>
+        <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.sku }})</option>
+      </select>
     </div>
-    <div class="slide-panel-body">
-      <div class="form-group">
-        <label>Product</label>
-        <select [(ngModel)]="requestForm.productId" (change)="onProductSelect(requestForm.productId)">
-          <option value="">Select a product...</option>
-          <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.sku }})</option>
-        </select>
-      </div>
-      <div *ngIf="availableWarehouseQuantity !== null" class="demo-hint" style="margin-bottom:12px">
-        <span class="material-symbols-outlined" style="font-size:14px">warehouse</span>
-        Available in warehouse: <strong>{{ availableWarehouseQuantity }}</strong> units
-      </div>
-      <div class="form-group">
-        <label>Quantity Requested</label>
-        <input type="number" [(ngModel)]="requestForm.quantity" placeholder="Enter quantity" min="1">
-      </div>
+    <div *ngIf="availableWarehouseQuantity !== null" class="demo-hint" style="margin-bottom:12px">
+      <span class="material-symbols-outlined" style="font-size:14px">warehouse</span>
+      Available in warehouse: <strong>{{ availableWarehouseQuantity }}</strong> units
     </div>
-    <div class="slide-panel-footer">
-      <button class="btn btn-ghost" (click)="toggleRequestForm()">Cancel</button>
-      <button class="btn btn-primary" (click)="submitRequest()">
-        <span class="material-symbols-outlined" style="font-size:16px">send</span>
-        Submit Request
-      </button>
+    <div class="form-group">
+      <label>Quantity Requested</label>
+      <input type="number" [(ngModel)]="requestForm.quantity" placeholder="Enter quantity" min="1">
     </div>
   </div>
-
+  <div class="slide-panel-footer">
+    <button class="btn btn-ghost" (click)="toggleRequestForm()">Cancel</button>
+    <button class="btn btn-primary" (click)="submitRequest()">
+      <span class="material-symbols-outlined" style="font-size:16px">send</span>
+      Submit Request
+    </button>
+  </div>
 </div>

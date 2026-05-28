@@ -30,7 +30,7 @@ export class SupermarketDashboardComponent implements OnInit {
 
   // Demo KPIs and panels to enrich dashboard
   kpis = [
-    { label: 'Sales Today', value: '$12.4k' },
+    { label: 'Sales Today', value: 'LKR 385k' },
     { label: 'Low Stock SKUs', value: '7' },
     { label: 'Open Requests', value: '3' },
     { label: 'Incoming Deliveries', value: '2' }
@@ -224,8 +224,7 @@ export class SupermarketDashboardComponent implements OnInit {
       productId: parseInt(this.requestForm.productId),
       requestedQuantity: parseInt(this.requestForm.quantity),
       status: 'PENDING',
-      priority: 'MEDIUM',
-      requestedAt: new Date()
+      priority: 'MEDIUM'
     };
 
     this.requestService.createRequest(newRequest as any).subscribe({
@@ -237,7 +236,7 @@ export class SupermarketDashboardComponent implements OnInit {
           id: created?.id || Date.now(),
           requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
           supermarket: { id: this.supermarketId, code: `SM${this.supermarketId}`, name: `Supermarket ${this.supermarketId}` },
-          warehouse: { id: newRequest.warehouseId || 1, code: `WH${newRequest.warehouseId || 1}`, name: 'Central Warehouse' },
+          warehouse: { id: newRequest.warehouseId || 1, code: `WH${newRequest.warehouseId || 1}`, name: 'Colombo Warehouse' },
           product: created?.product || product,
           requestedQuantity: newRequest.requestedQuantity,
           status: created?.status || 'PENDING',
@@ -270,9 +269,9 @@ export class SupermarketDashboardComponent implements OnInit {
 
   addHardcodedInventory(): void {
     this.inventory = [
-      { id: 1, product: { id: 1, sku: 'PROD001', name: 'Milk 1L', category: 'Dairy', unitPrice: 2.99, minStockLevel: 30, perishable: true, active: true, reorderLevel: 50, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Downtown Market' } as any, quantity: 45, reorderLevel: 50, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
-      { id: 2, product: { id: 3, sku: 'PROD003', name: 'Eggs Dozen', category: 'Dairy', unitPrice: 3.49, minStockLevel: 25, perishable: true, active: true, reorderLevel: 30, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Downtown Market' } as any, quantity: 28, reorderLevel: 30, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
-      { id: 3, product: { id: 5, sku: 'PROD005', name: 'Butter 200g', category: 'Dairy', unitPrice: 3.99, minStockLevel: 25, perishable: true, active: true, reorderLevel: 35, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Downtown Market' } as any, quantity: 60, reorderLevel: 35, lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() } as any
+      { id: 1, product: { id: 1, sku: 'PROD001', name: 'Milk 1L', category: 'Dairy', unitPrice: 1047, minStockLevel: 30, perishable: true, active: true, reorderLevel: 50, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Colombo Supermarket' } as any, quantity: 45, reorderLevel: 50, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 2, product: { id: 3, sku: 'PROD003', name: 'Eggs Dozen', category: 'Dairy', unitPrice: 1222, minStockLevel: 25, perishable: true, active: true, reorderLevel: 30, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Colombo Supermarket' } as any, quantity: 28, reorderLevel: 30, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 3, product: { id: 5, sku: 'PROD005', name: 'Butter 200g', category: 'Dairy', unitPrice: 1397, minStockLevel: 25, perishable: true, active: true, reorderLevel: 35, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Colombo Supermarket' } as any, quantity: 60, reorderLevel: 35, lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() } as any
     ];
     // Update shared inventory so navbar shows demo supermarket inventory
     if (this.inventory && this.inventory.length > 0) {
@@ -282,21 +281,21 @@ export class SupermarketDashboardComponent implements OnInit {
 
   addHardcodedProducts(): void {
     const hardcodedProducts = [
-      { id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy', unitPrice: 4.99, reorderLevel: 50, minStockLevel: 30, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery', unitPrice: 2.49, reorderLevel: 40, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages', unitPrice: 12.99, reorderLevel: 30, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 4, sku: 'PROD004', name: 'Cheddar Cheese Block', category: 'Dairy', unitPrice: 5.99, reorderLevel: 25, minStockLevel: 8, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 5, sku: 'PROD005', name: 'Chicken Breast (1kg)', category: 'Meat', unitPrice: 8.99, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy', unitPrice: 3.49, reorderLevel: 45, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 7, sku: 'PROD007', name: 'Olive Oil 500ml', category: 'Cooking', unitPrice: 9.99, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 8, sku: 'PROD008', name: 'Brown Rice 2kg', category: 'Grains', unitPrice: 7.49, reorderLevel: 30, minStockLevel: 12, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 9, sku: 'PROD009', name: 'Fresh Orange Juice 1L', category: 'Beverages', unitPrice: 5.49, reorderLevel: 50, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 10, sku: 'PROD010', name: 'Pasta 500g', category: 'Grains', unitPrice: 2.99, reorderLevel: 60, minStockLevel: 25, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 11, sku: 'PROD011', name: 'Tomato Sauce 400g', category: 'Canned Goods', unitPrice: 1.99, reorderLevel: 40, minStockLevel: 18, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 12, sku: 'PROD012', name: 'Almond Butter 250g', category: 'Spreads', unitPrice: 11.99, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 13, sku: 'PROD013', name: 'Greek Yogurt 500g', category: 'Dairy', unitPrice: 4.49, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 14, sku: 'PROD014', name: 'Honey 350g', category: 'Spreads', unitPrice: 8.99, reorderLevel: 25, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 15, sku: 'PROD015', name: 'Strawberries 250g', category: 'Produce', unitPrice: 6.49, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }
+      { id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy', unitPrice: 1747, reorderLevel: 50, minStockLevel: 30, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery', unitPrice: 872, reorderLevel: 40, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages', unitPrice: 4547, reorderLevel: 30, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 4, sku: 'PROD004', name: 'Cheddar Cheese Block', category: 'Dairy', unitPrice: 2097, reorderLevel: 25, minStockLevel: 8, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 5, sku: 'PROD005', name: 'Chicken Breast (1kg)', category: 'Meat', unitPrice: 3147, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy', unitPrice: 1222, reorderLevel: 45, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 7, sku: 'PROD007', name: 'Olive Oil 500ml', category: 'Cooking', unitPrice: 3497, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 8, sku: 'PROD008', name: 'Brown Rice 2kg', category: 'Grains', unitPrice: 2622, reorderLevel: 30, minStockLevel: 12, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 9, sku: 'PROD009', name: 'Fresh Orange Juice 1L', category: 'Beverages', unitPrice: 1922, reorderLevel: 50, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 10, sku: 'PROD010', name: 'Pasta 500g', category: 'Grains', unitPrice: 1047, reorderLevel: 60, minStockLevel: 25, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 11, sku: 'PROD011', name: 'Tomato Sauce 400g', category: 'Canned Goods', unitPrice: 697, reorderLevel: 40, minStockLevel: 18, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 12, sku: 'PROD012', name: 'Almond Butter 250g', category: 'Spreads', unitPrice: 4197, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 13, sku: 'PROD013', name: 'Greek Yogurt 500g', category: 'Dairy', unitPrice: 1572, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 14, sku: 'PROD014', name: 'Honey 350g', category: 'Spreads', unitPrice: 3147, reorderLevel: 25, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 15, sku: 'PROD015', name: 'Strawberries 250g', category: 'Produce', unitPrice: 2272, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }
     ] as any;
     this.sharedData.setProducts(hardcodedProducts);
   }

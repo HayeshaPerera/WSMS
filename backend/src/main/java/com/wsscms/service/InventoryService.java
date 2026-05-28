@@ -51,6 +51,14 @@ public class InventoryService {
                 .collect(Collectors.toList());
     }
 
+    public Integer getQuantityByWarehouseAndProduct(Long warehouseId, Long productId) {
+        List<Inventory> inventories = inventoryRepository.findByWarehouseIdAndProductId(warehouseId, productId);
+        if (inventories == null || inventories.isEmpty()) {
+            return 0;
+        }
+        return inventories.stream().mapToInt(Inventory::getQuantity).sum();
+    }
+
     public List<InventoryDTO> getLowStockItems() {
         return inventoryRepository.findLowStockItems().stream()
                 .map(this::convertToDTO)

@@ -1,11 +1,11 @@
 const fs = require('fs');
 
 const products = [
-  { id: 2, sku: 'PROD002', price: 1.50 },
-  { id: 3, sku: 'PROD003', price: 5.00 },
-  { id: 4, sku: 'PROD004', price: 4.00 },
-  { id: 5, sku: 'PROD005', price: 6.50 },
-  { id: 6, sku: 'PROD006', price: 2.00 }
+  { id: 2, sku: 'PROD002', price: 525.00 },
+  { id: 3, sku: 'PROD003', price: 1750.00 },
+  { id: 4, sku: 'PROD004', price: 1400.00 },
+  { id: 5, sku: 'PROD005', price: 2275.00 },
+  { id: 6, sku: 'PROD006', price: 700.00 }
 ];
 
 let sql = 'INSERT INTO sales_history (product_id, supermarket_id, sale_date, quantity_sold, unit_price, total_amount, created_at, is_deleted) VALUES\n';

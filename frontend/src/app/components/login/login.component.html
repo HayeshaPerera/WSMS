@@ -52,10 +52,6 @@
           <span class="field-error" *ngIf="passwordInvalid">Password is required</span>
         </div>
 
-        <div class="demo-hint">
-          <span class="material-symbols-outlined" style="font-size:14px">info</span>
-          Demo: <strong>admin</strong> / <strong>warehouse1</strong> / <strong>supermarket1</strong> (pass: <strong>password</strong>)
-        </div>
 
         <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading">
           <span *ngIf="!loading">Sign In</span>

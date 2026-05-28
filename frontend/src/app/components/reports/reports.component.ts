@@ -44,6 +44,14 @@ export class ReportsComponent implements OnInit {
     const warehouses = this.sharedData.getWarehouses();
 
     return items.map(item => {
+      // Handle nested items (e.g. from Deliveries or Stock Requests)
+      if (item.items && item.items.length > 0 && !item.product && !item.productId) {
+         const firstItem = item.items[0];
+         item.productId = firstItem.productId;
+         item.productName = firstItem.productName;
+         item.quantity = firstItem.expectedQuantity || firstItem.actualQuantity || 0;
+      }
+
       // Products
       if (!item.product && (item.productId || item.product_id)) {
         const pid = item.productId || item.product_id;
@@ -53,8 +61,8 @@ export class ReportsComponent implements OnInit {
         } else {
            item.product = { 
              id: pid, 
-             name: item.productName || 'N/A', 
-             sku: item.productSku || 'N/A', 
+             name: item.productName || 'Unresolved Item', 
+             sku: item.productSku || 'PENDING', 
              unitPrice: 0 
            };
         }
@@ -117,8 +125,36 @@ export class ReportsComponent implements OnInit {
       next: (res: any) => {
         this.loadingReconciliation = false;
         let records = res.data || res || [];
-        records = this.enrichItems(records);
-        this.pdfService.generateReconciliationReport(records);
+        
+        // Flatten reconciliation items for the report
+        let flatRecords: any[] = [];
+        records.forEach((r: any) => {
+           if (r.items && r.items.length > 0) {
+              r.items.forEach((item: any) => {
+                 flatRecords.push({
+                    auditDate: r.reconciliationDate || r.createdAt || new Date(),
+                    locationName: r.locationName || r.warehouse?.name || r.warehouseName || r.supermarket?.name || r.supermarketName || 'Colombo Warehouse',
+                    status: r.status,
+                    productName: item.productName || item.product?.name || 'Unresolved Item',
+                    systemQty: item.systemQuantity !== undefined ? item.systemQuantity : (item.expectedQuantity || 0),
+                    physicalQty: item.physicalCount !== undefined ? item.physicalCount : (item.actualQuantity || 0),
+                    variance: (item.physicalCount || 0) - (item.systemQuantity || 0)
+                 });
+              });
+           } else {
+              flatRecords.push({
+                 auditDate: r.reconciliationDate || r.createdAt || new Date(),
+                 locationName: r.locationName || r.warehouse?.name || r.warehouseName || r.supermarket?.name || r.supermarketName || 'Colombo Warehouse',
+                 status: r.status,
+                 productName: 'N/A',
+                 systemQty: 0,
+                 physicalQty: 0,
+                 variance: 0
+              });
+           }
+        });
+
+        this.pdfService.generateReconciliationReport(flatRecords);
         this.notifications.success('Reconciliation Report generated');
       },
       error: () => {

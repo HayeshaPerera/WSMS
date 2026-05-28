@@ -76,7 +76,7 @@ export class GrnComponent implements OnInit {
 
   private getDemoWarehouses(): any[] {
     return [
-      { id: 1, name: 'Central Warehouse', code: 'WH01' },
+      { id: 1, name: 'Colombo Warehouse', code: 'WH01' },
       { id: 2, name: 'North Distribution Center', code: 'WH02' },
       { id: 3, name: 'South Logistics Hub', code: 'WH03' }
     ];
@@ -96,9 +96,9 @@ export class GrnComponent implements OnInit {
 
   private getDemoProducts(): any[] {
     return [
-      { id: 1, name: 'White Bread Loaf', sku: 'BREAD-W', unitPrice: 1.50 },
-      { id: 2, name: 'Whole Milk 1L', sku: 'MILK-1L', unitPrice: 2.99 },
-      { id: 3, name: 'Fresh Eggs (Dozen)', sku: 'EGGS-12', unitPrice: 3.49 }
+      { id: 1, name: 'White Bread Loaf', sku: 'BREAD-W', unitPrice: 525 },
+      { id: 2, name: 'Whole Milk 1L', sku: 'MILK-1L', unitPrice: 1047 },
+      { id: 3, name: 'Fresh Eggs (Dozen)', sku: 'EGGS-12', unitPrice: 1222 }
     ];
   }
 

@@ -51,7 +51,7 @@ export class AdminDashboardComponent implements OnInit {
     { label: 'Fill Rate', value: '97.4%', delta: '+2.1% vs last week' },
     { label: 'On-Time Delivery', value: '93.6%', delta: '+4 routes stabilized' },
     { label: 'Stockout Risk', value: 'Low (7 SKUs)', delta: 'Auto-reorder triggered' },
-    { label: 'Margin Guardrail', value: '$12.4k saved', delta: 'Optimized replenishment lots' }
+    { label: 'Margin Guardrail', value: 'LKR 385k saved', delta: 'Optimized replenishment lots' }
   ];
 
   inventoryWarnings = [

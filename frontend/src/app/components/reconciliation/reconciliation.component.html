@@ -14,7 +14,7 @@
 
   <!-- New Reconciliation Form -->
   <div class="card mb-4 animate-fade-in" *ngIf="showAddForm">
-    <div style="font-size:15px; font-weight:700; margin-bottom:20px">New Reconciliation — Central Warehouse</div>
+    <div style="font-size:15px; font-weight:700; margin-bottom:20px">New Reconciliation — Colombo Warehouse</div>
 
     <!-- Date & Notes row -->
     <div class="d-flex gap-3 mb-3">
@@ -53,7 +53,7 @@
               (click)="addItemFromInventory(item)">
             <td style="font-weight:500">{{ item.product?.name }}</td>
             <td><code style="font-size:11px; background:var(--bg-page); padding:2px 6px; border-radius:4px">{{ item.product?.sku }}</code></td>
-            <td style="color:var(--text-muted)">{{ item.warehouse?.name || item.supermarket?.name || 'Central Warehouse' }}</td>
+            <td style="color:var(--text-muted)">{{ item.warehouse?.name || item.supermarket?.name || 'Colombo Warehouse' }}</td>
             <td style="font-weight:700" [style.color]="item.lowStockAlert ? 'var(--danger)' : 'inherit'">{{ item.quantity }}</td>
             <td>
               <span class="badge" [ngClass]="item.lowStockAlert ? 'badge-critical' : 'badge-approved'">
@@ -188,7 +188,7 @@
               </span>
               {{ r.reconciliationDate | date:'mediumDate' }}
             </td>
-            <td>{{ r.locationName || 'Central Warehouse' }}</td>
+            <td>{{ r.locationName || 'Colombo Warehouse' }}</td>
             <td>
               <span class="badge" [ngClass]="r.status === 'COMPLETED' ? 'badge-approved' : 'badge-warning'">
                 {{ r.status }}

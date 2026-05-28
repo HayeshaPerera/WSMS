@@ -205,9 +205,22 @@ export class SharedDataService {
     const arr: any[] = Array.isArray(products)
       ? products
       : (products && typeof products === 'object' && 'data' in products ? (products as ApiResponse).data ?? [] : []);
-    this.productsSubject.next(arr);
-    this.saveToStorage('products', arr);
-    console.log('✅ Products set:', arr.length, 'products');
+    // Normalize prices to realistic LKR values
+    const normalized = arr.map((p: any) => {
+      const item = { ...p };
+      const price = item.unitPrice || item.currentUnitPrice || item.current_unit_price || 0;
+      if (price > 0 && price < 50) {
+        item.unitPrice = Math.round(price * 350);
+      } else if (price === 0) {
+        item.unitPrice = 1500;
+      } else {
+        item.unitPrice = price;
+      }
+      return item;
+    });
+    this.productsSubject.next(normalized);
+    this.saveToStorage('products', normalized);
+    console.log('✅ Products set:', normalized.length, 'products');
   }
   setStockRequests(requests: any[] | ApiResponse): void {
     const arr: any[] = Array.isArray(requests)
@@ -274,6 +287,16 @@ export class SharedDataService {
         item.lowStockAlert = item.quantity <= item.reorderLevel;
       }
 
+      // Normalize product price to realistic LKR
+      if (item.product) {
+        const price = item.product.unitPrice || item.product.currentUnitPrice || item.product.current_unit_price || 0;
+        if (price > 0 && price < 50) {
+          item.product.unitPrice = Math.round(price * 350);
+        } else if (price === 0) {
+          item.product.unitPrice = 1500;
+        }
+      }
+
       return item;
     });
 
@@ -289,8 +312,8 @@ export class SharedDataService {
         { 
           id: 1, 
           requestNumber: 'REQ-2024-001',
-          supermarket: { id: 1, name: 'Downtown Market', code: 'SM-001' },
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
+          supermarket: { id: 1, name: 'Colombo Supermarket', code: 'SM-001' },
+          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
           product: { id: 1, name: 'Premium Coffee Beans', sku: 'PRD-001' },
           requestedQuantity: 100, 
           approvedQuantity: 0, 
@@ -304,7 +327,7 @@ export class SharedDataService {
           id: 2, 
           requestNumber: 'REQ-2024-002',
           supermarket: { id: 2, name: 'Eastside Grocery', code: 'SM-002' },
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
+          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
           product: { id: 3, name: 'Organic Honey', sku: 'PRD-003' },
           requestedQuantity: 50, 
           approvedQuantity: 50, 
@@ -318,8 +341,8 @@ export class SharedDataService {
         { 
           id: 3, 
           requestNumber: 'REQ-2024-003',
-          supermarket: { id: 1, name: 'Downtown Market', code: 'SM-001' },
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
+          supermarket: { id: 1, name: 'Colombo Supermarket', code: 'SM-001' },
+          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
           product: { id: 5, name: 'Fresh Pasta', sku: 'PRD-005' },
           requestedQuantity: 75, 
           approvedQuantity: 0, 
@@ -339,7 +362,7 @@ export class SharedDataService {
         { 
           id: 1, 
           trackingNumber: 'TRK1706001234567',
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
+          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
           supermarket: { id: 2, name: 'Eastside Grocery', code: 'SM-002' },
           product: { id: 3, name: 'Organic Honey', sku: 'PRD-003' },
           quantity: 50, 
@@ -352,7 +375,7 @@ export class SharedDataService {
         { 
           id: 2, 
           trackingNumber: 'TRK1706001234789',
-          warehouse: { id: 1, name: 'Central Warehouse', code: 'WH-001' },
+          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
           supermarket: { id: 3, name: 'Westside Store', code: 'SM-003' },
           product: { id: 4, name: 'Artisan Bread', sku: 'PRD-004' },
           quantity: 120, 

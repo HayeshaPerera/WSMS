@@ -17,8 +17,8 @@ import { forkJoin } from 'rxjs';
 })
 export class AnalyticsDashboardComponent implements OnInit {
     public demoInventory: any[] = [
-      { id: 1, product: { id: 1, sku: 'PROD001', name: 'Milk 1L', category: 'Dairy', unitPrice: 2.99, reorderLevel: 50, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 100, reorderLevel: 50, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
-      { id: 2, product: { id: 2, sku: 'PROD002', name: 'Bread Loaf', category: 'Bakery', unitPrice: 1.99, reorderLevel: 40, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 50, reorderLevel: 40, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() }
+      { id: 1, product: { id: 1, sku: 'PROD001', name: 'Milk 1L', category: 'Dairy', unitPrice: 1047, reorderLevel: 50, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 100, reorderLevel: 50, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
+      { id: 2, product: { id: 2, sku: 'PROD002', name: 'Bread Loaf', category: 'Bakery', unitPrice: 697, reorderLevel: 40, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 50, reorderLevel: 40, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() }
     ];
     public demoDeliveries: any[] = [
       { id: 1, trackingNumber: 'TRK-001', product: null, quantity: 100, status: 'DELIVERED', estimatedDelivery: new Date(), actualDelivery: new Date(), createdAt: new Date(), updatedAt: new Date() },
@@ -168,7 +168,7 @@ export class AnalyticsDashboardComponent implements OnInit {
 
     const newRequest = {
       supermarketId: supermarketId,
-      warehouseId: 1, // Central Warehouse
+      warehouseId: 1, // Colombo Warehouse
       productId: rec.productId,
       requestedQuantity: rec.recommendedQuantity,
       status: 'PENDING',
@@ -187,7 +187,7 @@ export class AnalyticsDashboardComponent implements OnInit {
           id: created?.id || Date.now(),
           requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
           supermarket: { id: supermarketId, name: `Supermarket #${supermarketId}` },
-          warehouse: { id: 1, name: 'Central Warehouse' },
+          warehouse: { id: 1, name: 'Colombo Warehouse' },
           product: { id: rec.productId, name: rec.productName },
           requestedQuantity: rec.recommendedQuantity,
           status: 'PENDING',
@@ -235,7 +235,7 @@ export class AnalyticsDashboardComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return '$' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    return 'LKR ' + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
 
   private calculateAlertStats(): void {

@@ -160,61 +160,60 @@
     </div>
 
   </div>
+</div>
 
-  <!-- Add/Edit Inventory Panel -->
-  <div *ngIf="showForm" class="panel-overlay" (click)="toggleForm()"></div>
-  <div *ngIf="showForm" class="slide-panel">
-    <div class="slide-panel-header">
-      <h2>{{ editingId ? 'Edit Inventory' : 'Add Inventory Item' }}</h2>
-      <button class="btn btn-ghost btn-icon" (click)="toggleForm()">
-        <span class="material-symbols-outlined">close</span>
-      </button>
+<!-- Add/Edit Inventory Panel -->
+<div *ngIf="showForm" class="panel-overlay" (click)="toggleForm()"></div>
+<div *ngIf="showForm" class="slide-panel">
+  <div class="slide-panel-header">
+    <h2>{{ editingId ? 'Edit Inventory' : 'Add Inventory Item' }}</h2>
+    <button class="btn btn-ghost btn-icon" (click)="toggleForm()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="slide-panel-body">
+    <div class="form-group">
+      <label>Product</label>
+      <select [(ngModel)]="form.productId" (change)="onProductSelect($event)">
+        <option value="">Select product...</option>
+        <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
+        <option value="new">+ Add New Product</option>
+      </select>
     </div>
-    <div class="slide-panel-body">
+    <ng-container *ngIf="isNewProduct">
       <div class="form-group">
-        <label>Product</label>
-        <select [(ngModel)]="form.productId" (change)="onProductSelect($event)">
-          <option value="">Select product...</option>
-          <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
-          <option value="new">+ Add New Product</option>
+        <label>SKU</label>
+        <input type="text" [(ngModel)]="newProduct.sku" placeholder="e.g. PROD-007">
+      </div>
+      <div class="form-group">
+        <label>Product Name</label>
+        <input type="text" [(ngModel)]="newProduct.name" placeholder="e.g. Organic Yogurt 500g">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select [(ngModel)]="newProduct.category">
+          <option>Dairy</option><option>Bakery</option><option>Beverages</option>
+          <option>Meat</option><option>Produce</option><option>Pantry</option>
         </select>
       </div>
-      <ng-container *ngIf="isNewProduct">
-        <div class="form-group">
-          <label>SKU</label>
-          <input type="text" [(ngModel)]="newProduct.sku" placeholder="e.g. PROD-007">
-        </div>
-        <div class="form-group">
-          <label>Product Name</label>
-          <input type="text" [(ngModel)]="newProduct.name" placeholder="e.g. Organic Yogurt 500g">
-        </div>
-        <div class="form-group">
-          <label>Category</label>
-          <select [(ngModel)]="newProduct.category">
-            <option>Dairy</option><option>Bakery</option><option>Beverages</option>
-            <option>Meat</option><option>Produce</option><option>Pantry</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Unit Price</label>
-          <input type="number" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
-        </div>
-      </ng-container>
       <div class="form-group">
-        <label>Quantity</label>
-        <input type="number" [(ngModel)]="form.quantity" placeholder="0" min="0">
+        <label>Unit Price</label>
+        <input type="number" [(ngModel)]="newProduct.unitPrice" placeholder="0.00">
       </div>
-      <div class="form-group">
-        <label>Reorder Level</label>
-        <input type="number" [(ngModel)]="form.reorderLevel" placeholder="0" min="0">
-      </div>
+    </ng-container>
+    <div class="form-group">
+      <label>Quantity</label>
+      <input type="number" [(ngModel)]="form.quantity" placeholder="0" min="0">
     </div>
-    <div class="slide-panel-footer">
-      <button class="btn btn-ghost" (click)="toggleForm()">Cancel</button>
-      <button class="btn btn-primary" (click)="onSubmit()">
-        {{ editingId ? 'Save Changes' : 'Add to Inventory' }}
-      </button>
+    <div class="form-group">
+      <label>Reorder Level</label>
+      <input type="number" [(ngModel)]="form.reorderLevel" placeholder="0" min="0">
     </div>
   </div>
-
+  <div class="slide-panel-footer">
+    <button class="btn btn-ghost" (click)="toggleForm()">Cancel</button>
+    <button class="btn btn-primary" (click)="onSubmit()">
+      {{ editingId ? 'Save Changes' : 'Add to Inventory' }}
+    </button>
+  </div>
 </div>

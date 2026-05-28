@@ -204,7 +204,7 @@ export class StockMonitorComponent implements OnInit {
 
     const newRequest = {
       supermarketId: this.supermarketId,
-      warehouseId: 1, // Central Warehouse
+      warehouseId: 1, // Colombo Warehouse
       productId: this.selectedProductForRequest.id,
       requestedQuantity: this.requestQuantity,
       status: 'PENDING',
@@ -221,7 +221,7 @@ export class StockMonitorComponent implements OnInit {
           id: created?.id || Date.now(),
           requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
           supermarket: { id: this.supermarketId, name: this.supermarketName },
-          warehouse: { id: 1, name: 'Central Warehouse' },
+          warehouse: { id: 1, name: 'Colombo Warehouse' },
           product: this.selectedProductForRequest,
           requestedQuantity: this.requestQuantity,
           status: 'PENDING',

@@ -34,6 +34,14 @@ public class InventoryController {
         return ResponseEntity.ok(ApiResponse.success(inventory));
     }
 
+    @GetMapping("/warehouse/{warehouseId}/product/{productId}/quantity")
+    public ResponseEntity<Integer> getQuantityByWarehouseAndProduct(
+            @PathVariable Long warehouseId,
+            @PathVariable Long productId) {
+        Integer quantity = inventoryService.getQuantityByWarehouseAndProduct(warehouseId, productId);
+        return ResponseEntity.ok(quantity);
+    }
+
     @GetMapping("/supermarket/{supermarketId}")
     public ResponseEntity<ApiResponse<List<InventoryDTO>>> getInventoryBySupermarket(@PathVariable Long supermarketId) {
         List<InventoryDTO> inventory = inventoryService.getInventoryBySupermarket(supermarketId);

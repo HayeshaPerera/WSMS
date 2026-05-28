@@ -491,8 +491,8 @@ export class PdfReportService {
   }
 
   generateReconciliationReport(records: any[]): void {
-    const matched = records.filter(r => r.status === 'MATCHED').length;
-    const discrepancies = records.filter(r => r.status === 'DISCREPANCY').length;
+    const matched = records.filter(r => r.variance === 0).length;
+    const discrepancies = records.filter(r => r.variance !== 0).length;
     
     let content = `
       <html>
@@ -537,7 +537,7 @@ export class PdfReportService {
           </thead>
           <tbody>
             ${records.map(r => {
-              const isDiscrepancy = r.status === 'DISCREPANCY';
+              const isDiscrepancy = r.variance !== 0;
               return `
                 <tr>
                   <td><strong>${new Date(r.auditDate).toLocaleDateString()}</strong></td>

@@ -93,7 +93,8 @@ export class DeliveriesComponent implements OnInit {
     if (!d.product && (d.productId || d.product_id)) {
       const pid = d.productId || d.product_id;
       const matched = products.find((p: any) => p && (p.id == pid || String(p.id) === String(pid)));
-      d.product = matched || { id: pid, name: 'Unresolved Item', sku: 'PENDING' };
+      const fallbackName = d.productName || d.product_name || 'Unresolved Item';
+      d.product = matched || { id: pid, name: fallbackName, sku: 'PENDING' };
     }
     if (!d.warehouse && (d.warehouseId || d.warehouse_id)) {
       const wid = d.warehouseId || d.warehouse_id;
@@ -173,7 +174,9 @@ export class DeliveriesComponent implements OnInit {
 
             if (!d.product && (d.productId || d.product_id)) {
               const pid = d.productId || d.product_id;
-              d.product = products.find((p: any) => p.id === pid) || { id: pid, name: 'Unresolved Item', sku: 'PENDING' };
+              const matched = products.find((p: any) => p.id === pid);
+              const fallbackName = d.productName || d.product_name || 'Unresolved Item';
+              d.product = matched || { id: pid, name: fallbackName, sku: 'PENDING' };
             }
             if (!d.warehouse && (d.warehouseId || d.warehouse_id)) {
               const wid = d.warehouseId || d.warehouse_id;
@@ -236,8 +239,8 @@ export class DeliveriesComponent implements OnInit {
       {
         id: 1,
         trackingNumber: 'TRK-2026-001',
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 1, code: 'SM01', name: 'Downtown Market', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        supermarket: { id: 1, code: 'SM01', name: 'Colombo Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy', unitPrice: 899.00, reorderLevel: 50, minStockLevel: 30, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
         quantity: 100,
         status: DeliveryStatus.DELIVERED,
@@ -287,8 +290,8 @@ export class DeliveriesComponent implements OnInit {
       {
         id: 4,
         trackingNumber: 'TRK-2026-004',
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 1, code: 'SM01', name: 'Downtown Market', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        supermarket: { id: 1, code: 'SM01', name: 'Colombo Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 14, sku: 'PROD014', name: 'Strawberries 250g', category: 'Produce', unitPrice: 899.00, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
         quantity: 40,
         status: DeliveryStatus.DISPATCHED,
@@ -319,7 +322,7 @@ export class DeliveriesComponent implements OnInit {
       {
         id: 6,
         trackingNumber: 'TRK-2026-006',
-        warehouse: { id: 1, code: 'WH01', name: 'Central Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
         supermarket: { id: 2, code: 'SM02', name: 'Uptown Plaza', location: 'Kandy', storageCapacity: 4000, currentStock: 2000, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery', unitPrice: 449.00, reorderLevel: 40, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
         quantity: 200,

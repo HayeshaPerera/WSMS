@@ -116,8 +116,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Subscribe to the notification list for the dropdown panel
     this.subscriptions.push(
       this.notificationService.notifications$.subscribe(notifs => {
-        // Only show the 10 most recent notifications in the dropdown
-        this.recentNotifications = notifs.slice(0, 10);
+        // Show all recent notifications in the dropdown
+        this.recentNotifications = notifs;
       })
     );
   }
