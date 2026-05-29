@@ -1,73 +1,230 @@
 # Warehouse and Supermarket Supply Chain Management System (WSSCMS)
 
-End-to-end Angular + Spring Boot + PostgreSQL system with JWT auth, role-based access (Admin, Warehouse Staff, Supermarket Manager), inventory sync, stock requests, deliveries, and AI-assisted demand forecasting. Dockerized and ready for AWS.
+A web-based supply chain management system developed using Angular, Spring Boot, and PostgreSQL to manage warehouse and supermarket operations efficiently. The system supports secure JWT authentication, role-based access control, inventory synchronization, stock request handling, delivery management, and AI-assisted demand forecasting. The application is containerized using Docker and designed to be scalable for future expansion.
 
-## Stack
-- Frontend: Angular 17, Chart.js, black/yellow/white theme
-- Backend: Spring Boot 3, Spring Security (JWT), JPA/Hibernate, Apache Commons Math (forecasting)
-- Database: PostgreSQL
-- Container: Docker, docker-compose
+---
 
-## Quick Start (local)
+# Technology Stack
+
+## Frontend
+
+* Angular 17
+* TypeScript
+* Chart.js
+* Responsive UI Design
+
+## Backend
+
+* Spring Boot 3
+* Spring Security with JWT Authentication
+* Spring Data JPA / Hibernate
+* Apache Commons Math for forecasting
+
+## Database
+
+* PostgreSQL
+
+## DevOps & Deployment
+
+* Docker
+* Docker Compose
+* AWS Deployment Ready
+
+---
+
+# Core Features
+
+* JWT-based Authentication & Authorization
+* Role-Based Access Control
+
+  * Admin
+  * Warehouse Staff
+  * Supermarket Manager
+* Inventory Management
+* Stock Request Management
+* Delivery Tracking
+* Inventory Synchronization
+* AI-Assisted Demand Forecasting
+* Responsive Dashboard & Reports
+* Sales Data Management
+
+---
+
+# System Scope
+
+The current implementation supports:
+
+* One warehouse
+* One supermarket
+
+However, the system architecture is designed to be expandable and scalable to support multiple warehouses and supermarkets in future development stages.
+
+---
+
+# Quick Start (Docker)
+
 ```bash
-# from repo root
 docker-compose up --build
 ```
-- Frontend: http://localhost:4200
-- Backend: http://localhost:8080
-- DB: localhost:5432 (wsscms_db / wsscms_user / wsscms_password)
 
-### Without Docker
+## Services
+
+* Frontend: http://localhost:4200
+* Backend: http://localhost:8080
+* Database: PostgreSQL on port 5432
+
+---
+
+# Running Without Docker
+
+## Backend
+
 ```bash
-# backend
 cd backend
 ./mvnw spring-boot:run
+```
 
-# frontend
-cd ../frontend
+## Frontend
+
+```bash
+cd frontend
 npm install
 npm start
 ```
 
-## Auth
-Default users (password `password123`):
-- admin (ROLE_ADMIN)
-- warehouse1, warehouse2 (ROLE_WAREHOUSE_STAFF)
-- supermarket1, supermarket2, supermarket3 (ROLE_SUPERMARKET_MANAGER)
+---
 
-## API Base
-- Auth: /api/auth/login
-- Inventory: /api/inventory
-- Stock Requests: /api/stock-requests
-- Deliveries: /api/deliveries
-- Forecasts: /api/forecast
-- Products: /api/products
-- Warehouses: /api/warehouses
-- Supermarkets: /api/supermarkets
-- Users: /api/users
-- Sales: /api/sales
+# Authentication
 
-See [API.md](API.md) for detailed endpoint documentation with request/response examples.
+## Default Users
 
-## Database Seed
-`database/schema.sql` creates schema, roles, sample users, products, inventory, sales history, stock requests, and deliveries.
+| Username     | Role                     |
+| ------------ | ------------------------ |
+| admin        | ROLE_ADMIN               |
+| warehouse1   | ROLE_WAREHOUSE_STAFF     |
+| supermarket1 | ROLE_SUPERMARKET_MANAGER |
 
-## Docker/AWS Notes
-- Set `jwt.secret` or `JWT_SECRET` to a strong value in production.
-- Configure CORS via `cors.allowed.origins` env or property.
-- For AWS ECS/EKS: build images, push to ECR, deploy compose or k8s manifests. Ensure Postgres storage persistence.
-- See [AWS_DEPLOY.md](AWS_DEPLOY.md) for complete deployment guide with RDS, ECS, ALB, and security checklist.
+Default Password:
 
-## Frontend Theming
-Black primary background, yellow accents, white text (see `src/styles.css`). Responsive tables and dashboards. Role-aware nav and guards.
+```text
+password
+```
 
-## Forecasting
-Uses 90-day weighted moving average + linear regression trend + seasonal factor to produce weekly/monthly predictions and recommended orders.
+---
 
-## Testing
-- Backend: `mvn test`
-- Frontend: `npm test`
+# API Modules
 
-## Notes
-- Response targets: sub-3s typical on modest data sizes; enable DB indexes already defined.
-- Real-time sync hooks implemented via service methods; for production, add websockets if needed.
+| Module         | Endpoint            |
+| -------------- | ------------------- |
+| Authentication | /api/auth/login     |
+| Inventory      | /api/inventory      |
+| Stock Requests | /api/stock-requests |
+| Deliveries     | /api/deliveries     |
+| Forecasting    | /api/forecast       |
+| Products       | /api/products       |
+| Warehouses     | /api/warehouses     |
+| Supermarkets   | /api/supermarkets   |
+| Users          | /api/users          |
+| Sales          | /api/sales          |
+
+Detailed API documentation is available in `API.md`.
+
+---
+
+# Database Initialization
+
+The `database/schema.sql` file initializes:
+
+* Database schema
+* User roles
+* Sample users
+* Products
+* Inventory records
+* Sales history
+* Stock requests
+* Delivery records
+
+---
+
+# AI Forecasting Module
+
+The forecasting module uses:
+
+* Weighted Moving Average (90-day)
+* Linear Regression Trend Analysis
+* Seasonal Factor Calculations
+
+The system generates:
+
+* Weekly demand predictions
+* Monthly demand forecasts
+* Recommended stock order quantities
+
+---
+
+# AWS Deployment
+
+The system is deployment-ready for AWS using:
+
+* Amazon ECS/EKS
+* Amazon RDS (PostgreSQL)
+* Elastic Load Balancer (ALB)
+* Docker Containers
+
+## Production Recommendations
+
+* Configure strong JWT secrets
+* Enable PostgreSQL persistence
+* Configure CORS securely
+
+Deployment details are available in `AWS_DEPLOY.md`.
+
+---
+
+# Testing
+
+## Backend Testing
+
+```bash
+mvn test
+```
+
+## Frontend Testing
+
+```bash
+npm test
+```
+
+---
+
+# Performance Notes
+
+* Optimized database indexing is enabled
+* Typical API response time is under 3 seconds
+* Designed for scalable inventory synchronization
+* Real-time sync hooks are implemented and can be extended using WebSockets for production environments
+
+---
+
+# Frontend Theme
+
+The application UI follows a:
+
+* White primary background
+* Green accent colors
+* Clean and responsive layout
+
+Responsive dashboards, tables, and navigation are implemented for all user roles.
+
+---
+
+# Future Improvements
+
+* Multi-warehouse support
+* Multi-supermarket support
+* Real-time notifications using WebSockets
+* Advanced AI forecasting models
+* Mobile application support
+* QR/barcode integration
+
+---
