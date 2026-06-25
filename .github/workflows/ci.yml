@@ -41,7 +41,7 @@ jobs:
 
       - name: Run backend tests
         working-directory: ./backend
-        run: ./mvnw test -B
+        run: mvn test -B
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/wsscms_test
           SPRING_DATASOURCE_USERNAME: wsscms_user
