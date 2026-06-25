@@ -24,8 +24,8 @@ public class ProphetClientService {
 
     private final WebClient webClient;
 
-    // VIVA CHEAT SHEET: This reads the URL of the Python service from application.properties.
-    // If not found, it defaults to localhost:8000. It uses Spring's modern, non-blocking WebClient.
+    // Injects the Prophet service base URL from configuration (defaulting to localhost:8000).
+    // Configures reactive WebClient for non-blocking HTTP communication.
     public ProphetClientService(@Value("${prophet.service.url:http://localhost:8000}") String prophetUrl) {
         this.webClient = WebClient.builder()
                 .baseUrl(prophetUrl)
@@ -37,9 +37,8 @@ public class ProphetClientService {
      */
     public record SalesRecord(String ds, double y) {}
 
-    // VIVA CHEAT SHEET: This matches the JSON structure expected by FastAPI in Python.
-    // The @JsonProperty annotations are critical! Java standard is camelCase (productId),
-    // but Python relies on snake_case (product_id). Without these, the JSON parsing fails!
+    // DTO matching the JSON schema expected by FastAPI.
+    // @JsonProperty maps Java camelCase to Python snake_case required by Pydantic.
     public record ForecastRequest(
             @JsonProperty("product_id") Long productId,
             @JsonProperty("supermarket_id") Long supermarketId,
@@ -80,10 +79,8 @@ public class ProphetClientService {
             logger.info("Calling Prophet service for product={} supermarket={} periods={}",
                     productId, supermarketId, periods);
 
-            // VIVA CHEAT SHEET: This is the actual network call to the Python microservice.
-            // It sends the JSON payload via POST to the /forecast endpoint.
-            // We set a strict 3-second timeout (`block(Duration.ofSeconds(3))`). If Python is down,
-            // this immediately times out so we can trigger the Linear Regression fallback instead of hanging forever.
+            // Execute synchronous POST request to the forecasting microservice.
+            // Enforces a strict 3-second timeout to fail fast and trigger downstream fallback logic.
             List<Map> rawResult = webClient.post()
                     .uri("/forecast")
                     .bodyValue(requestBody)

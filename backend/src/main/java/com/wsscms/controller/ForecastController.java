@@ -79,10 +79,10 @@ public class ForecastController {
     }
 
     /**
-     * VIVA CHEAT SHEET: This is the most important endpoint for AI. 
-     * It is triggered when the user clicks "Run AI Forecast".
-     * It orchestrates the entire process: grabs historical data, sends it to Prophet (Python),
-     * and if Prophet fails, runs a Linear Regression mathematical fallback.
+     * Orchestrates the demand forecasting generation pipeline.
+     * Triggered from the frontend analytics view.
+     * Grabs historical sales data, proxies to the Python Prophet microservice,
+     * and executes a mathematical Linear Regression fallback if the service is unreachable.
      */
     @PostMapping("/generate")
     public ResponseEntity<ApiResponse<List<DemandForecastDTO>>> generateForecasts(
@@ -101,9 +101,8 @@ public class ForecastController {
             forecastRepository.deleteAll(existing);
         }
 
-        // VIVA CHEAT SHEET: We pre-fetch ALL sales history for the supermarket at once.
-        // Doing this prevents the "N+1 query problem" (where the database is hit hundreds of times)
-        // This is an advanced optimization that makes the application run significantly faster!
+        // Batch fetch all sales history to prevent the N+1 select problem.
+        // Grouping in-memory optimizes database performance during parallel execution.
         List<com.wsscms.entity.SalesHistory> allSalesHistory = salesHistoryRepository.findBySupermarketId(supermarketId);
         java.util.Map<Long, List<com.wsscms.entity.SalesHistory>> historyMap = allSalesHistory.stream()
                 .collect(Collectors.groupingBy(sh -> sh.getProduct().getId()));
@@ -112,9 +111,8 @@ public class ForecastController {
                 .flatMap(product -> {
                     List<com.wsscms.entity.SalesHistory> salesHistory = historyMap.getOrDefault(product.getId(), java.util.Collections.emptyList());
                     
-                    // VIVA CHEAT SHEET: The AI needs a minimum amount of historical data to find a trend.
-                    // If a product has less than 10 sales records, we skip the Python AI
-                    // and immediately use the Linear Regression fallback below.
+                    // ML model requires a baseline threshold of historical data points (>10)
+                    // to compute reliable seasonal patterns. Otherwise bypass to regression fallback.
                     if (salesHistory.size() >= 10) {
                         try {
                             List<ProphetClientService.SalesRecord> history = salesHistory.stream()
@@ -124,8 +122,8 @@ public class ForecastController {
                                     .map(e -> new ProphetClientService.SalesRecord(e.getKey(), e.getValue()))
                                     .collect(Collectors.toList());
                                     
-                            // VIVA CHEAT SHEET: This is where Java makes the HTTP REST call 
-                            // to the Python FastAPI microservice (port 8000) using WebClient.
+                            // Synchronously retrieve predicted future demand via REST call 
+                            // to the Python FastAPI microservice (port 8000).
                             List<ProphetClientService.ForecastPoint> points = prophetClientService.getForecast(
                                     product.getId(), supermarketId, history, daysAhead);
                                     
@@ -152,11 +150,10 @@ public class ForecastController {
                         }
                     }
                     
-                    // VIVA CHEAT SHEET: THE LINEAR REGRESSION FALLBACK 🚨
-                    // If the Python service is offline (e.g. Docker not running), this block executes.
-                    // It uses mathematical Linear Regression (y = mx + b) to calculate the slope of past sales
-                    // and project that exact trend into the future. This guarantees the system never breaks
-                    // and the user still gets accurate trend projections!
+                    // Linear Regression Trend Projection Fallback
+                    // Executes if the external forecasting service is offline or data is sparse.
+                    // Applies ordinary least squares (y = mx + b) to calculate historical slope
+                    // and project the linear trajectory into future periods.
                     List<com.wsscms.entity.SalesHistory> sortedHistory = salesHistory.stream()
                             .sorted(java.util.Comparator.comparing(com.wsscms.entity.SalesHistory::getSaleDate))
                             .collect(Collectors.toList());

@@ -403,9 +403,8 @@ export class SalesForecastingComponent implements OnInit {
         const importedSales: SaleRecord[] = [];
         const errors: string[] = [];
 
-        // VIVA CHEAT SHEET: This is where we parse the uploaded CSV file.
-        // If they ask you to add a new column (like 'Discount'), you add `const discount = cols[5];` here.
-        // It converts the raw text into an array of `SaleRecord` JSON objects.
+        // Parse CSV contents line-by-line into SaleRecord DTO structures.
+        // Validates SKU mappings and numeric constraints before bulk submission.
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
@@ -463,11 +462,10 @@ export class SalesForecastingComponent implements OnInit {
                     this.notifications.info(`Skipped ${errors.length} invalid rows. See console for details.`);
                     console.warn('Import warnings:', errors);
                 }
-                // VIVA CHEAT SHEET: This is the magic that updates everything after an upload.
-                // 1. We reload the Sales Analytics (Revenue, Charts).
+                // Post-import synchronization:
+                // 1. Refresh analytical KPI metrics and chart visualizations.
                 this.loadSales();
-                // 2. We automatically trigger the backend AI orchestration endpoint 
-                // so the user doesn't have to click "Run AI Forecast" manually.
+                // 2. Automatically trigger downstream forecast recalculation pipeline.
                 this.runAiForecast();
             },
             error: (err: any) => {
