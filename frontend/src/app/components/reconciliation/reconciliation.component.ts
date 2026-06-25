@@ -31,7 +31,7 @@ export class ReconciliationComponent implements OnInit {
 
   // Single warehouse/supermarket - no selection needed
   readonly DEFAULT_WAREHOUSE_ID = 1;
-  readonly DEFAULT_WAREHOUSE_NAME = 'Colombo Warehouse';
+  readonly DEFAULT_WAREHOUSE_NAME = 'SL Warehouse';
 
   newDraft: any = {
     reconciliationDate: new Date().toISOString().split('T')[0],
@@ -76,7 +76,7 @@ export class ReconciliationComponent implements OnInit {
             totalDiscrepancyCount: 2,
             notes: 'Monthly cycle count',
             reconciledByName: 'Admin User',
-            locationName: 'Colombo Warehouse',
+            locationName: 'SL Warehouse',
             items: []
           }
         ];

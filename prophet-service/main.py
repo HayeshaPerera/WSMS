@@ -28,6 +28,8 @@ class SalesRecord(BaseModel):
     y: float   # sales quantity
 
 
+# This defines the expected JSON format from the Java backend.
+# Pydantic (the library) automatically validates the incoming data.
 class ForecastRequest(BaseModel):
     product_id: int
     supermarket_id: int
@@ -64,6 +66,9 @@ def forecast(req: ForecastRequest):
     df["ds"] = pd.to_datetime(df["ds"])
     df["y"] = df["y"].clip(lower=0)   # demand can't be negative
 
+    #  This is the core Machine Learning algorithm!
+    # It initializes Facebook Prophet to look for weekly and yearly patterns.
+    # 'changepoint_prior_scale' prevents the model from overfitting to random noise.
     model = Prophet(
         weekly_seasonality=True,
         yearly_seasonality=True,
@@ -73,6 +78,8 @@ def forecast(req: ForecastRequest):
     )
     model.fit(df)
 
+    #  We extend the timeline into the future (e.g. +7 days).
+    # Then `model.predict` does the heavy math to calculate 'yhat' (predicted demand).
     future = model.make_future_dataframe(periods=req.periods)
     forecast_df = model.predict(future)
 

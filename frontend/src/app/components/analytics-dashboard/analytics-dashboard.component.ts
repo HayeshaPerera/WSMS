@@ -168,7 +168,7 @@ export class AnalyticsDashboardComponent implements OnInit {
 
     const newRequest = {
       supermarketId: supermarketId,
-      warehouseId: 1, // Colombo Warehouse
+      warehouseId: 1, // SL Warehouse
       productId: rec.productId,
       requestedQuantity: rec.recommendedQuantity,
       status: 'PENDING',
@@ -187,7 +187,7 @@ export class AnalyticsDashboardComponent implements OnInit {
           id: created?.id || Date.now(),
           requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
           supermarket: { id: supermarketId, name: `Supermarket #${supermarketId}` },
-          warehouse: { id: 1, name: 'Colombo Warehouse' },
+          warehouse: { id: 1, name: 'SL Warehouse' },
           product: { id: rec.productId, name: rec.productName },
           requestedQuantity: rec.recommendedQuantity,
           status: 'PENDING',

@@ -2,10 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install build tools needed by Prophet/pystan
+# Install build tools needed by Prophet/pystan and curl for healthcheck
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

@@ -1,5 +1,6 @@
 package com.wsscms.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,8 @@ public class ProphetClientService {
 
     private final WebClient webClient;
 
+    // VIVA CHEAT SHEET: This reads the URL of the Python service from application.properties.
+    // If not found, it defaults to localhost:8000. It uses Spring's modern, non-blocking WebClient.
     public ProphetClientService(@Value("${prophet.service.url:http://localhost:8000}") String prophetUrl) {
         this.webClient = WebClient.builder()
                 .baseUrl(prophetUrl)
@@ -34,9 +37,12 @@ public class ProphetClientService {
      */
     public record SalesRecord(String ds, double y) {}
 
+    // VIVA CHEAT SHEET: This matches the JSON structure expected by FastAPI in Python.
+    // The @JsonProperty annotations are critical! Java standard is camelCase (productId),
+    // but Python relies on snake_case (product_id). Without these, the JSON parsing fails!
     public record ForecastRequest(
-            Long productId,
-            Long supermarketId,
+            @JsonProperty("product_id") Long productId,
+            @JsonProperty("supermarket_id") Long supermarketId,
             List<SalesRecord> history,
             int periods
     ) {}
@@ -74,6 +80,10 @@ public class ProphetClientService {
             logger.info("Calling Prophet service for product={} supermarket={} periods={}",
                     productId, supermarketId, periods);
 
+            // VIVA CHEAT SHEET: This is the actual network call to the Python microservice.
+            // It sends the JSON payload via POST to the /forecast endpoint.
+            // We set a strict 3-second timeout (`block(Duration.ofSeconds(3))`). If Python is down,
+            // this immediately times out so we can trigger the Linear Regression fallback instead of hanging forever.
             List<Map> rawResult = webClient.post()
                     .uri("/forecast")
                     .bodyValue(requestBody)

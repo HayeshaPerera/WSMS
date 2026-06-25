@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 CREATE INDEX IF NOT EXISTS idx_refresh_token_token  ON refresh_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_refresh_token_user   ON refresh_tokens(user_id);
 
--- 2. demand_forecast: add Prophet confidence bounds
-ALTER TABLE demand_forecast
+-- 2. demand_forecasts: add Prophet confidence bounds
+ALTER TABLE demand_forecasts
     ADD COLUMN IF NOT EXISTS lower_bound   DECIMAL(12,2),
     ADD COLUMN IF NOT EXISTS upper_bound   DECIMAL(12,2);
 
@@ -55,7 +55,7 @@ ALTER TABLE delivery_items   ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT
 ALTER TABLE grn_headers      ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE grn_items        ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE sales_history    ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
-ALTER TABLE demand_forecast  ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
+ALTER TABLE demand_forecasts  ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE audit_logs       ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE notifications    ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
 ALTER TABLE roles            ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
@@ -66,11 +66,6 @@ CREATE INDEX IF NOT EXISTS idx_deliveries_active      ON deliveries(id)      WHE
 CREATE INDEX IF NOT EXISTS idx_grn_headers_active     ON grn_headers(id)     WHERE is_deleted = FALSE;
 CREATE INDEX IF NOT EXISTS idx_notifications_active   ON notifications(user_id, is_read) WHERE is_deleted = FALSE;
 
--- 8. stock_requests: add urgency alias column (master prompt uses urgency, schema uses priority)
---    Keep priority for backward compat, add urgency as a computed synonym via default
-ALTER TABLE stock_requests ADD COLUMN IF NOT EXISTS urgency VARCHAR(30);
--- Back-fill urgency from existing priority column
-UPDATE stock_requests SET urgency = priority WHERE urgency IS NULL;
 
 -- 9. deliveries: add failure tracking columns
 ALTER TABLE deliveries
@@ -93,7 +88,7 @@ DECLARE
 BEGIN
     FOREACH t IN ARRAY ARRAY[
         'products','warehouses','supermarkets','users','inventory',
-        'stock_requests','deliveries','grn_headers','demand_forecast'
+        'stock_requests','deliveries','grn_headers','demand_forecasts'
     ]
     LOOP
         IF NOT EXISTS (

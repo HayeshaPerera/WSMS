@@ -121,7 +121,8 @@ public class SalesHistoryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERMARKET_MANAGER')")
     public ResponseEntity<ApiResponse<String>> generateDemoSales(
             @RequestParam(defaultValue = "35") int days,
-            @RequestParam(required = false) Long supermarketId) {
+            @RequestParam(required = false) Long supermarketId,
+            @RequestParam(defaultValue = "true") boolean clearExisting) {
         
         Long targetSupermarketId = supermarketId;
         if (targetSupermarketId == null) {
@@ -141,10 +142,12 @@ public class SalesHistoryController {
         int recordsCreated = 0;
 
         for (Product product : products) {
-            // Clean old sales history for this product/supermarket first to keep database clean
-            List<SalesHistory> existing = salesHistoryRepository.findByProductAndSupermarket(product.getId(), supermarket.getId());
-            if (!existing.isEmpty()) {
-                salesHistoryRepository.deleteAll(existing);
+            if (clearExisting) {
+                // Clean old sales history for this product/supermarket first to keep database clean
+                List<SalesHistory> existing = salesHistoryRepository.findByProductAndSupermarket(product.getId(), supermarket.getId());
+                if (!existing.isEmpty()) {
+                    salesHistoryRepository.deleteAll(existing);
+                }
             }
 
             for (int i = days; i >= 1; i--) {

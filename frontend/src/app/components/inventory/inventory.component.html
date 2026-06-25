@@ -10,9 +10,9 @@
         <span class="material-symbols-outlined" style="font-size:16px">download</span>
         Export PDF
       </button>
-      <button class="btn btn-primary" (click)="toggleAddForm()" *ngIf="auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.isAdmin()">
+      <button class="btn btn-primary" (click)="toggleAddForm()" *ngIf="auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.isAdmin()" title="Perform manual stock level updates">
         <span class="material-symbols-outlined" style="font-size:16px">add</span>
-        {{ showAddForm ? 'Cancel' : 'Register Stock' }}
+        {{ showAddForm ? 'Cancel' : 'Direct Stock Adjustment' }}
       </button>
     </div>
   </div>
@@ -86,9 +86,10 @@
         </div>
         <div class="form-group mb-0" style="flex:1">
           <label>Category</label>
-          <select [(ngModel)]="newProduct.category">
-            <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
-          </select>
+          <input type="text" [(ngModel)]="newProduct.category" list="category-options" placeholder="Select or type category">
+          <datalist id="category-options">
+            <option *ngFor="let cat of categories" [value]="cat"></option>
+          </datalist>
         </div>
         <div class="form-group mb-0" style="flex:0.8">
           <label>Price</label>
@@ -176,6 +177,7 @@
           <th>Valuation</th>
           <th>Status</th>
           <th>Last Update</th>
+          <th *ngIf="auth.isAdmin() || auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.hasRole('ROLE_WAREHOUSE_MANAGER')">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -201,6 +203,16 @@
             </span>
           </td>
           <td style="font-size:11px; color:var(--text-muted)">{{ (item.lastUpdated || item.updatedAt) | date:'MMM d, HH:mm' }}</td>
+          <td *ngIf="auth.isAdmin() || auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.hasRole('ROLE_WAREHOUSE_MANAGER')">
+            <div class="d-flex gap-2">
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="editInventory(item)" title="Edit Stock">
+                <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+              </button>
+              <button class="btn btn-ghost btn-sm btn-icon" (click)="requestDeleteInventory(item)" title="Delete Stock Record">
+                <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">delete</span>
+              </button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -210,6 +222,27 @@
       <div class="d-flex gap-2">
         <button class="btn btn-ghost btn-sm" [disabled]="page === 1" (click)="changePage(page - 1)">Previous</button>
         <button class="btn btn-ghost btn-sm" [disabled]="page >= totalPages" (click)="changePage(page + 1)">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showConfirmModal" (click)="cancelDeleteInventory()">
+    <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Stock Record</h2>
+        <button class="btn-icon" (click)="cancelDeleteInventory()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5">
+          Are you sure you want to delete the stock record for <strong>"{{ confirmInventory?.product?.name }}"</strong>? This cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelDeleteInventory()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmDeleteInventory()" style="background-color: var(--danger); border-color: var(--danger)">
+          Delete Record
+        </button>
       </div>
     </div>
   </div>

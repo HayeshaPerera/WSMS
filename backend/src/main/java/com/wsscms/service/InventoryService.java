@@ -84,10 +84,35 @@ public class InventoryService {
     }
 
     public InventoryDTO createInventory(InventoryDTO inventoryDTO) {
-        Inventory inventory = new Inventory();
-        
         Product product = productRepository.findById(inventoryDTO.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                
+        // Check if inventory already exists for this product and location
+        if (inventoryDTO.getWarehouseId() != null) {
+            List<Inventory> existing = inventoryRepository.findByWarehouseIdAndProductId(inventoryDTO.getWarehouseId(), inventoryDTO.getProductId());
+            if (!existing.isEmpty()) {
+                Inventory inv = existing.get(0);
+                inv.setQuantity(inv.getQuantity() + inventoryDTO.getQuantity());
+                if (inventoryDTO.getReorderLevel() != null) {
+                    inv.setReorderLevel(inventoryDTO.getReorderLevel());
+                }
+                inv.setLowStockAlert(inv.getQuantity() <= inv.getReorderLevel());
+                return convertToDTO(inventoryRepository.save(inv));
+            }
+        } else if (inventoryDTO.getSupermarketId() != null) {
+            List<Inventory> existing = inventoryRepository.findBySupermarketIdAndProductId(inventoryDTO.getSupermarketId(), inventoryDTO.getProductId());
+            if (!existing.isEmpty()) {
+                Inventory inv = existing.get(0);
+                inv.setQuantity(inv.getQuantity() + inventoryDTO.getQuantity());
+                if (inventoryDTO.getReorderLevel() != null) {
+                    inv.setReorderLevel(inventoryDTO.getReorderLevel());
+                }
+                inv.setLowStockAlert(inv.getQuantity() <= inv.getReorderLevel());
+                return convertToDTO(inventoryRepository.save(inv));
+            }
+        }
+
+        Inventory inventory = new Inventory();
         inventory.setProduct(product);
 
         if (inventoryDTO.getWarehouseId() != null) {

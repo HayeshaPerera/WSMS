@@ -133,7 +133,7 @@ export class ReportsComponent implements OnInit {
               r.items.forEach((item: any) => {
                  flatRecords.push({
                     auditDate: r.reconciliationDate || r.createdAt || new Date(),
-                    locationName: r.locationName || r.warehouse?.name || r.warehouseName || r.supermarket?.name || r.supermarketName || 'Colombo Warehouse',
+                    locationName: r.locationName || r.warehouse?.name || r.warehouseName || r.supermarket?.name || r.supermarketName || 'SL Warehouse',
                     status: r.status,
                     productName: item.productName || item.product?.name || 'Unresolved Item',
                     systemQty: item.systemQuantity !== undefined ? item.systemQuantity : (item.expectedQuantity || 0),
@@ -144,7 +144,7 @@ export class ReportsComponent implements OnInit {
            } else {
               flatRecords.push({
                  auditDate: r.reconciliationDate || r.createdAt || new Date(),
-                 locationName: r.locationName || r.warehouse?.name || r.warehouseName || r.supermarket?.name || r.supermarketName || 'Colombo Warehouse',
+                 locationName: r.locationName || r.warehouse?.name || r.warehouseName || r.supermarket?.name || r.supermarketName || 'SL Warehouse',
                  status: r.status,
                  productName: 'N/A',
                  systemQty: 0,

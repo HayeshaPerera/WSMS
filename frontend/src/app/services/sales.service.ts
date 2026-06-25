@@ -146,8 +146,8 @@ export class SalesService {
     /**
      * Generates simulated demo sales data for testing and forecasting visualization.
      */
-    generateDemoSales(days: number, supermarketId?: number): Observable<ApiResponse> {
-        let params = new HttpParams().set('days', days.toString());
+    generateDemoSales(days: number, supermarketId?: number, clearExisting: boolean = true): Observable<ApiResponse> {
+        let params = new HttpParams().set('days', days.toString()).set('clearExisting', clearExisting.toString());
         if (supermarketId) {
             params = params.set('supermarketId', supermarketId.toString());
         }

@@ -24,6 +24,17 @@ export class GrnComponent implements OnInit {
   confirmGrnId?: number;  // tracks which GRN is pending confirmation
   submitting = false;
 
+  showNewProductModal = false;
+  pendingItemIndex: number = -1;
+  newProduct = {
+    sku: '',
+    name: '',
+    category: '',
+    unitPrice: 0,
+    description: '',
+    isActive: true
+  };
+
   newGrn: GrnDTO = {
     warehouseId: 0,
     receivedById: 0,
@@ -76,8 +87,8 @@ export class GrnComponent implements OnInit {
 
   private getDemoWarehouses(): any[] {
     return [
-      { id: 1, name: 'Colombo Warehouse', code: 'WH01' },
-      { id: 2, name: 'North Distribution Center', code: 'WH02' },
+      { id: 1, name: 'SL Warehouse', code: 'WH01' },
+      { id: 2, name: 'SL Warehouse', code: 'WH02' },
       { id: 3, name: 'South Logistics Hub', code: 'WH03' }
     ];
   }
@@ -85,8 +96,12 @@ export class GrnComponent implements OnInit {
   loadProducts(): void {
     this.productService.getAll().subscribe({
       next: (response: any) => {
-        const data = response.data || response;
-        this.products = (Array.isArray(data) && data.length > 0) ? data : this.getDemoProducts();
+        let data = [];
+        if (Array.isArray(response)) data = response;
+        else if (response && Array.isArray(response.data)) data = response.data;
+        else if (response && Array.isArray(response.content)) data = response.content;
+        
+        this.products = (data.length > 0) ? data : this.getDemoProducts();
       },
       error: () => {
         this.products = this.getDemoProducts();
@@ -146,6 +161,74 @@ export class GrnComponent implements OnInit {
 
   removeItem(index: number): void {
     this.newGrn.items.splice(index, 1);
+  }
+
+  onProductChange(event: any, index: number): void {
+    const value = event;
+    if (value === 'new') {
+      this.pendingItemIndex = index;
+      this.newProduct = { sku: '', name: '', category: '', unitPrice: 0, description: '', isActive: true };
+      this.showNewProductModal = true;
+      // Temporarily clear it so 'new' doesn't stay bound if they cancel
+      setTimeout(() => this.newGrn.items[index].productId = 0, 0);
+    } else {
+      this.newGrn.items[index].productId = parseInt(value, 10);
+    }
+  }
+
+  cancelNewProduct(): void {
+    this.showNewProductModal = false;
+    this.pendingItemIndex = -1;
+  }
+
+  saveNewProduct(): void {
+    if (!this.newProduct.sku || !this.newProduct.name || !this.newProduct.category || this.newProduct.unitPrice <= 0) {
+      window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'warning', title: 'Validation', message: 'Please fill in all product details (SKU, Name, Category, Price).' } }));
+      return;
+    }
+
+    const newProductId = Math.max(...this.products.map(p => p.id), 0) + 1;
+    const createdProduct = {
+      id: newProductId,
+      sku: this.newProduct.sku,
+      name: this.newProduct.name,
+      category: this.newProduct.category,
+      unitPrice: this.newProduct.unitPrice,
+      description: this.newProduct.description,
+      reorderLevel: 20,
+      minStockLevel: 10,
+      perishable: ['Dairy', 'Meat', 'Produce', 'Bakery'].includes(this.newProduct.category),
+      active: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    // Try to create product in backend
+    this.productService.create(createdProduct).subscribe({
+      next: (res: any) => {
+        const backendProduct = res.data || res;
+        const productWithId = { ...createdProduct, id: backendProduct.id || newProductId };
+        this.products.unshift(productWithId);
+        this.sharedData.addProduct(productWithId);
+        
+        if (this.pendingItemIndex >= 0) {
+          this.newGrn.items[this.pendingItemIndex].productId = productWithId.id;
+        }
+        this.showNewProductModal = false;
+        this.pendingItemIndex = -1;
+        window.dispatchEvent(new CustomEvent('wsms-toast', { detail: { type: 'success', title: 'Product Created', message: `${productWithId.name} added successfully.` } }));
+      },
+      error: () => {
+        // Fallback: Use local product if backend fails
+        this.products.unshift(createdProduct);
+        this.sharedData.addProduct(createdProduct);
+        if (this.pendingItemIndex >= 0) {
+          this.newGrn.items[this.pendingItemIndex].productId = createdProduct.id;
+        }
+        this.showNewProductModal = false;
+        this.pendingItemIndex = -1;
+      }
+    });
   }
 
   submitGrn(): void {

@@ -86,6 +86,7 @@ export class SalesForecastingComponent implements OnInit {
     // ========== Record Sale Form Properties ==========
 
     showRecordForm = false;              // Whether the record sale form is visible
+    showCsvUploadForm = false;           // Whether the CSV upload form is visible
     newSale: SaleRecord = {              // Object holding the new sale form data
         productId: 0,                      // Selected product ID (0 = not selected)
         supermarketId: 0,                  // Selected supermarket ID (0 = not selected)
@@ -303,6 +304,13 @@ export class SalesForecastingComponent implements OnInit {
     }
 
     /**
+     * Toggles the visibility of the CSV upload form.
+     */
+    toggleCsvUploadForm(): void {
+        this.showCsvUploadForm = !this.showCsvUploadForm; // Toggle form visibility
+    }
+
+    /**
      * Resets the form inputs to defaults.
      * Auto-populates the store ID if the user is a supermarket manager.
      */
@@ -395,7 +403,9 @@ export class SalesForecastingComponent implements OnInit {
         const importedSales: SaleRecord[] = [];
         const errors: string[] = [];
 
-        // Parse line-by-line skipping header
+        // VIVA CHEAT SHEET: This is where we parse the uploaded CSV file.
+        // If they ask you to add a new column (like 'Discount'), you add `const discount = cols[5];` here.
+        // It converts the raw text into an array of `SaleRecord` JSON objects.
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
@@ -453,7 +463,12 @@ export class SalesForecastingComponent implements OnInit {
                     this.notifications.info(`Skipped ${errors.length} invalid rows. See console for details.`);
                     console.warn('Import warnings:', errors);
                 }
+                // VIVA CHEAT SHEET: This is the magic that updates everything after an upload.
+                // 1. We reload the Sales Analytics (Revenue, Charts).
                 this.loadSales();
+                // 2. We automatically trigger the backend AI orchestration endpoint 
+                // so the user doesn't have to click "Run AI Forecast" manually.
+                this.runAiForecast();
             },
             error: (err: any) => {
                 this.loading = false;
@@ -719,9 +734,9 @@ export class SalesForecastingComponent implements OnInit {
      */
     downloadCsvTemplate(): void {
         const csvContent = "Product SKU,Sale Date,Quantity Sold,Unit Price,Notes\n" +
-                           "PROD001,2026-05-25,12,899.00,Morning rush sale\n" +
-                           "PROD002,2026-05-25,8,449.00,Store checkout\n" +
-                           "PROD003,2026-05-25,4,2499.00,Weekend promo";
+                           "SKU-001-RICE,2026-05-25,12,899.00,Morning rush sale\n" +
+                           "SKU-002-OIL,2026-05-25,8,449.00,Store checkout\n" +
+                           "SKU-003-CHICKEN,2026-05-25,4,2499.00,Weekend promo";
         
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
@@ -754,7 +769,7 @@ export class SalesForecastingComponent implements OnInit {
 
         // Filter by trend (INCREASING, DECREASING, STABLE)
         if (this.forecastSelectedTrend) {
-            result = result.filter(f => f.trend === this.forecastSelectedTrend);
+            result = result.filter(f => (f.trend || '').toUpperCase() === this.forecastSelectedTrend);
         }
 
         // Sort
@@ -773,4 +788,44 @@ export class SalesForecastingComponent implements OnInit {
 
         return result;
     }
+
+    /**
+     * Exports the filtered sales data to a CSV file.
+     */
+    exportSalesToCsv(): void {
+        if (!this.filteredSales || this.filteredSales.length === 0) {
+            this.notifications.warning('No sales data available to export.');
+            return;
+        }
+
+        const headers = ['Sale Date', 'Product Name', 'Product SKU', 'Store Name', 'Quantity Sold', 'Unit Price (LKR)', 'Total Amount (LKR)', 'Notes'];
+        const rows = this.filteredSales.map((s: any) => [
+            s.saleDate || '',
+            `"${(s.productName || '').replace(/"/g, '""')}"`,
+            `"${(s.productSku || '').replace(/"/g, '""')}"`,
+            `"${(s.supermarketName || '').replace(/"/g, '""')}"`,
+            s.quantitySold || 0,
+            s.unitPrice || 0,
+            s.totalAmount || (s.unitPrice * s.quantitySold) || 0,
+            `"${(s.notes || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `sales_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
 }
+

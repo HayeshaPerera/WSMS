@@ -99,8 +99,8 @@ public class ProductService {
         product.setDescription(productDTO.getDescription());
         product.setCategory(productDTO.getCategory());
         product.setUnitPrice(productDTO.getUnitPrice());
-        product.setUnit(productDTO.getUnit());
-        product.setReorderLevel(productDTO.getReorderLevel());
+        product.setUnit(productDTO.getUnit() != null && !productDTO.getUnit().isEmpty() ? productDTO.getUnit() : "units");
+        product.setReorderLevel(productDTO.getReorderLevel() != null ? productDTO.getReorderLevel() : 10);
         product.setActive(productDTO.getActive() != null ? productDTO.getActive() : true);
 
         Product savedProduct = productRepository.save(product);

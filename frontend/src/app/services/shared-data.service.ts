@@ -312,8 +312,8 @@ export class SharedDataService {
         { 
           id: 1, 
           requestNumber: 'REQ-2024-001',
-          supermarket: { id: 1, name: 'Colombo Supermarket', code: 'SM-001' },
-          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
+          supermarket: { id: 1, name: 'SL Supermarket', code: 'SM-001' },
+          warehouse: { id: 1, name: 'SL Warehouse', code: 'WH-001' },
           product: { id: 1, name: 'Premium Coffee Beans', sku: 'PRD-001' },
           requestedQuantity: 100, 
           approvedQuantity: 0, 
@@ -327,7 +327,7 @@ export class SharedDataService {
           id: 2, 
           requestNumber: 'REQ-2024-002',
           supermarket: { id: 2, name: 'Eastside Grocery', code: 'SM-002' },
-          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
+          warehouse: { id: 1, name: 'SL Warehouse', code: 'WH-001' },
           product: { id: 3, name: 'Organic Honey', sku: 'PRD-003' },
           requestedQuantity: 50, 
           approvedQuantity: 50, 
@@ -341,8 +341,8 @@ export class SharedDataService {
         { 
           id: 3, 
           requestNumber: 'REQ-2024-003',
-          supermarket: { id: 1, name: 'Colombo Supermarket', code: 'SM-001' },
-          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
+          supermarket: { id: 1, name: 'SL Supermarket', code: 'SM-001' },
+          warehouse: { id: 1, name: 'SL Warehouse', code: 'WH-001' },
           product: { id: 5, name: 'Fresh Pasta', sku: 'PRD-005' },
           requestedQuantity: 75, 
           approvedQuantity: 0, 
@@ -362,7 +362,7 @@ export class SharedDataService {
         { 
           id: 1, 
           trackingNumber: 'TRK1706001234567',
-          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
+          warehouse: { id: 1, name: 'SL Warehouse', code: 'WH-001' },
           supermarket: { id: 2, name: 'Eastside Grocery', code: 'SM-002' },
           product: { id: 3, name: 'Organic Honey', sku: 'PRD-003' },
           quantity: 50, 
@@ -375,7 +375,7 @@ export class SharedDataService {
         { 
           id: 2, 
           trackingNumber: 'TRK1706001234789',
-          warehouse: { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
+          warehouse: { id: 1, name: 'SL Warehouse', code: 'WH-001' },
           supermarket: { id: 3, name: 'Westside Store', code: 'SM-003' },
           product: { id: 4, name: 'Artisan Bread', sku: 'PRD-004' },
           quantity: 120, 

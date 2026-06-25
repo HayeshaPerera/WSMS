@@ -36,55 +36,63 @@
     </div>
   </div>
 
-  <!-- GRN Table -->
-  <div class="table-card">
-    <div class="table-toolbar">
+  <!-- GRN Document List -->
+  <div class="grn-list-container">
+    <div class="table-toolbar" style="background: var(--bg-surface); border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border-color);">
       <input class="search-input" [(ngModel)]="searchTerm" placeholder="Search by GRN number or supplier..." />
     </div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>GRN #</th>
-          <th>Supplier</th>
-          <th>Warehouse</th>
-          <th>Items</th>
-          <th>Received By</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let grn of filteredGrns()">
-          <td><span class="mono">{{ grn.grnNumber }}</span></td>
-          <td>{{ grn.supplierName || '—' }}</td>
-          <td>{{ grn.warehouseName }}</td>
-          <td>{{ grn.items.length || 0 }} item(s)</td>
-          <td>{{ grn.receivedByName }}</td>
-          <td>{{ grn.receivedDate | date:'dd MMM yyyy' }}</td>
-          <td>
-            <span class="badge" [ngClass]="{
-              'badge-draft': grn.status === 'DRAFT',
-              'badge-success': grn.status === 'COMPLETED',
-              'badge-danger': grn.status === 'CANCELLED'
-            }">{{ grn.status }}</span>
-          </td>
-          <td>
-            <div class="action-btns">
-              <button class="btn-icon" title="View" (click)="viewGrn(grn)">
-                <span class="material-symbols-outlined">visibility</span>
-              </button>
-              <button class="btn-icon success" title="Confirm" *ngIf="grn.status === 'DRAFT'" (click)="requestConfirmGrn(grn)">
-                <span class="material-symbols-outlined">check_circle</span>
-              </button>
+    
+    <div class="grn-grid">
+      <div class="grn-card" *ngFor="let grn of filteredGrns()">
+        <div class="grn-card-header">
+          <div class="grn-title-group">
+            <span class="material-symbols-outlined doc-icon">receipt_long</span>
+            <div>
+              <div class="grn-number">{{ grn.grnNumber }}</div>
+              <div class="grn-date">{{ grn.receivedDate | date:'dd MMM yyyy' }}</div>
             </div>
-          </td>
-        </tr>
-        <tr *ngIf="filteredGrns().length === 0">
-          <td colspan="8" class="empty-row">No GRNs found</td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+          <span class="badge" [ngClass]="{
+            'badge-draft': grn.status === 'DRAFT',
+            'badge-success': grn.status === 'COMPLETED',
+            'badge-danger': grn.status === 'CANCELLED'
+          }">{{ grn.status }}</span>
+        </div>
+        
+        <div class="grn-card-body">
+          <div class="info-row">
+            <span class="info-label">Supplier:</span>
+            <span class="info-value">{{ grn.supplierName || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Warehouse:</span>
+            <span class="info-value">{{ grn.warehouseName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Items:</span>
+            <span class="info-value">{{ grn.items.length || 0 }} product(s)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Received By:</span>
+            <span class="info-value">{{ grn.receivedByName }}</span>
+          </div>
+        </div>
+
+        <div class="grn-card-footer">
+          <button class="btn-secondary-sm" (click)="viewGrn(grn)">
+            <span class="material-symbols-outlined" style="font-size:16px;">visibility</span> View Details
+          </button>
+          <button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" *ngIf="grn.status === 'DRAFT'" (click)="requestConfirmGrn(grn)">
+            <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Confirm
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="filteredGrns().length === 0" class="empty-state">
+        <span class="material-symbols-outlined" style="font-size:48px; color:var(--text-muted); opacity:0.5; margin-bottom:16px; display:block;">inventory_2</span>
+        No Goods Received Notes found matching your criteria.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -127,7 +135,9 @@
         <div class="item-row" *ngFor="let item of newGrn.items; let i = index">
           <div class="form-group">
             <label>Product</label>
-            <select [(ngModel)]="item.productId">
+            <select [ngModel]="item.productId" (ngModelChange)="onProductChange($event, i)">
+              <option value="0" disabled>Select Product...</option>
+              <option value="new" style="font-weight:bold; color:var(--color-primary)">+ Create New Product</option>
               <option *ngFor="let p of products" [value]="p.id">{{ p.name }} ({{ p.sku }})</option>
             </select>
           </div>
@@ -231,6 +241,54 @@
       <button class="btn-ghost" (click)="cancelConfirmGrn()">Cancel</button>
       <button class="btn-primary" (click)="confirmGrn()">
         <span class="material-symbols-outlined">check_circle</span> Yes, Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Add Product Modal -->
+<div class="modal-overlay" *ngIf="showNewProductModal" (click)="cancelNewProduct()" style="z-index: 1050;">
+  <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>Quick Add Product</h2>
+      <button class="btn-icon" (click)="cancelNewProduct()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>SKU</label>
+          <input type="text" [(ngModel)]="newProduct.sku" placeholder="e.g. MILK-001" />
+        </div>
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" [(ngModel)]="newProduct.name" placeholder="e.g. Fresh Milk 1L" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" [(ngModel)]="newProduct.category" list="quick-cat-list" placeholder="e.g. Dairy" />
+          <datalist id="quick-cat-list">
+            <option value="Dairy"></option>
+            <option value="Bakery"></option>
+            <option value="Beverages"></option>
+            <option value="Produce"></option>
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label>Unit Price (LKR)</label>
+          <input type="number" [(ngModel)]="newProduct.unitPrice" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="newProduct.description" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cancelNewProduct()">Cancel</button>
+      <button class="btn-primary" (click)="saveNewProduct()">
+        <span class="material-symbols-outlined">save</span> Save Product
       </button>
     </div>
   </div>

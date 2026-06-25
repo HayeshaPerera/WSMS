@@ -21,6 +21,7 @@ export class StockMonitorComponent implements OnInit {
   generatingForecast = false;
   searchTerm = '';
   selectedStatus = '';
+  filteredInventory: any[] = [];
   
   // Quick request modal/form state
   showRequestModal = false;
@@ -68,11 +69,13 @@ export class StockMonitorComponent implements OnInit {
         this.forecastService.getSupermarketForecasts(this.supermarketId!).subscribe({
           next: (fcs) => {
             this.forecasts = fcs || [];
+            this.updateFilteredInventory();
             this.loading = false;
           },
           error: (err) => {
             console.error('Error loading forecasts:', err);
             this.forecasts = [];
+            this.updateFilteredInventory();
             this.loading = false;
           }
         });
@@ -104,8 +107,8 @@ export class StockMonitorComponent implements OnInit {
     }
   }
 
-  getFilteredInventory(): any[] {
-    return this.inventory.map(item => {
+  updateFilteredInventory(): void {
+    this.filteredInventory = this.inventory.map(item => {
       // Find corresponding forecast
       const forecast = this.forecasts.find(f => f.productId === item.product?.id);
       const weeklyDemand = forecast?.predictedWeeklyDemand || Math.round(item.reorderLevel * 1.5);
@@ -204,7 +207,7 @@ export class StockMonitorComponent implements OnInit {
 
     const newRequest = {
       supermarketId: this.supermarketId,
-      warehouseId: 1, // Colombo Warehouse
+      warehouseId: 1, // SL Warehouse
       productId: this.selectedProductForRequest.id,
       requestedQuantity: this.requestQuantity,
       status: 'PENDING',
@@ -221,7 +224,7 @@ export class StockMonitorComponent implements OnInit {
           id: created?.id || Date.now(),
           requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
           supermarket: { id: this.supermarketId, name: this.supermarketName },
-          warehouse: { id: 1, name: 'Colombo Warehouse' },
+          warehouse: { id: 1, name: 'SL Warehouse' },
           product: this.selectedProductForRequest,
           requestedQuantity: this.requestQuantity,
           status: 'PENDING',

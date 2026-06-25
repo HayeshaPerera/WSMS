@@ -87,7 +87,7 @@ public class InventoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('WAREHOUSE_MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('WAREHOUSE_MANAGER') or hasRole('WAREHOUSE_STAFF')")
     public ResponseEntity<ApiResponse<Void>> deleteInventory(@PathVariable Long id) {
         inventoryService.deleteInventory(id);
         return ResponseEntity.ok(ApiResponse.success("Inventory deleted successfully", null));

@@ -54,6 +54,7 @@
       <input 
         type="text" 
         [(ngModel)]="searchTerm" 
+        (ngModelChange)="updateFilteredInventory()"
         placeholder="Filter by product name, SKU..." 
         class="search-input"
       />
@@ -61,7 +62,7 @@
 
     <div class="filter-controls">
       <div class="select-wrapper">
-        <select [(ngModel)]="selectedStatus" class="filter-select">
+        <select [(ngModel)]="selectedStatus" (ngModelChange)="updateFilteredInventory()" class="filter-select">
           <option value="">All Stock Levels</option>
           <option value="adequate">Adequate Stock</option>
           <option value="low">Low Stock</option>
@@ -83,14 +84,14 @@
   </div>
 
   <!-- Empty state -->
-  <div class="empty-state-card" *ngIf="!loading && getFilteredInventory().length === 0">
+  <div class="empty-state-card" *ngIf="!loading && filteredInventory.length === 0">
     <span class="material-symbols-outlined empty-icon">check_circle_outline</span>
     <h3>All Systems Operational</h3>
     <p>No products match the selected filters, or your supermarket has no inventory assigned.</p>
   </div>
 
   <!-- Monitor Table -->
-  <div class="table-wrapper" *ngIf="!loading && getFilteredInventory().length > 0">
+  <div class="table-wrapper" *ngIf="!loading && filteredInventory.length > 0">
     <table class="monitor-table">
       <thead>
         <tr>
@@ -105,7 +106,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of getFilteredInventory()" class="monitor-row">
+        <tr *ngFor="let item of filteredInventory" class="monitor-row">
           <td class="product-cell">
             <div class="product-info-wrapper">
               <span class="product-name">{{ item.product?.name }}</span>

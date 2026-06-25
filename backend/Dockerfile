@@ -1,5 +1,5 @@
 # Stage 1: Build the Maven application
-FROM maven:3.8.5-openjdk-17-slim AS build
+FROM maven:3.8.5-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 # Download dependencies first to cache them
@@ -8,7 +8,7 @@ COPY src ./src
 RUN mvn package -DskipTests -B
 
 # Stage 2: Create the runtime container
-FROM openjdk:17-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/warehouse-supply-chain-1.0.0.jar app.jar
 EXPOSE 8081

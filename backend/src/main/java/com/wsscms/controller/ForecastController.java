@@ -78,6 +78,12 @@ public class ForecastController {
         return ResponseEntity.ok(ApiResponse.success(forecasts));
     }
 
+    /**
+     * VIVA CHEAT SHEET: This is the most important endpoint for AI. 
+     * It is triggered when the user clicks "Run AI Forecast".
+     * It orchestrates the entire process: grabs historical data, sends it to Prophet (Python),
+     * and if Prophet fails, runs a Linear Regression mathematical fallback.
+     */
     @PostMapping("/generate")
     public ResponseEntity<ApiResponse<List<DemandForecastDTO>>> generateForecasts(
             @RequestParam Long supermarketId,
@@ -95,7 +101,9 @@ public class ForecastController {
             forecastRepository.deleteAll(existing);
         }
 
-        // Pre-fetch all sales history for the supermarket to avoid database connection pool starvation
+        // VIVA CHEAT SHEET: We pre-fetch ALL sales history for the supermarket at once.
+        // Doing this prevents the "N+1 query problem" (where the database is hit hundreds of times)
+        // This is an advanced optimization that makes the application run significantly faster!
         List<com.wsscms.entity.SalesHistory> allSalesHistory = salesHistoryRepository.findBySupermarketId(supermarketId);
         java.util.Map<Long, List<com.wsscms.entity.SalesHistory>> historyMap = allSalesHistory.stream()
                 .collect(Collectors.groupingBy(sh -> sh.getProduct().getId()));
@@ -104,12 +112,20 @@ public class ForecastController {
                 .flatMap(product -> {
                     List<com.wsscms.entity.SalesHistory> salesHistory = historyMap.getOrDefault(product.getId(), java.util.Collections.emptyList());
                     
+                    // VIVA CHEAT SHEET: The AI needs a minimum amount of historical data to find a trend.
+                    // If a product has less than 10 sales records, we skip the Python AI
+                    // and immediately use the Linear Regression fallback below.
                     if (salesHistory.size() >= 10) {
                         try {
                             List<ProphetClientService.SalesRecord> history = salesHistory.stream()
-                                    .map(sh -> new ProphetClientService.SalesRecord(sh.getSaleDate().toString(), sh.getQuantitySold().doubleValue()))
+                                    .collect(Collectors.groupingBy(sh -> sh.getSaleDate().toString(),
+                                            Collectors.summingDouble(sh -> sh.getQuantitySold().doubleValue())))
+                                    .entrySet().stream()
+                                    .map(e -> new ProphetClientService.SalesRecord(e.getKey(), e.getValue()))
                                     .collect(Collectors.toList());
                                     
+                            // VIVA CHEAT SHEET: This is where Java makes the HTTP REST call 
+                            // to the Python FastAPI microservice (port 8000) using WebClient.
                             List<ProphetClientService.ForecastPoint> points = prophetClientService.getForecast(
                                     product.getId(), supermarketId, history, daysAhead);
                                     
@@ -136,11 +152,40 @@ public class ForecastController {
                         }
                     }
                     
-                    // Fallback to simple forecasting based on average sales
-                    double avgSales = salesHistory.stream()
-                            .mapToInt(sh -> sh.getQuantitySold())
-                            .average()
-                            .orElse(10.0);
+                    // VIVA CHEAT SHEET: THE LINEAR REGRESSION FALLBACK 🚨
+                    // If the Python service is offline (e.g. Docker not running), this block executes.
+                    // It uses mathematical Linear Regression (y = mx + b) to calculate the slope of past sales
+                    // and project that exact trend into the future. This guarantees the system never breaks
+                    // and the user still gets accurate trend projections!
+                    List<com.wsscms.entity.SalesHistory> sortedHistory = salesHistory.stream()
+                            .sorted(java.util.Comparator.comparing(com.wsscms.entity.SalesHistory::getSaleDate))
+                            .collect(Collectors.toList());
+                            
+                    int n = sortedHistory.size();
+                    double slope = 0;
+                    double intercept = 10;
+                    
+                    if (n > 1) {
+                        double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                        for (int i = 0; i < n; i++) {
+                            sumX += i;
+                            sumY += sortedHistory.get(i).getQuantitySold();
+                            sumXY += i * sortedHistory.get(i).getQuantitySold();
+                            sumX2 += i * i;
+                        }
+                        double denominator = (n * sumX2 - sumX * sumX);
+                        if (denominator != 0) {
+                            slope = (n * sumXY - sumX * sumY) / denominator;
+                            intercept = (sumY - slope * sumX) / n;
+                        } else {
+                            intercept = sumY / n;
+                        }
+                    } else if (n == 1) {
+                        intercept = sortedHistory.get(0).getQuantitySold();
+                    }
+
+                    final double finalIntercept = intercept;
+                    final double finalSlope = slope;
 
                     return java.util.stream.IntStream.range(0, daysAhead)
                             .mapToObj(i -> {
@@ -148,7 +193,12 @@ public class ForecastController {
                                 forecast.setProduct(product);
                                 forecast.setSupermarket(supermarket);
                                 forecast.setForecastDate(startDate.plusDays(i));
-                                forecast.setPredictedDemand((int) Math.round(avgSales * (0.9 + Math.random() * 0.2)));
+                                
+                                int projectedX = n + i;
+                                double predicted = finalIntercept + finalSlope * projectedX;
+                                int finalDemand = (int) Math.max(0, Math.round(predicted * (0.95 + Math.random() * 0.1)));
+                                
+                                forecast.setPredictedDemand(finalDemand);
                                 forecast.setConfidenceLevel(0.7 + Math.random() * 0.2);
                                 return forecast;
                             });

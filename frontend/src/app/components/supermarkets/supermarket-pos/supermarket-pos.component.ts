@@ -19,6 +19,14 @@ export class SupermarketPosComponent implements OnInit {
   quantity: number = 1;
   isProcessing: boolean = false;
   supermarketId: number = 1;
+  exportStartDate: string = '';
+  exportEndDate: string = '';
+  allSales: any[] = [];
+  filteredExportSales: any[] = [];
+  
+  tableSearchTerm: string = '';
+  rowsPerPage: number = 10;
+  currentPage: number = 1;
 
   constructor(
     private inventoryService: InventoryService,
@@ -33,6 +41,81 @@ export class SupermarketPosComponent implements OnInit {
     this.supermarketId = 1; // Default for demo
     this.sharedData.initializeDefaultData(); // Ensure products are loaded
     this.loadInventory();
+    this.loadAllSales();
+  }
+
+  loadAllSales(): void {
+    this.salesService.getAllSales().subscribe({
+      next: (sales: any[]) => {
+        this.allSales = sales;
+        this.updateFilteredExportSales();
+      }
+    });
+  }
+
+  updateFilteredExportSales(): void {
+    let sales = [...this.allSales];
+    if (this.exportStartDate) {
+       sales = sales.filter(s => (s.saleDate || '') >= this.exportStartDate);
+    }
+    if (this.exportEndDate) {
+       sales = sales.filter(s => (s.saleDate || '') <= this.exportEndDate);
+    }
+    this.filteredExportSales = sales;
+    this.currentPage = 1; // reset page on new date filter
+  }
+
+  get filteredSalesForTable(): any[] {
+    let sales = this.filteredExportSales;
+    if (this.tableSearchTerm) {
+      const term = this.tableSearchTerm.toLowerCase();
+      sales = sales.filter(s => 
+        (s.productName || '').toLowerCase().includes(term) ||
+        (s.productSku || '').toLowerCase().includes(term)
+      );
+    }
+    return sales;
+  }
+
+  get paginatedSales(): any[] {
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredSalesForTable.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredSalesForTable.length / this.rowsPerPage) || 1;
+  }
+
+  get showingStartIndex(): number {
+    return this.filteredSalesForTable.length === 0 ? 0 : (this.currentPage - 1) * this.rowsPerPage + 1;
+  }
+
+  get showingEndIndex(): number {
+    return Math.min(this.currentPage * this.rowsPerPage, this.filteredSalesForTable.length);
+  }
+
+  changePage(delta: number): void {
+    const newPage = this.currentPage + delta;
+    if (newPage >= 1 && newPage <= this.totalPages) {
+      this.currentPage = newPage;
+    }
+  }
+
+  onTableFilterChange(): void {
+    this.currentPage = 1;
+  }
+
+  generateDemoSales(): void {
+    this.notifications.info('Generating dummy data for past days...');
+    this.salesService.generateDemoSales(15, this.supermarketId, false).subscribe({
+      next: () => {
+        this.notifications.success('Dummy data generated and appended successfully!');
+        this.loadAllSales();
+      },
+      error: () => {
+        this.notifications.error('Failed to generate dummy data.');
+      }
+    });
   }
 
   loadInventory(): void {
@@ -62,6 +145,7 @@ export class SupermarketPosComponent implements OnInit {
           }
           return i;
         });
+        this.sharedData.setInventory(this.inventoryItems);
         this.filterItems();
       },
       error: () => {
@@ -137,6 +221,7 @@ export class SupermarketPosComponent implements OnInit {
              this.selectedItem = null;
              this.quantity = 1;
              this.loadInventory(); // Refresh
+             this.loadAllSales(); // Refresh sales history
           },
           error: (err) => {
              console.error('Inventory adjust error:', err);
@@ -167,11 +252,65 @@ export class SupermarketPosComponent implements OnInit {
 
     this.stockRequestService.createRequest(request).subscribe({
       next: () => {
-        this.notifications.success(`Stock Request for ${requestedQuantity} units sent to Colombo Warehouse.`);
+        this.notifications.success(`Stock Request for ${requestedQuantity} units sent to SL Warehouse.`);
       },
       error: () => {
         this.notifications.error('Failed to dispatch auto stock request.');
       }
     });
   }
+
+  exportSalesToCsv(): void {
+    this.notifications.info('Fetching sales data for export...');
+    this.salesService.getAllSales().subscribe({
+      next: (sales: any[]) => {
+        let exportSales = sales;
+        if (this.exportStartDate) {
+           exportSales = exportSales.filter(s => (s.saleDate || '') >= this.exportStartDate);
+        }
+        if (this.exportEndDate) {
+           exportSales = exportSales.filter(s => (s.saleDate || '') <= this.exportEndDate);
+        }
+
+        if (!exportSales || exportSales.length === 0) {
+          this.notifications.warning('No sales data available to export for the selected period.');
+          return;
+        }
+
+        const headers = ['Sale Date', 'Product Name', 'Product SKU', 'Store Name', 'Quantity Sold', 'Unit Price (LKR)', 'Total Amount (LKR)', 'Notes'];
+        const rows = exportSales.map((s: any) => [
+            s.saleDate || '',
+            `"${(s.productName || '').replace(/"/g, '""')}"`,
+            `"${(s.productSku || '').replace(/"/g, '""')}"`,
+            `"${(s.supermarketName || '').replace(/"/g, '""')}"`,
+            s.quantitySold || 0,
+            s.unitPrice || 0,
+            s.totalAmount || (s.unitPrice * s.quantitySold) || 0,
+            `"${(s.notes || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `pos_sales_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        this.notifications.success('Sales data exported successfully!');
+      },
+      error: () => {
+        this.notifications.error('Failed to fetch sales data for export.');
+      }
+    });
+  }
 }
+

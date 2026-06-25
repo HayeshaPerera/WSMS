@@ -10,9 +10,6 @@
         </div>
         <!-- Right side: Actions container (Record Sale, Bulk Import, Seed) -->
         <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
-            <!-- Hidden File Input for CSV upload -->
-            <input type="file" #csvFileInput (change)="onCsvFileSelected($event)" accept=".csv" style="display: none;">
-            
             <button class="btn btn-secondary" (click)="downloadCsvTemplate()"
                 *ngIf="auth.isAdmin() || auth.isSupermarketManager()"
                 title="Download standard CSV template for POS sales import">
@@ -20,7 +17,7 @@
                 Download CSV Template
             </button>
 
-            <button class="btn btn-secondary" (click)="csvFileInput.click()"
+            <button class="btn btn-secondary" (click)="toggleCsvUploadForm()"
                 *ngIf="auth.isAdmin() || auth.isSupermarketManager()"
                 title="Upload POS Sales CSV to batch import historical sales">
                 <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">upload_file</span>
@@ -41,11 +38,6 @@
                 Run AI Forecast
             </button>
 
-            <button class="btn btn-primary" (click)="toggleRecordForm()"
-                *ngIf="auth.isAdmin() || auth.isSupermarketManager()">
-                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">add_circle</span>
-                Record Sale
-            </button>
         </div>
     </header>
 
@@ -62,54 +54,26 @@
     </div>
 
     <!-- ========================= -->
-    <!-- RECORD SALE FORM (toggle) -->
+    <!-- CSV UPLOAD FORM (toggle)  -->
     <!-- ========================= -->
-    <!-- Form for recording a new sale - shown/hidden via showRecordForm toggle -->
-    <div class="glass-card mb-4 record-form" *ngIf="showRecordForm">
-        <h3 class="mb-3"><i class="fas fa-cash-register text-accent"></i> Record New Sale</h3>
-        <!-- Form fields laid out in a 3-column grid -->
-        <div class="form-grid">
-            <!-- Product dropdown: selects which product was sold -->
-            <div class="form-group">
-                <label>Product</label>
-                <select [(ngModel)]="newSale.productId" (change)="onProductSelectForSale($event)" class="glass">
-                    <option [value]="0" disabled>Select product...</option>
-                    <!-- Loop through all products to populate the dropdown -->
-                    <option *ngFor="let p of products" [value]="p.id">{{p.name}} ({{p.sku}})</option>
-                </select>
-            </div>
-            <!-- Store dropdown: visible only to Admins. Hidden but auto-populated for Supermarket Managers -->
-            <div class="form-group" *ngIf="auth.isAdmin()">
-                <label>Store</label>
-                <select [(ngModel)]="newSale.supermarketId" class="glass">
-                    <option [value]="0" disabled>Select store...</option>
-                    <!-- Loop through all supermarkets to populate the dropdown -->
-                    <option *ngFor="let s of supermarkets" [value]="s.id">{{s.name}}</option>
-                </select>
-            </div>
-            <!-- Date picker: date when the sale occurred -->
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" [(ngModel)]="newSale.saleDate" class="glass">
-            </div>
-            <!-- Quantity input: number of units sold -->
-            <div class="form-group">
-                <label>Quantity</label>
-                <input type="number" [(ngModel)]="newSale.quantitySold" min="1" class="glass">
-            </div>
-            <!-- Unit price input: price per unit (auto-filled when product is selected) -->
-            <div class="form-group">
-                <label>Unit Price (LKR)</label>
-                <input type="number" [(ngModel)]="newSale.unitPrice" step="0.01" class="glass">
-            </div>
-            <!-- Save and Cancel buttons -->
-            <div class="form-group form-actions">
-                <button class="btn btn-success" (click)="recordSale()"><i class="fas fa-check"></i> Save</button>
-                <button class="btn btn-secondary glass" (click)="toggleRecordForm()"><i class="fas fa-times"></i>
-                    Cancel</button>
-            </div>
+    <div class="glass-card mb-4 csv-upload-form" *ngIf="showCsvUploadForm" style="border: 2px dashed var(--accent-color); padding: 40px; text-align: center; background: rgba(0,0,0,0.2);">
+        <h3 class="mb-2"><i class="fas fa-file-csv text-accent mr-2"></i> Bulk Import Sales Data</h3>
+        <p class="text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">Upload a CSV file containing historical POS sales data to train the AI Demand Forecasting model. Ensure your CSV matches the standard template format.</p>
+        
+        <div class="upload-area" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+            <input type="file" #csvFileInput (change)="onCsvFileSelected($event); toggleCsvUploadForm()" accept=".csv" style="display: none;">
+            <button class="btn btn-primary" style="padding: 12px 24px; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);" (click)="csvFileInput.click()">
+                <i class="fas fa-cloud-upload-alt mr-2"></i> Browse CSV File
+            </button>
+            <span class="text-muted fs-sm">Drag and drop functionality coming soon</span>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top border-light text-center">
+             <button class="btn btn-secondary glass" (click)="toggleCsvUploadForm()"><i class="fas fa-times mr-1"></i> Cancel</button>
         </div>
     </div>
+
+    <!-- Removed Record Sale Form -->
 
     <!-- ==================== -->
     <!-- SALES ANALYTICS TAB  -->

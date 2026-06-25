@@ -25,7 +25,7 @@ export class SupermarketsComponent implements OnInit {
 
   addHardcodedSupermarkets() {
     this.supermarkets = [
-      { id: 1, code: 'SM01', name: 'Colombo Supermarket', location: '789 Main Street', storageCapacity: 5000, currentStock: 3800, contactPhone: '555-1001', contactEmail: 'sm01@wsscms.com', assignedWarehouseId: 1, active: true, managerId: 3, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 1, code: 'SM01', name: 'SL Supermarket', location: '789 Main Street', storageCapacity: 5000, currentStock: 3800, contactPhone: '555-1001', contactEmail: 'sm01@wsscms.com', assignedWarehouseId: 1, active: true, managerId: 3, createdAt: new Date(), updatedAt: new Date() } as any,
       { id: 2, code: 'SM02', name: 'Mall Center Store', location: '321 Shopping Mall', storageCapacity: 4500, currentStock: 3200, contactPhone: '555-1002', contactEmail: 'sm02@wsscms.com', assignedWarehouseId: 2, active: true, managerId: 4, createdAt: new Date(), updatedAt: new Date() } as any,
       { id: 3, code: 'SM03', name: 'Riverside Supermarket', location: '654 River Road', storageCapacity: 6000, currentStock: 4500, contactPhone: '555-1003', contactEmail: 'sm03@wsscms.com', assignedWarehouseId: 3, active: true, managerId: 5, createdAt: new Date(), updatedAt: new Date() } as any,
       { id: 4, code: 'SM04', name: 'Airport Terminal Store', location: '999 Airport Drive', storageCapacity: 3000, currentStock: 2100, contactPhone: '555-1004', contactEmail: 'sm04@wsscms.com', assignedWarehouseId: 1, active: true, managerId: 6, createdAt: new Date(), updatedAt: new Date() } as any

@@ -41,8 +41,20 @@ public class GrnItem {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "ordered_qty", nullable = false)
+    private Integer orderedQty;
+
+    @Column(name = "received_qty", nullable = false)
+    private Integer receivedQty;
+
+    @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
+    private BigDecimal unitPrice;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (orderedQty == null) orderedQty = quantity != null ? quantity : 0;
+        if (receivedQty == null) receivedQty = quantity != null ? quantity : 0;
+        if (unitPrice == null) unitPrice = unitCost != null ? unitCost : BigDecimal.ZERO;
     }
 }

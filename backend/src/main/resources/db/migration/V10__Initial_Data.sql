@@ -46,26 +46,26 @@ INSERT INTO supermarkets (code, name, branch_code, location, address, manager_na
     ('SM-COL-003', 'Metro Store - Colombo', 'MS-COL-001', 'Colombo 03', 'Colombo 03', 'Ms. Liyanage', '0701567890', 'manager.metro@metrostore.lk', 1.25, 4000) ON CONFLICT DO NOTHING;
 
 -- Ensure columns exist
-ALTER TABLE products ADD COLUMN IF NOT EXISTS unit VARCHAR(50);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS unit_type VARCHAR(50);
 ALTER TABLE products ADD COLUMN IF NOT EXISTS current_unit_price DECIMAL(10, 2);
 
 -- Insert Sample Products
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Basmati Rice Premium 5kg', 'SKU-001-RICE', 'Grains', 'bag', 550.00, 550.00, 20, 'Premium basmati rice in 5kg bags') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Sunflower Oil 1L', 'SKU-002-OIL', 'Oils', 'bottle', 280.00, 280.00, 30, 'Pure sunflower cooking oil 1 liter') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Chicken Breast 1kg', 'SKU-003-CHICKEN', 'Proteins', 'kg', 650.00, 650.00, 10, 'Fresh chicken breast per kg') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Tomato Powder 500g', 'SKU-004-TOMATO', 'Spices', 'packet', 120.00, 120.00, 50, 'Tomato powder 500g packet') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Milk Powder 400g', 'SKU-005-MILK', 'Dairy', 'tin', 420.00, 420.00, 25, 'Full cream milk powder 400g tin') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Bread White 500g', 'SKU-006-BREAD', 'Bakery', 'pack', 95.00, 95.00, 40, 'White bread loaf 500g pack') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Banana Fresh', 'SKU-007-BANANA', 'Fruits', 'dozen', 180.00, 180.00, 30, 'Fresh banana per dozen') ON CONFLICT DO NOTHING;
-INSERT INTO products (name, sku, category, unit, current_unit_price, unit_price, reorder_level, description) VALUES
-    ('Orange Fresh', 'SKU-008-ORANGE', 'Fruits', 'kg', 220.00, 220.00, 20, 'Fresh oranges per kg') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Basmati Rice Premium 5kg', 'SKU-001-RICE', 'Grains', 'bag', 550.00, 20, 'Premium basmati rice in 5kg bags') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Sunflower Oil 1L', 'SKU-002-OIL', 'Oils', 'bottle', 280.00, 30, 'Pure sunflower cooking oil 1 liter') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Chicken Breast 1kg', 'SKU-003-CHICKEN', 'Proteins', 'kg', 650.00, 10, 'Fresh chicken breast per kg') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Tomato Powder 500g', 'SKU-004-TOMATO', 'Spices', 'packet', 120.00, 50, 'Tomato powder 500g packet') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Milk Powder 400g', 'SKU-005-MILK', 'Dairy', 'tin', 420.00, 25, 'Full cream milk powder 400g tin') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Bread White 500g', 'SKU-006-BREAD', 'Bakery', 'pack', 95.00, 40, 'White bread loaf 500g pack') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Banana Fresh', 'SKU-007-BANANA', 'Fruits', 'dozen', 180.00, 30, 'Fresh banana per dozen') ON CONFLICT DO NOTHING;
+INSERT INTO products (name, sku, category, unit_type, current_unit_price, reorder_level, description) VALUES
+    ('Orange Fresh', 'SKU-008-ORANGE', 'Fruits', 'kg', 220.00, 20, 'Fresh oranges per kg') ON CONFLICT DO NOTHING;
 
 -- Insert Notification Templates
 INSERT INTO notification_templates (template_key, title_template, message_template, notification_type) VALUES

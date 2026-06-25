@@ -30,10 +30,10 @@ public class StockRequest {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "requested_quantity", nullable = false)
+    @Column(name = "requested_qty", nullable = false)
     private Integer requestedQuantity;
 
-    @Column(name = "approved_quantity")
+    @Column(name = "approved_qty")
     private Integer approvedQuantity;
 
     @Enumerated(EnumType.STRING)
@@ -41,7 +41,7 @@ public class StockRequest {
     private RequestStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(name = "urgency", nullable = false, length = 30)
     private Priority priority;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,10 +58,10 @@ public class StockRequest {
     @Column(name = "rejection_reason", length = 500)
     private String rejectionReason;
 
-    @Column(name = "requested_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime requestedAt;
 
-    @Column(name = "approved_at")
+    @Column(name = "approval_date")
     private LocalDateTime approvedAt;
 
     @Column(name = "completed_at")

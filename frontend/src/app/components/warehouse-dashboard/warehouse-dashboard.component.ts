@@ -63,9 +63,9 @@ export class WarehouseDashboardComponent implements OnInit {
     { id: 3, sku: 'PROD003', name: 'Eggs Dozen', category: 'Dairy', unitPrice: 1222, reorderLevel: 30, minStockLevel: 10, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }
   ];
   demoInventory: any[] = [
-    { id: 1, product: null, warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 100, reorderLevel: 20, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
-    { id: 2, product: null, warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 50, reorderLevel: 10, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
-    { id: 3, product: null, warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 120, reorderLevel: 30, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() }
+    { id: 1, product: null, warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 100, reorderLevel: 20, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
+    { id: 2, product: null, warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 50, reorderLevel: 10, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
+    { id: 3, product: null, warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: '123 Industrial Ave', capacity: 10000, currentStock: 7500, active: true, createdAt: new Date(), updatedAt: new Date() }, quantity: 120, reorderLevel: 30, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() }
   ];
   
   form = {
@@ -119,7 +119,7 @@ export class WarehouseDashboardComponent implements OnInit {
       { id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy', unitPrice: 599.00, reorderLevel: 45, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() }
     ] as Product[];
     
-    const warehouse = { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() };
+    const warehouse = { id: 1, code: 'WH01', name: 'SL Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() };
     
     this.inventory = [
       { id: 1, product: this.products[0], warehouse, quantity: 150, reorderLevel: 50, lastUpdated: new Date(), lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() },
@@ -279,6 +279,7 @@ export class WarehouseDashboardComponent implements OnInit {
         name: this.newProduct.name,
         category: this.newProduct.category,
         unitPrice: this.newProduct.unitPrice,
+        unit: 'units',
         description: this.newProduct.description || `${this.newProduct.name} - ${this.newProduct.category}`
       };
 

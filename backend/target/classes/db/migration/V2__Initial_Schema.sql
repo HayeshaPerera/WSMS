@@ -12,12 +12,16 @@ CREATE TABLE roles (
 
 CREATE TABLE warehouses (
     id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
     capacity DECIMAL(12, 2) NOT NULL,
+    current_stock INTEGER DEFAULT 0,
     manager_name VARCHAR(255),
     contact_phone VARCHAR(20),
-    email VARCHAR(255),
+    contact_email VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     is_deleted BOOLEAN DEFAULT FALSE
@@ -25,12 +29,18 @@ CREATE TABLE warehouses (
 
 CREATE TABLE supermarkets (
     id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     branch_code VARCHAR(50) NOT NULL UNIQUE,
     location VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
+    storage_capacity INTEGER NOT NULL,
+    current_stock INTEGER DEFAULT 0,
     manager_name VARCHAR(255),
     contact_phone VARCHAR(20),
-    email VARCHAR(255),
+    contact_email VARCHAR(255),
+    assigned_warehouse_id BIGINT REFERENCES warehouses(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT TRUE,
     par_level_setting DECIMAL(5, 2) DEFAULT 1.2,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
@@ -68,22 +78,9 @@ CREATE TABLE audit_logs (
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     action VARCHAR(50) NOT NULL,
     entity_type VARCHAR(100) NOT NULL,
-    entity_id BIGINT NOT NULL,
-    old_value TEXT,
-    new_value TEXT,
+    entity_id BIGINT,
+    details TEXT,
     ip_address VARCHAR(45),
-    user_agent VARCHAR(500),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    is_deleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE refresh_tokens (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    token_hash VARCHAR(500) NOT NULL UNIQUE,
-    expires_at TIMESTAMP NOT NULL,
-    is_revoked BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     is_deleted BOOLEAN DEFAULT FALSE
@@ -98,5 +95,3 @@ CREATE INDEX idx_user_roles_user ON user_roles(user_id) WHERE is_deleted = FALSE
 CREATE INDEX idx_audit_logs_user ON audit_logs(user_id) WHERE is_deleted = FALSE;
 CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id) WHERE is_deleted = FALSE;
 CREATE INDEX idx_audit_logs_created ON audit_logs(created_at DESC) WHERE is_deleted = FALSE;
-CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id) WHERE is_deleted = FALSE;
-CREATE INDEX idx_refresh_tokens_expires ON refresh_tokens(expires_at) WHERE is_deleted = FALSE;

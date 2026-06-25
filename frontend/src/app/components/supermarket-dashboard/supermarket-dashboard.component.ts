@@ -236,7 +236,7 @@ export class SupermarketDashboardComponent implements OnInit {
           id: created?.id || Date.now(),
           requestNumber: created?.requestNumber || `REQ-${Date.now()}`,
           supermarket: { id: this.supermarketId, code: `SM${this.supermarketId}`, name: `Supermarket ${this.supermarketId}` },
-          warehouse: { id: newRequest.warehouseId || 1, code: `WH${newRequest.warehouseId || 1}`, name: 'Colombo Warehouse' },
+          warehouse: { id: newRequest.warehouseId || 1, code: `WH${newRequest.warehouseId || 1}`, name: 'SL Warehouse' },
           product: created?.product || product,
           requestedQuantity: newRequest.requestedQuantity,
           status: created?.status || 'PENDING',
@@ -269,9 +269,9 @@ export class SupermarketDashboardComponent implements OnInit {
 
   addHardcodedInventory(): void {
     this.inventory = [
-      { id: 1, product: { id: 1, sku: 'PROD001', name: 'Milk 1L', category: 'Dairy', unitPrice: 1047, minStockLevel: 30, perishable: true, active: true, reorderLevel: 50, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Colombo Supermarket' } as any, quantity: 45, reorderLevel: 50, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
-      { id: 2, product: { id: 3, sku: 'PROD003', name: 'Eggs Dozen', category: 'Dairy', unitPrice: 1222, minStockLevel: 25, perishable: true, active: true, reorderLevel: 30, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Colombo Supermarket' } as any, quantity: 28, reorderLevel: 30, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
-      { id: 3, product: { id: 5, sku: 'PROD005', name: 'Butter 200g', category: 'Dairy', unitPrice: 1397, minStockLevel: 25, perishable: true, active: true, reorderLevel: 35, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'Colombo Supermarket' } as any, quantity: 60, reorderLevel: 35, lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() } as any
+      { id: 1, product: { id: 1, sku: 'PROD001', name: 'Milk 1L', category: 'Dairy', unitPrice: 1047, minStockLevel: 30, perishable: true, active: true, reorderLevel: 50, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'SL Supermarket' } as any, quantity: 45, reorderLevel: 50, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 2, product: { id: 3, sku: 'PROD003', name: 'Eggs Dozen', category: 'Dairy', unitPrice: 1222, minStockLevel: 25, perishable: true, active: true, reorderLevel: 30, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'SL Supermarket' } as any, quantity: 28, reorderLevel: 30, lowStockAlert: true, createdAt: new Date(), updatedAt: new Date() } as any,
+      { id: 3, product: { id: 5, sku: 'PROD005', name: 'Butter 200g', category: 'Dairy', unitPrice: 1397, minStockLevel: 25, perishable: true, active: true, reorderLevel: 35, createdAt: new Date(), updatedAt: new Date() } as any, supermarket: { id: this.supermarketId, code: 'SM01', name: 'SL Supermarket' } as any, quantity: 60, reorderLevel: 35, lowStockAlert: false, createdAt: new Date(), updatedAt: new Date() } as any
     ];
     // Update shared inventory so navbar shows demo supermarket inventory
     if (this.inventory && this.inventory.length > 0) {

@@ -150,8 +150,8 @@ export class StockRequestsComponent implements OnInit {
       {
         id: 1,
         requestNumber: 'REQ-2026-001',
-        supermarket: { id: 1, code: 'SM01', name: 'Colombo Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        supermarket: { id: 1, code: 'SM01', name: 'SL Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 1, sku: 'PROD001', name: 'Organic Whole Milk', category: 'Dairy', unitPrice: 899.00, reorderLevel: 50, minStockLevel: 30, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
         requestedQuantity: 100,
         status: RequestStatus.PENDING,
@@ -163,8 +163,8 @@ export class StockRequestsComponent implements OnInit {
       {
         id: 2,
         requestNumber: 'REQ-2026-002',
-        supermarket: { id: 2, code: 'SM02', name: 'Uptown Plaza', location: 'Kandy', storageCapacity: 4000, currentStock: 2000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        supermarket: { id: 2, code: 'SM02', name: 'SL Supermarket', location: 'Kandy', storageCapacity: 4000, currentStock: 2000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages', unitPrice: 2499.00, reorderLevel: 30, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
         requestedQuantity: 50,
         status: RequestStatus.PENDING,
@@ -176,8 +176,8 @@ export class StockRequestsComponent implements OnInit {
       {
         id: 3,
         requestNumber: 'REQ-2026-003',
-        supermarket: { id: 1, code: 'SM01', name: 'Colombo Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        warehouse: { id: 2, code: 'WH02', name: 'North Distribution Center', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
+        supermarket: { id: 1, code: 'SM01', name: 'SL Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 2, code: 'WH02', name: 'SL Warehouse', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 6, sku: 'PROD006', name: 'Eggs (Dozen)', category: 'Dairy', unitPrice: 599.00, reorderLevel: 45, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
         requestedQuantity: 200,
         approvedQuantity: 200,
@@ -192,8 +192,8 @@ export class StockRequestsComponent implements OnInit {
       {
         id: 4,
         requestNumber: 'REQ-2026-004',
-        supermarket: { id: 3, code: 'SM03', name: 'Suburban Store', location: 'Galle', storageCapacity: 3000, currentStock: 1500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        warehouse: { id: 1, code: 'WH01', name: 'Colombo Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
+        supermarket: { id: 3, code: 'SM03', name: 'SL Supermarket', location: 'Galle', storageCapacity: 3000, currentStock: 1500, active: true, createdAt: new Date(), updatedAt: new Date() },
+        warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
         product: { id: 5, sku: 'PROD005', name: 'Chicken Breast (1kg)', category: 'Meat', unitPrice: 1599.00, reorderLevel: 35, minStockLevel: 15, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
         requestedQuantity: 75,
         status: RequestStatus.PENDING,
@@ -268,7 +268,7 @@ export class StockRequestsComponent implements OnInit {
     const trackingNumber = 'TRK' + Date.now() + Math.floor(Math.random() * 1000);
     const delivery = {
       trackingNumber,
-      warehouse: sr.warehouse || { id: 1, name: 'Colombo Warehouse', code: 'WH-001' },
+      warehouse: sr.warehouse || { id: 1, name: 'SL Warehouse', code: 'WH-001' },
       supermarket: sr.supermarket || { id: 1, name: 'Unknown Supermarket', code: 'SM-000' },
       product: sr.product || { id: 1, name: 'Unresolved Item', sku: 'PENDING' },
       stockRequest: sr,

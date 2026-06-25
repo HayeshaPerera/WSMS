@@ -29,10 +29,10 @@
         </div>
         <div class="form-group" style="flex:1">
           <label>Classification</label>
-          <select [(ngModel)]="newProduct.category">
-            <option value="">-- Select Category --</option>
-            <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
-          </select>
+          <input type="text" [(ngModel)]="newProduct.category" list="product-category-options" placeholder="Select or type category">
+          <datalist id="product-category-options">
+            <option *ngFor="let cat of categories" [value]="cat"></option>
+          </datalist>
         </div>
       </div>
 

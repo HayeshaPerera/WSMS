@@ -20,6 +20,9 @@ export class InventoryComponent implements OnInit {
   availableProducts: Product[] = [];
   loading = true;
   showAddForm = false;
+  editingInventory: Inventory | null = null;
+  showConfirmModal = false;
+  confirmInventory?: Inventory;
 
   get totalSkus(): number {
     return this.filteredItems.length;
@@ -301,6 +304,46 @@ export class InventoryComponent implements OnInit {
     }
   }
 
+  editInventory(item: Inventory): void {
+    this.editingInventory = item;
+    this.isNewProduct = false;
+    this.selectedProduct = item.product || null;
+    this.newInventory = {
+      productId: item.product?.id || null,
+      warehouseId: item.warehouse?.id || 1,
+      quantity: item.quantity,
+      reorderLevel: item.reorderLevel
+    };
+    this.showAddForm = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  requestDeleteInventory(item: Inventory): void {
+    this.confirmInventory = item;
+    this.showConfirmModal = true;
+  }
+
+  cancelDeleteInventory(): void {
+    this.showConfirmModal = false;
+    this.confirmInventory = undefined;
+  }
+
+  confirmDeleteInventory(): void {
+    const item = this.confirmInventory;
+    if (!item) return;
+    this.inventoryService.deleteInventory(item.id).subscribe({
+      next: () => {
+        this.notifications.success(`Deleted stock record for ${item.product?.name}`);
+        this.loadInventoryFromAPI();
+        this.cancelDeleteInventory();
+      },
+      error: () => {
+        this.notifications.error('Failed to delete inventory record');
+        this.cancelDeleteInventory();
+      }
+    });
+  }
+
   exportToPdf(): void {
     this.pdfReport.generateInventoryReport(this.filteredItems);
   }
@@ -376,8 +419,28 @@ export class InventoryComponent implements OnInit {
   }
 
   addInventoryItem(): void {
-    if (this.newInventory.quantity <= 0) {
+    if (this.newInventory.quantity < 0) {
       this.notifications.error('Please enter a valid quantity');
+      return;
+    }
+
+    if (this.editingInventory) {
+      const payload = {
+        productId: this.newInventory.productId,
+        warehouseId: this.newInventory.warehouseId,
+        quantity: this.newInventory.quantity,
+        reorderLevel: this.newInventory.reorderLevel
+      };
+      this.inventoryService.updateInventory(this.editingInventory.id, payload as any).subscribe({
+        next: () => {
+          this.notifications.success(`Stock updated successfully`);
+          this.loadInventoryFromAPI();
+          this.resetForm();
+          this.showAddForm = false;
+          this.editingInventory = null;
+        },
+        error: () => this.notifications.error('Failed to update stock')
+      });
       return;
     }
 
@@ -480,6 +543,7 @@ export class InventoryComponent implements OnInit {
   resetForm(): void {
     this.selectedProduct = null;
     this.isNewProduct = false;
+    this.editingInventory = null;
     this.newInventory = {
       productId: null,
       warehouseId: 1,

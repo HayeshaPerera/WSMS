@@ -1,12 +1,27 @@
 <div class="pos-container">
-  <div class="header-section mb-4">
-    <h2><i class="fas fa-cash-register text-success"></i> Point of Sale</h2>
-    <p class="text-muted">Process sales and automatically update inventory stock</p>
+  <div class="header-section mb-4" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <h2><i class="fas fa-cash-register text-success"></i> Point of Sale</h2>
+      <p class="text-muted">Process sales and automatically update inventory stock</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <div class="date-filter">
+        <label class="text-muted" style="font-size: 12px; margin-bottom: 2px; display: block;">From</label>
+        <input type="date" class="form-control glass" [(ngModel)]="exportStartDate" (ngModelChange)="updateFilteredExportSales()" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 6px 12px;">
+      </div>
+      <div class="date-filter">
+        <label class="text-muted" style="font-size: 12px; margin-bottom: 2px; display: block;">To</label>
+        <input type="date" class="form-control glass" [(ngModel)]="exportEndDate" (ngModelChange)="updateFilteredExportSales()" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 6px 12px;">
+      </div>
+      <button class="btn btn-success" (click)="exportSalesToCsv()" title="Export sales to Excel/CSV for the selected time period" style="margin-top: 18px;">
+        <i class="fas fa-file-excel me-2"></i> Export Sales
+      </button>
+    </div>
   </div>
 
   <div class="pos-grid">
     <!-- Left: Search and Product List -->
-    <div class="search-section">
+    <div class="search-section glass-card">
       <div class="search-bar">
         <input 
           type="text" 
@@ -22,67 +37,158 @@
              *ngFor="let item of filteredItems" 
              [class.selected]="selectedItem?.id === item.id"
              (click)="selectItem(item)">
-          <div class="item-name">{{ item.product?.name || 'Unknown' }}</div>
-          <div class="item-sku">{{ item.product?.sku || 'N/A' }}</div>
-          
-          <div class="item-stock mt-2">
-            <span [class.stock-low]="item.quantity <= (item.reorderLevel || 10)" 
-                  [class.stock-ok]="item.quantity > (item.reorderLevel || 10)">
-              <i class="fas" [ngClass]="item.quantity <= (item.reorderLevel || 10) ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
-              In Stock: {{ item.quantity }}
-            </span>
+             
+          <div class="item-card-header">
+            <div class="item-card-icon">
+              <i class="fas fa-box"></i>
+            </div>
+            <div class="item-card-title">
+              <div class="item-name">{{ item.product?.name || 'Unknown' }}</div>
+              <div class="item-sku">SKU: {{ item.product?.sku || 'N/A' }}</div>
+            </div>
           </div>
           
-          <div class="item-price">LKR {{ (item.product?.unitPrice || 0) | number:'1.2-2' }}</div>
+          <div class="item-card-footer">
+            <div class="item-stock">
+              <span [class.stock-low]="item.quantity <= (item.reorderLevel || 10)" 
+                    [class.stock-ok]="item.quantity > (item.reorderLevel || 10)">
+                <i class="fas" [ngClass]="item.quantity <= (item.reorderLevel || 10) ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
+                {{ item.quantity }} in stock
+              </span>
+            </div>
+            <div class="item-price">LKR {{ (item.product?.unitPrice || 0) | number:'1.2-2' }}</div>
+          </div>
+        </div>
+        
+        <div *ngIf="filteredItems.length === 0" class="text-center text-muted py-5" style="grid-column: 1 / -1;">
+          <i class="fas fa-search fa-3x mb-3 opacity-25"></i>
+          <p>No products found matching your search.</p>
         </div>
       </div>
     </div>
 
     <!-- Right: Checkout -->
-    <div class="checkout-section">
+    <div class="checkout-section glass-card">
       <div class="checkout-header">
         Current Sale
       </div>
 
-      <div *ngIf="!selectedItem" class="text-center text-muted my-5 py-5">
-        <i class="fas fa-shopping-basket fa-3x mb-3 opacity-50"></i>
-        <p>Select a product to begin sale</p>
+      <div *ngIf="!selectedItem" class="text-center text-muted my-5 py-5" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <i class="fas fa-shopping-basket fa-4x mb-4" style="color: rgba(0,0,0,0.05);"></i>
+        <p style="font-size: 1.1rem; color: rgba(0,0,0,0.3);">Select a product to begin sale</p>
       </div>
 
       <div *ngIf="selectedItem" class="checkout-details">
         <div class="selected-item-info">
-          <h4 class="m-0">{{ selectedItem.product?.name }}</h4>
-          <small class="text-white-50">SKU: {{ selectedItem.product?.sku }}</small>
-          
-          <div class="mt-2 d-flex justify-content-between">
-             <span>Price:</span>
-             <strong>LKR {{ selectedItem.product?.unitPrice | number:'1.2-2' }}</strong>
+          <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+            <div class="item-card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981; width: 48px; height: 48px; font-size: 20px;">
+              <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div>
+              <h4 class="m-0">{{ selectedItem.product?.name }}</h4>
+              <small class="text-muted">SKU: {{ selectedItem.product?.sku }}</small>
+            </div>
           </div>
-          <div class="mt-1 d-flex justify-content-between text-white-50">
-             <span>Available:</span>
-             <span>{{ selectedItem.quantity }} units</span>
+          
+          <div class="d-flex justify-content-between align-items-center mb-2">
+             <span class="text-muted">Unit Price:</span>
+             <strong class="text-primary">LKR {{ selectedItem.product?.unitPrice | number:'1.2-2' }}</strong>
+          </div>
+          <div class="d-flex justify-content-between align-items-center text-muted">
+             <span>Available Stock:</span>
+             <span class="badge" [ngClass]="selectedItem.quantity <= (selectedItem.reorderLevel || 10) ? 'bg-danger' : 'bg-success bg-opacity-75'">{{ selectedItem.quantity }} units</span>
           </div>
         </div>
 
-        <label class="text-white-50 text-uppercase" style="font-size:12px; letter-spacing:1px;">Quantity</label>
+        <label class="text-muted text-uppercase mt-2" style="font-size:12px; letter-spacing:1px; font-weight: 600;">Quantity</label>
         <div class="qty-control">
-          <button class="qty-btn" (click)="quantity = quantity - 1" [disabled]="quantity <= 1 || isProcessing">
+          <button class="btn btn-secondary btn-icon" (click)="quantity = quantity - 1" [disabled]="quantity <= 1 || isProcessing">
             <i class="fas fa-minus"></i>
           </button>
-          <input type="number" class="qty-input" [(ngModel)]="quantity" min="1" [max]="selectedItem.quantity" [disabled]="isProcessing">
-          <button class="qty-btn" (click)="quantity = quantity + 1" [disabled]="quantity >= selectedItem.quantity || isProcessing">
+          <input type="number" class="qty-input text-primary" [(ngModel)]="quantity" min="1" [max]="selectedItem.quantity" [disabled]="isProcessing">
+          <button class="btn btn-secondary btn-icon" (click)="quantity = quantity + 1" [disabled]="quantity >= selectedItem.quantity || isProcessing">
             <i class="fas fa-plus"></i>
           </button>
         </div>
 
         <div class="total-row">
-          <span>Total:</span>
-          <span>LKR {{ totalAmount | number:'1.2-2' }}</span>
+          <span class="text-muted">Total:</span>
+          <span class="text-success">LKR {{ totalAmount | number:'1.2-2' }}</span>
         </div>
 
-        <button class="btn-complete" (click)="completeSale()" [disabled]="isProcessing || quantity > selectedItem.quantity">
+        <button class="btn btn-primary mt-4 w-100" style="padding: 18px; font-size: 18px; display: flex; justify-content: center;" (click)="completeSale()" [disabled]="isProcessing || quantity > selectedItem.quantity">
           <span *ngIf="!isProcessing">Complete Sale <i class="fas fa-arrow-right ms-2"></i></span>
           <span *ngIf="isProcessing" class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtered Sales History Section -->
+  <div class="glass-card mt-4 p-0 overflow-hidden" *ngIf="exportStartDate || exportEndDate">
+    <div class="table-toolbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 24px; flex-wrap: wrap; gap: 15px;">
+      <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">Sales History</h3>
+      <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <!-- Search filter -->
+        <div class="search-box" style="width: 250px;">
+          <i class="fas fa-search search-icon" style="top: 50%; transform: translateY(-50%); font-size: 14px; left: 12px; color: var(--text-muted);"></i>
+          <input type="text" class="form-control" placeholder="Search product or SKU..." [(ngModel)]="tableSearchTerm" (ngModelChange)="onTableFilterChange()" style="padding-left: 35px; border-radius: 8px;">
+        </div>
+
+        <!-- Rows per page -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label class="text-muted mb-0" style="font-size: 13px; white-space: nowrap;">Rows:</label>
+          <select class="form-control" [(ngModel)]="rowsPerPage" (ngModelChange)="onTableFilterChange()" style="border-radius: 8px; padding: 6px 12px; width: 70px;">
+            <option [ngValue]="5">5</option>
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="20">20</option>
+            <option [ngValue]="50">50</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of paginatedSales">
+            <td><span class="text-muted">{{s.saleDate}}</span></td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span class="fw-600">{{s.productName}}</span>
+                <span class="fs-xs text-muted">{{s.productSku}}</span>
+              </div>
+            </td>
+            <td><strong>{{s.quantitySold}}</strong></td>
+            <td><span class="text-success fw-600">LKR {{s.totalAmount || (s.unitPrice * s.quantitySold) | number:'1.2-2'}}</span></td>
+          </tr>
+          <tr *ngIf="paginatedSales.length === 0">
+            <td colspan="4" class="text-center text-muted py-5">
+              <i class="fas fa-history fa-2x mb-3 opacity-25 d-block"></i>
+              No records found.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer" style="padding: 15px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.3);">
+      <span class="text-muted" style="font-size: 13px;">
+        Showing {{ showingStartIndex }} to {{ showingEndIndex }} of {{ filteredSalesForTable.length }} entries
+      </span>
+      <div style="display: flex; gap: 5px;">
+        <button class="btn btn-secondary btn-sm" [disabled]="currentPage === 1" (click)="changePage(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span style="display: inline-flex; align-items: center; padding: 0 10px; font-weight: 600; font-size: 14px;">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn btn-secondary btn-sm" [disabled]="currentPage === totalPages" (click)="changePage(1)">
+          <i class="fas fa-chevron-right"></i>
         </button>
       </div>
     </div>

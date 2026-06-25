@@ -38,6 +38,9 @@ public class GrnHeader {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "reference_number", nullable = false, length = 100)
+    private String referenceNumber;
+
     @Column(name = "received_date", nullable = false)
     private LocalDateTime receivedDate;
 
@@ -56,6 +59,9 @@ public class GrnHeader {
         updatedAt = LocalDateTime.now();
         if (receivedDate == null) receivedDate = LocalDateTime.now();
         if (status == null) status = "DRAFT";
+        if (referenceNumber == null) {
+            referenceNumber = grnNumber != null ? grnNumber : "REF-" + System.currentTimeMillis();
+        }
     }
 
     @PreUpdate

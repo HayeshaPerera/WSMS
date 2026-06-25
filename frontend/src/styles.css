@@ -410,27 +410,30 @@ table {
 }
 
 thead tr {
-  background: var(--green-light);
+  background: var(--green-primary);
 }
 
 th {
   text-align: left;
-  padding: 14px 24px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--green-primary);
+  padding: 16px 24px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   white-space: nowrap;
-  border-bottom: 1px solid var(--border-light);
+  border: none;
   font-family: 'Inter', sans-serif;
 }
+
+th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
 
 td {
   padding: 16px 24px;
   font-size: 14px;
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: none;
   vertical-align: middle;
   font-family: 'Inter', sans-serif;
   transition: background 0.2s ease;
@@ -439,7 +442,14 @@ td {
 tbody tr {
   animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.2s ease;
 }
+
+tbody tr:nth-child(even) {
+  background-color: rgba(45, 122, 79, 0.02);
+}
+
 /* Staggered row animations */
 tbody tr:nth-child(1) { animation-delay: 0.05s; }
 tbody tr:nth-child(2) { animation-delay: 0.10s; }
@@ -452,11 +462,10 @@ tbody tr:nth-child(8) { animation-delay: 0.40s; }
 tbody tr:nth-child(9) { animation-delay: 0.45s; }
 tbody tr:nth-child(n+10) { animation-delay: 0.50s; }
 
-tbody tr:hover td { 
-  background: rgba(45,122,79,0.04); 
-  transform: scale(1.002);
+tbody tr:hover { 
+  background: rgba(45,122,79,0.06); 
 }
-tbody tr:last-child td { border-bottom: none; }
+tbody tr:last-child { border-bottom: none; }
 
 /* ── BUTTONS ─────────────────────────────────────────────── */
 .btn {
