@@ -44,11 +44,11 @@
     <!-- Tab Switcher: toggles between Sales Analytics and AI Demand Forecast views -->
     <div class="tab-switcher glass-card mb-4">
         <!-- Sales Analytics tab button - highlights when active -->
-        <button class="tab-btn" [class.active]="activeTab === 'sales'" (click)="activeTab = 'sales'">
+        <button class="tab-btn" [class.active]="activeTab === 'sales'" (click)="switchTab('sales')">
             <i class="fas fa-chart-line"></i> Sales Analytics
         </button>
         <!-- AI Demand Forecast tab button - highlights when active -->
-        <button class="tab-btn" [class.active]="activeTab === 'forecast'" (click)="activeTab = 'forecast'">
+        <button class="tab-btn" [class.active]="activeTab === 'forecast'" (click)="switchTab('forecast')">
             <i class="fas fa-brain"></i> AI Demand Forecast
         </button>
     </div>
@@ -194,36 +194,37 @@
         <!-- Table showing all filtered sales records -->
         <div class="glass-card p-0 overflow-hidden" *ngIf="!loading && filteredSales.length > 0">
             <div class="table-container">
-                <table>
-                    <!-- Table header row -->
+                <table class="table-hover">
                     <thead>
                         <tr>
                             <th>Date</th> <!-- Sale date column -->
                             <th>Product</th> <!-- Product name and SKU column -->
-                            <th>Qty</th> <!-- Quantity sold column -->
-                            <th>Unit Price</th> <!-- Price per unit column -->
-                            <th>Total</th> <!-- Total amount (qty * price) column -->
+                            <th class="text-right">Qty</th> <!-- Quantity sold column -->
+                            <th class="text-right">Unit Price</th> <!-- Price per unit column -->
+                            <th class="text-right">Total</th> <!-- Total amount (qty * price) column -->
                         </tr>
                     </thead>
                     <!-- Table body: one row per filtered sale record -->
                     <tbody>
                         <tr *ngFor="let s of pagedSales">
                             <!-- Sale date -->
-                            <td><span class="text-muted">{{s.saleDate}}</span></td>
+                            <td>
+                                <span class="text-muted fw-bold">{{s.saleDate | date:'mediumDate'}}</span>
+                            </td>
                             <!-- Product name and SKU -->
                             <td>
                                 <div class="product-cell">
-                                    <span class="text-white fw-bold">{{s.productName}}</span>
+                                    <span class="fw-bold" style="color: #212529;">{{s.productName}}</span>
                                     <span class="text-accent fs-xs">{{s.productSku}}</span>
                                 </div>
                             </td>
 
                             <!-- Quantity sold -->
-                            <td><strong>{{s.quantitySold}}</strong></td>
+                            <td class="text-right"><strong>{{s.quantitySold}}</strong></td>
                             <!-- Unit price formatted with 2 decimal places -->
-                            <td>LKR {{s.unitPrice | number:'1.2-2'}}</td>
+                            <td class="text-right">LKR {{s.unitPrice | number:'1.2-2'}}</td>
                             <!-- Total amount formatted with 2 decimal places -->
-                            <td><span class="text-accent fw-bold">LKR {{s.totalAmount | number:'1.2-2'}}</span></td>
+                            <td class="text-right"><span class="text-accent fw-bold">LKR {{s.totalAmount | number:'1.2-2'}}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -327,6 +328,14 @@
                                     <option value="productName">Product Name</option>
                                 </select>
                             </div>
+                        </div>
+                        
+                        <!-- Export button -->
+                        <div class="filter-item flex-0">
+                            <label class="fs-xxs text-muted mb-1 d-block fw-bold">EXPORT</label>
+                            <button class="btn btn-icon btn-secondary glass" (click)="exportForecastsToCsv()" title="Export Forecasts to CSV">
+                                <i class="fas fa-download"></i>
+                            </button>
                         </div>
                         
                         <!-- Reset button -->

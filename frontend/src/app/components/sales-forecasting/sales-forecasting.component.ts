@@ -100,6 +100,17 @@ export class SalesForecastingComponent implements OnInit {
     activeTab: 'sales' | 'forecast' = 'sales'; // Currently active tab: 'sales' or 'forecast'
 
     /**
+     * Switches the active tab and re-initializes charts if returning to sales view.
+     */
+    switchTab(tab: 'sales' | 'forecast'): void {
+        this.activeTab = tab;
+        if (tab === 'sales') {
+            // Wait for DOM to render the canvas elements before initializing charts
+            setTimeout(() => this.initSalesCharts(), 150);
+        }
+    }
+
+    /**
      * Constructor: inject all required services
      */
     constructor(
@@ -819,6 +830,46 @@ export class SalesForecastingComponent implements OnInit {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
             link.setAttribute('download', `sales_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    /**
+     * Exports the AI Forecast recommendations to a CSV file.
+     */
+    exportForecastsToCsv(): void {
+        const currentForecasts = this.getFilteredForecasts();
+        if (!currentForecasts || currentForecasts.length === 0) {
+            this.notifications.warning('No forecast data available to export.');
+            return;
+        }
+
+        const headers = ['Product Name', 'SKU', 'Trend', 'Current Stock', 'Weekly Demand', 'Monthly Demand', 'Recommended Order', 'Confidence %'];
+        const rows = currentForecasts.map((f: any) => [
+            `"${(f.productName || '').replace(/"/g, '""')}"`,
+            `"${(f.productSku || '').replace(/"/g, '""')}"`,
+            f.trend || '',
+            f.currentStock || 0,
+            f.predictedWeeklyDemand || 0,
+            f.predictedMonthlyDemand || 0,
+            f.recommendedOrder || 0,
+            Math.round((f.confidence || 0) * 100)
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `ai_forecast_export_${new Date().toISOString().split('T')[0]}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();

@@ -588,57 +588,92 @@
 /* Red for below 60% confidence */
 
 /* ========================
-   Sales Table Styles
+   Sales Table Styles (Redesigned)
    ======================== */
 
-/* Scrollable table container for horizontal overflow */
+/* Table container with clean border and shadow */
 .table-container {
     overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    max-height: 500px; /* Enable vertical scrolling */
+    overflow-y: auto;
 }
 
 /* Table - full width with collapsed borders */
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* Required for sticky borders */
+    border-spacing: 0;
+    min-width: 800px; /* Ensure table is wide enough to scroll on small screens */
+}
+
+/* Table header row */
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 /* Table header cells */
 thead th {
-    padding: 14px 16px;
-    /* Comfortable padding */
+    padding: 16px 20px;
     text-align: left;
-    /* Left-aligned text */
-    font-size: 0.75rem;
-    /* Small text */
+    font-size: 0.8rem;
     text-transform: uppercase;
-    /* UPPERCASE labels */
-    letter-spacing: 0.5px;
-    /* Slightly spaced letters */
-    color: rgba(0, 0, 0, 0.4);
-    /* Dimmed text */
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    /* Subtle bottom border */
-    background: rgba(0, 0, 0, 0.2);
-    /* Slightly darker background */
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #495057;
+    white-space: nowrap;
+    background: #f8f9fa; /* Solid background for sticky */
+    border-bottom: 2px solid #e9ecef;
 }
 
 /* Table body cells */
 tbody td {
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    font-size: 0.9rem;
+    padding: 10px 16px; /* Reduced vertical padding for tighter rows */
+    border-bottom: 1px solid #eaeaea; /* Slightly darker border for contrast */
+    font-size: 0.95rem;
+    color: #212529;
+    vertical-align: middle;
+    background: #ffffff;
 }
 
-/* Table row hover effect - subtle gold highlight */
-tbody tr:hover {
-    background: rgba(255, 215, 0, 0.03);
+/* Numeric columns right alignment */
+.text-right {
+    text-align: right !important;
+}
+
+/* Sticky Columns - Product Name (2nd column) */
+thead th:nth-child(2),
+tbody td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.03); /* Softer shadow */
+}
+
+/* Ensure sticky header cell for product stays above row cells */
+thead th:nth-child(2) {
+    z-index: 15;
+}
+
+/* Subtle striping and hover effect */
+tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover td {
+    background: #f1f8ff; /* Light blue highlight on hover instead of gray */
 }
 
 /* Product name + SKU cell layout */
 .product-cell {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px; /* Reduced gap to bring name and SKU closer */
 }
 
 /* ========================
