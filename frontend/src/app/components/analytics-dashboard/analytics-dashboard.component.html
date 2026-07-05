@@ -1,16 +1,28 @@
+<!-- =========================================
+     Analytics & Risk Management Dashboard
+     ========================================= -->
+<!-- Main container for the analytics dashboard with fade-in animation -->
 <div class="analytics-container animate-fade-in">
+  
+  <!-- Page Header: Title, subtitle, and Export button -->
   <div class="dashboard-header mb-4">
     <div class="header-info">
       <h1>Analytics & Risk Management</h1>
       <p class="text-secondary">AI-Driven Insights & Alerts</p>
     </div>
+    <!-- Export button: Only visible to admins -->
     <button class="btn btn-primary btn-export glass" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
       <i class="fas fa-file-pdf"></i> Export PDF Report
     </button>
   </div>
 
-  <!-- Alert Summary Cards -->
+  <!-- =========================================
+       Alert Summary Cards (KPI Grid)
+       ========================================= -->
+  <!-- Displays counts of active alerts grouped by severity -->
   <div class="kpi-grid mb-4">
+    
+    <!-- Critical Alerts Card -->
     <div class="glass-card stat-card border-danger">
       <div class="stat-icon glass text-danger"><i class="fas fa-radiation"></i></div>
       <div class="stat-content">
@@ -18,6 +30,8 @@
         <div class="stat-value text-danger">{{alertStats.critical}}</div>
       </div>
     </div>
+    
+    <!-- High Priority Alerts Card -->
     <div class="glass-card stat-card border-warning">
       <div class="stat-icon glass text-warning"><i class="fas fa-exclamation-triangle"></i></div>
       <div class="stat-content">
@@ -25,6 +39,8 @@
         <div class="stat-value text-warning">{{alertStats.high}}</div>
       </div>
     </div>
+    
+    <!-- Medium Alerts Card -->
     <div class="glass-card stat-card border-accent">
       <div class="stat-icon glass text-accent"><i class="fas fa-exclamation-circle"></i></div>
       <div class="stat-content">
@@ -32,6 +48,8 @@
         <div class="stat-value text-accent">{{alertStats.medium}}</div>
       </div>
     </div>
+    
+    <!-- Low Alerts Card -->
     <div class="glass-card stat-card border-success">
       <div class="stat-icon glass text-success"><i class="fas fa-info-circle"></i></div>
       <div class="stat-content">
@@ -41,28 +59,38 @@
     </div>
   </div>
 
-  <!-- Tab Navigation -->
+  <!-- =========================================
+       Tab Navigation Buttons
+       ========================================= -->
+  <!-- Switch between Alerts, Reorder, Costs, and Audit tabs -->
   <div class="tabs mb-4">
+    <!-- Alerts Tab Button -->
     <button class="btn glass" [class.btn-primary]="selectedTab === 'alerts'"
       [class.btn-secondary]="selectedTab !== 'alerts'" (click)="selectedTab = 'alerts'">
       <i class="fas fa-bell"></i> Alerts & Exceptions
     </button>
+    <!-- Reorder Recommendations Tab Button -->
     <button class="btn glass" [class.btn-primary]="selectedTab === 'reorder'"
       [class.btn-secondary]="selectedTab !== 'reorder'" (click)="selectedTab = 'reorder'">
       <i class="fas fa-robot"></i> Reorder Recommendations
     </button>
+    <!-- Cost Analysis Tab Button -->
     <button class="btn glass" [class.btn-primary]="selectedTab === 'costs'"
       [class.btn-secondary]="selectedTab !== 'costs'" (click)="selectedTab = 'costs'">
       <i class="fas fa-chart-pie"></i> Cost Analysis
     </button>
+    <!-- Audit Trail Tab Button -->
     <button class="btn glass" [class.btn-primary]="selectedTab === 'audit'"
       [class.btn-secondary]="selectedTab !== 'audit'" (click)="selectedTab = 'audit'">
       <i class="fas fa-history"></i> Audit Trail
     </button>
   </div>
 
-  <!-- Alerts Tab -->
+  <!-- =========================================
+       TAB 1: Active Alerts & Exceptions
+       ========================================= -->
   <div *ngIf="selectedTab === 'alerts'" class="glass-card animate-slide-in">
+    <!-- Tab Header and Clear Acknowledged Button -->
     <div class="dashboard-header mb-4">
       <h3 class="m-0">Active Alerts & Exceptions</h3>
       <button class="btn btn-sm btn-secondary glass" (click)="clearAcknowledged()">
@@ -70,22 +98,31 @@
       </button>
     </div>
 
+    <!-- Empty State: Shows when there are zero unacknowledged alerts -->
     <div *ngIf="unacknowledgedAlerts.length === 0" class="empty-placeholder p-5 text-center text-muted">
       <i class="fas fa-check-circle mb-2 fs-xl d-block text-success"></i>
       No active alerts - System operating normally
     </div>
 
+    <!-- Alert List: Iterates through unacknowledged alerts -->
     <div class="alerts-container" *ngIf="unacknowledgedAlerts.length > 0">
       <div *ngFor="let alert of unacknowledgedAlerts" class="glass-card alert-item mb-3" [ngClass]="getSeverityClass(alert.severity)">
+        
+        <!-- Alert Icon -->
         <div class="alert-icon">{{getAlertIcon(alert.type)}}</div>
+        
+        <!-- Alert Content details -->
         <div class="alert-content">
           <div class="alert-header">
             <span class="alert-title">{{alert.title}}</span>
             <span class="badge" [ngClass]="getSeverityClass(alert.severity)">{{alert.severity}}</span>
           </div>
           <div class="alert-message text-secondary mt-1">{{alert.message}}</div>
+          
+          <!-- Alert Footer: Timestamp and Acknowledge Button -->
           <div class="alert-footer mt-2 pt-2 border-top border-glass text-muted">
             <small>{{alert.timestamp | date:'short'}}</small>
+            <!-- Clicking acknowledges (dismisses) the alert -->
             <button class="btn btn-sm btn-secondary glass" (click)="acknowledgeAlert(alert.id)">
               Acknowledge
             </button>
@@ -95,12 +132,17 @@
     </div>
   </div>
 
-  <!-- Reorder Recommendations Tab -->
+  <!-- =========================================
+       TAB 2: Reorder Recommendations
+       ========================================= -->
   <div *ngIf="selectedTab === 'reorder'" class="animate-slide-in">
     <h3 class="mb-4 text-accent"><i class="fas fa-robot"></i> AI-Powered Recommendations</h3>
 
     <div class="inventory-grid">
+      <!-- Iterate through each reorder recommendation -->
       <div *ngFor="let rec of reorderRecommendations" class="glass-card inventory-item-card">
+        
+        <!-- Card Header: Product name and AI confidence badge -->
         <div class="item-header">
           <div class="item-meta">
             <span class="name text-primary">{{rec.productName}}</span>
@@ -108,6 +150,7 @@
           <span class="badge badge-info">{{rec.confidence}}% confidence</span>
         </div>
 
+        <!-- Metric Grid 1: Current vs Reorder Level -->
         <div class="item-stats mt-3">
           <div class="stat">
             <span class="label">Current Stock</span>
@@ -119,6 +162,7 @@
           </div>
         </div>
 
+        <!-- Metric Grid 2: Recommended Qty and Cost -->
         <div class="item-stats mt-3">
           <div class="stat">
             <span class="label">Recommended Qty</span>
@@ -126,22 +170,32 @@
           </div>
           <div class="stat">
             <span class="label">Est Cost</span>
+            <!-- Custom LKR pipe for currency formatting -->
             <span class="value text-warning">{{rec.estimatedCost | lkr}}</span>
           </div>
         </div>
 
+        <!-- Visual warning bar for days until stockout -->
         <div class="progress-track glass mt-3 mb-2">
+          <!-- Width caps at 100% based on 14 days max visualization -->
           <div class="progress-bar bg-danger" [style.width.%]="(rec.daysUntilStockout / 14) * 100"></div>
         </div>
-        <small class="text-danger fw-bold" *ngIf="rec.daysUntilStockout < 7">{{rec.daysUntilStockout}} days until
-          stockout</small>
-        <small class="text-secondary" *ngIf="rec.daysUntilStockout >= 7">{{rec.daysUntilStockout}} days until
-          stockout</small>
+        
+        <!-- Urgent stockout warning text -->
+        <small class="text-danger fw-bold" *ngIf="rec.daysUntilStockout < 7">
+          {{rec.daysUntilStockout}} days until stockout
+        </small>
+        <!-- Normal stockout warning text -->
+        <small class="text-secondary" *ngIf="rec.daysUntilStockout >= 7">
+          {{rec.daysUntilStockout}} days until stockout
+        </small>
 
+        <!-- AI Reasoning Explanation Text -->
         <div class="rec-reasoning mt-3 p-2 bg-dark-soft border-radius-sm text-secondary fs-sm">
           <strong><i class="fas fa-chart-line text-accent"></i> Analysis:</strong> {{rec.reasoning}}
         </div>
 
+        <!-- Action Button: Opens a new stock request for this recommendation -->
         <button class="btn btn-primary w-100 mt-3" (click)="createStockRequest(rec)">
           <i class="fas fa-file-invoice"></i> Create Stock Request
         </button>
@@ -149,39 +203,54 @@
     </div>
   </div>
 
-  <!-- Cost Analysis Tab -->
+  <!-- =========================================
+       TAB 3: Cost Analysis
+       ========================================= -->
   <div *ngIf="selectedTab === 'costs'" class="glass-card animate-slide-in">
     <h3 class="mb-4"><i class="fas fa-chart-pie text-warning"></i> Financial Impact Analysis</h3>
 
+    <!-- Only render if cost analysis data exists -->
     <div *ngIf="costAnalysis" class="dashboard-grid">
+      
+      <!-- Main Content Left Column -->
       <div class="main-content-area">
+        
+        <!-- Two main KPI cards -->
         <div class="form-grid mb-4">
+          <!-- Total Inventory Value Card -->
           <div class="glass-card border-success p-4">
             <div class="text-secondary mb-1 text-uppercase fw-bold fs-xs">Total Inventory Value</div>
             <div class="text-success fs-xl fw-bold">{{costAnalysis.totalInventoryValue | lkr}}</div>
           </div>
 
+          <!-- Total Cost Impact Card (Losses/Expenses) -->
           <div class="glass-card border-warning p-4">
             <div class="text-secondary mb-1 text-uppercase fw-bold fs-xs">Total Cost Impact</div>
             <div class="text-warning fs-xl fw-bold">{{costAnalysis.totalCostImpact | lkr}}</div>
+            <!-- Monthly trend indicator (Red if up, Green if down) -->
             <div class="fs-xs fw-bold mt-2" [class.text-success]="costAnalysis.monthlyTrend < 0"
               [class.text-danger]="costAnalysis.monthlyTrend >= 0">
               <i class="fas" [ngClass]="costAnalysis.monthlyTrend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+              <!-- Math.abs ensures the percentage always shows positive number, sign handled by arrow -->
               {{Math.abs(costAnalysis.monthlyTrend)}}% vs last month
             </div>
           </div>
         </div>
 
+        <!-- Cost Breakdown List -->
         <div class="glass-card mb-4">
           <h4 class="mb-3 border-bottom border-glass pb-2">Cost Breakdown</h4>
+          
           <div class="d-flex justify-between py-2 border-bottom border-glass">
             <span class="text-secondary">Excess Inventory Holding Cost</span>
             <span class="text-warning fw-bold">{{costAnalysis.excessInventoryCost | lkr}}</span>
           </div>
+          
           <div class="d-flex justify-between py-2 border-bottom border-glass">
             <span class="text-secondary">Stockout & Lost Sales Cost</span>
             <span class="text-danger fw-bold">{{costAnalysis.stockoutCost | lkr}}</span>
           </div>
+          
           <div class="d-flex justify-between py-2">
             <span class="text-secondary">Delivery Delay Cost</span>
             <span class="text-accent fw-bold">{{costAnalysis.deliveryDelayCost | lkr}}</span>
@@ -189,10 +258,12 @@
         </div>
       </div>
 
+      <!-- Side Panel Right Column: AI Insights -->
       <aside class="side-panel">
         <div class="glass-card border-primary h-100">
           <h4 class="mb-3 text-primary"><i class="fas fa-lightbulb"></i> Key Insights</h4>
           <ul class="activity-timeline m-0 p-0">
+            <!-- Dynamic insights based on cost thresholds -->
             <li class="activity-item pb-3" *ngIf="costAnalysis.excessInventoryCost > 1000">
               <div class="text-secondary fs-sm">Consider reducing excess inventory to lower holding costs.</div>
             </li>
@@ -203,12 +274,10 @@
               <div class="text-secondary fs-sm">Delivery delays impacting costs - review logistics processes.</div>
             </li>
             <li class="activity-item pb-3" *ngIf="costAnalysis.monthlyTrend > 0">
-              <div class="text-danger fs-sm">Costs increased by {{costAnalysis.monthlyTrend}}% - investigate root
-                causes.</div>
+              <div class="text-danger fs-sm">Costs increased by {{costAnalysis.monthlyTrend}}% - investigate root causes.</div>
             </li>
             <li class="activity-item pb-3" *ngIf="costAnalysis.monthlyTrend < 0">
-              <div class="text-success fs-sm">Good news! Costs decreased by {{Math.abs(costAnalysis.monthlyTrend)}}%
-                this month.</div>
+              <div class="text-success fs-sm">Good news! Costs decreased by {{Math.abs(costAnalysis.monthlyTrend)}}% this month.</div>
             </li>
           </ul>
         </div>
@@ -216,16 +285,22 @@
     </div>
   </div>
 
-  <!-- Audit Trail Tab -->
+  <!-- =========================================
+       TAB 4: System Audit Trail
+       ========================================= -->
   <div *ngIf="selectedTab === 'audit'" class="glass-card animate-slide-in">
+    
     <div class="dashboard-header mb-4">
       <h3 class="m-0"><i class="fas fa-history text-secondary"></i> System Audit Trail</h3>
+      
+      <!-- Search input for filtering audit logs -->
       <div class="search-box glass">
         <i class="fas fa-search"></i>
         <input type="search" placeholder="Search audit logs..." (input)="searchAuditLogs($any($event.target).value)">
       </div>
     </div>
 
+    <!-- Data Table for Audit Logs -->
     <div class="table-container p-0">
       <table>
         <thead>
@@ -238,18 +313,26 @@
           </tr>
         </thead>
         <tbody>
+          <!-- Iterate through recent audit logs -->
           <tr *ngFor="let log of recentAuditLogs">
-            <td><small class="text-secondary">{{log.timestamp | date:'shortTime'}}</small><br><span
-                class="fs-xs text-muted">{{log.timestamp | date:'MMM d, y'}}</span></td>
+            <!-- Time and Date -->
+            <td>
+              <small class="text-secondary">{{log.timestamp | date:'shortTime'}}</small><br>
+              <span class="fs-xs text-muted">{{log.timestamp | date:'MMM d, y'}}</span>
+            </td>
+            <!-- User Info -->
             <td>
               <strong class="text-white">{{log.userName}}</strong>
               <br><small class="text-muted">ID: {{log.userId}}</small>
             </td>
+            <!-- Action Type Badge -->
             <td><span class="badge badge-info">{{log.action}}</span></td>
+            <!-- Entity Affected -->
             <td>
               <div class="text-accent">{{log.entityType}}</div>
               <small class="text-muted">{{log.entityName}}</small>
             </td>
+            <!-- Specific Action Details -->
             <td><span class="text-secondary fs-sm">{{log.details}}</span></td>
           </tr>
         </tbody>

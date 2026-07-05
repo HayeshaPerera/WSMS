@@ -1,12 +1,16 @@
+<!-- Main container with a fade-up animation class defined in global CSS -->
 <div class="animate-fade-up">
 
-  <!-- Page Header -->
+  <!-- ======================= -->
+  <!-- Page Header             -->
+  <!-- ======================= -->
   <div class="page-header">
     <div class="page-header-left">
       <h1>Stock Requests</h1>
       <p class="subtitle">Procurement oversight and replenishment approval queue</p>
     </div>
     <div class="d-flex gap-2">
+      <!-- Export button: Only visible to ADMIN users. Calls exportToPdf() in TS when clicked -->
       <button class="btn btn-secondary" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
         <span class="material-symbols-outlined" style="font-size:16px">analytics</span>
         Export Analytics
@@ -14,26 +18,37 @@
     </div>
   </div>
 
-  <!-- KPI Quick Stats -->
+  <!-- ======================= -->
+  <!-- KPI Quick Stats         -->
+  <!-- ======================= -->
   <div class="kpi-grid mb-4">
+    <!-- Card 1: Pending Approvals -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Pending Approval</div>
+        <!-- Binds to the pendingCount getter in TS -->
         <div class="kpi-value">{{ pendingCount }}</div>
+        
+        <!-- Conditional sub-text: Shows red "Needs action" if there are pending requests -->
         <div class="kpi-trend down" *ngIf="pendingCount > 0">
           <span class="material-symbols-outlined" style="font-size:13px">shopping_cart</span>
           Needs action
         </div>
+        <!-- Shows green "All clear" if 0 pending requests -->
         <div class="kpi-trend up" *ngIf="pendingCount === 0">
           <span class="material-symbols-outlined" style="font-size:13px">check_circle</span>
           All clear
         </div>
       </div>
+      <!-- Background icon for the card -->
       <div class="kpi-icon-wrap"><span class="material-symbols-outlined">pending_actions</span></div>
     </div>
+
+    <!-- Card 2: Approved Requests -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Approved Today</div>
+        <!-- Binds to the approvedCount getter in TS -->
         <div class="kpi-value">{{ approvedCount }}</div>
         <div class="kpi-trend up">
           <span class="material-symbols-outlined" style="font-size:13px">local_shipping</span>
@@ -42,9 +57,12 @@
       </div>
       <div class="kpi-icon-wrap"><span class="material-symbols-outlined">task_alt</span></div>
     </div>
+
+    <!-- Card 3: Rejection Rate -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Reject Rate</div>
+        <!-- Binds to the rejectRate getter in TS -->
         <div class="kpi-value">{{ rejectRate }}%</div>
         <div class="kpi-trend" style="color:var(--text-muted)">
           <span class="material-symbols-outlined" style="font-size:13px">cancel</span>
@@ -55,15 +73,22 @@
     </div>
   </div>
 
-  <!-- Table & Filters -->
+  <!-- ======================= -->
+  <!-- Table & Filters         -->
+  <!-- ======================= -->
   <div class="table-wrapper">
+    <!-- Toolbar containing search input and dropdown filters -->
     <div class="table-toolbar">
       <div class="d-flex gap-3 align-items-center flex-wrap">
+        
+        <!-- Text Search Input -->
         <div class="search-box">
           <span class="material-symbols-outlined search-icon">search</span>
+          <!-- Two-way binding with [(ngModel)] to 'searchTerm'. Triggers 'applyFilters()' on every keystroke -->
           <input type="text" placeholder="Search Request # or Product..." [(ngModel)]="searchTerm" (input)="applyFilters()" style="width:300px">
         </div>
         
+        <!-- Status Dropdown Filter -->
         <select [(ngModel)]="selectedStatus" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
           <option value="">All Statuses</option>
           <option value="PENDING">Pending Approval</option>
@@ -72,12 +97,14 @@
           <option value="DELIVERED">Delivered</option>
         </select>
 
+        <!-- Clear Filters Button: Only shows up if a search term OR status filter is currently active -->
         <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedStatus" style="font-size:13px">
           Clear Filters
         </button>
       </div>
     </div>
 
+    <!-- Loading State: Displays a spinning icon while 'loading' is true -->
     <div *ngIf="loading" class="empty-state">
       <div class="spin" style="font-size:32px; color:var(--green-primary)">
         <span class="material-symbols-outlined">refresh</span>
@@ -85,13 +112,16 @@
       <p>Loading requests queue...</p>
     </div>
 
+    <!-- Empty State: Displays if finished loading but the filtered array has 0 items -->
     <div *ngIf="!loading && filteredRequests.length === 0" class="empty-state">
       <span class="material-symbols-outlined empty-icon">inbox</span>
       <h3>Queue is empty</h3>
       <p>New replenishment requests from supermarkets will appear here.</p>
     </div>
 
+    <!-- Data Table: Only displays if finished loading AND there is data to show -->
     <table *ngIf="!loading && filteredRequests.length > 0">
+      <!-- Table Headers -->
       <thead>
         <tr>
           <th>Request Details</th>
@@ -103,26 +133,41 @@
           <th>Action</th>
         </tr>
       </thead>
+      <!-- Table Body -->
       <tbody>
+        <!-- Loop through every 'r' (request) in the 'filteredRequests' array -->
+        <!-- Dynamically adds a faint green background if the request is PENDING -->
         <tr *ngFor="let r of filteredRequests" [style.background]="r.status === 'PENDING' ? 'rgba(45,122,79,0.03)' : ''">
+          
+          <!-- Column: Request Details (ID + Product Name) -->
           <td>
             <div style="font-weight:700">#{{ r.requestNumber || r.id }}</div>
             <div style="font-size:12px; color:var(--text-muted)">{{ r.product?.name }}</div>
           </td>
+          
+          <!-- Column: Origin Store (Supermarket Name + Location) -->
           <td>
             <div style="font-size:13px; font-weight:500">{{ r.supermarket?.name || 'Store #'+(r.supermarket?.id || '?') }}</div>
             <div style="font-size:11px; color:var(--text-muted)">{{ r.supermarket?.location }}</div>
           </td>
+          
+          <!-- Column: Requested Quantity -->
           <td>
             <div style="font-weight:700">{{ r.requestedQuantity }}</div>
             <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase">Units</div>
           </td>
+          
+          <!-- Column: Priority Badge -->
           <td>
+            <!-- Dynamically applies 'badge-critical' CSS class if priority is HIGH, else 'badge-secondary' -->
             <span class="badge" [ngClass]="r.priority === 'HIGH' ? 'badge-critical' : 'badge-secondary'" style="font-size:10px">
               {{ r.priority || 'NORMAL' }}
             </span>
           </td>
+          
+          <!-- Column: Status Badge -->
           <td>
+            <!-- Dynamically applies different color badges depending on the exact status string -->
             <span class="badge" [ngClass]="{
               'badge-pending': r.status === 'PENDING',
               'badge-approved': r.status === 'APPROVED' || r.status === 'COMPLETED',
@@ -131,19 +176,29 @@
               {{ r.status }}
             </span>
           </td>
+          
+          <!-- Column: Timeline (Date and Time of request) -->
           <td style="font-size:11px; color:var(--text-muted)">
+            <!-- Uses Angular's built in 'date' pipe to format the raw Date object -->
             {{ r.requestedAt | date:'MMM d' }}
             <div style="opacity:0.6">{{ r.requestedAt | date:'HH:mm' }}</div>
           </td>
+          
+          <!-- Column: Action Buttons (Approve / Reject) -->
           <td>
+            <!-- Buttons ONLY show if user is Warehouse Staff AND the request is PENDING -->
             <div class="d-flex gap-2" *ngIf="auth.isWarehouseStaff() && r.status === 'PENDING'">
+              <!-- Approve Button -->
               <button class="btn btn-primary btn-sm" (click)="approve(r)" title="Approve & Generate Delivery">
                 <span class="material-symbols-outlined" style="font-size:16px">check</span>
               </button>
+              <!-- Reject Button (opens modal) -->
               <button class="btn btn-ghost btn-sm" (click)="openRejectModal(r)" title="Reject Request">
                 <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">close</span>
               </button>
             </div>
+            
+            <!-- If the request is NOT pending, show text instead of buttons -->
             <div *ngIf="r.status !== 'PENDING'" style="font-size:11px; color:var(--text-muted); font-style:italic">
               {{ r.status === 'APPROVED' ? 'Dispatched' : 'Finalized' }}
             </div>
@@ -153,28 +208,43 @@
     </table>
   </div>
 
-  <!-- Rejection Reason Modal -->
+  <!-- ======================= -->
+  <!-- Rejection Reason Modal  -->
+  <!-- ======================= -->
+  
+  <!-- Overlay background. Clicking it triggers 'closeRejectModal()'. *ngIf controls visibility based on boolean. -->
   <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    
+    <!-- Actual white modal box. $event.stopPropagation() stops clicks inside the box from closing the overlay -->
     <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 450px;">
+      
+      <!-- Modal Header -->
       <div class="modal-header">
         <h2>Reject Stock Request</h2>
         <button class="btn-icon" (click)="closeRejectModal()"><span class="material-symbols-outlined">close</span></button>
       </div>
+      
+      <!-- Modal Body (Input Form) -->
       <div class="modal-body">
         <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 1.5; color: #475569">
           Provide a reason for rejecting request <strong>#{{ rejectingRequest?.requestNumber || rejectingRequest?.id }}</strong>. This will notify the supermarket staff.
         </p>
         <div class="form-group">
           <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 6px; color: #334155">Rejection Reason</label>
+          <!-- Textarea bound to 'rejectionReason' string in TS -->
           <textarea [(ngModel)]="rejectionReason" rows="3" class="form-control" placeholder="e.g. Insufficient stock / Item discontinued" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none;"></textarea>
         </div>
       </div>
+      
+      <!-- Modal Footer (Buttons) -->
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="closeRejectModal()">Cancel</button>
+        <!-- Submit button. Disabled if the rejection reason is entirely whitespace -->
         <button class="btn btn-primary" (click)="confirmReject()" [disabled]="!rejectionReason.trim()" style="background-color: var(--danger); border-color: var(--danger)">
           Confirm Rejection
         </button>
       </div>
+      
     </div>
   </div>
 

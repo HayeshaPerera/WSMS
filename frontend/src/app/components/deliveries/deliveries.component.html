@@ -1,12 +1,16 @@
+<!-- Main container with a fade-up animation class defined in global CSS -->
 <div class="animate-fade-up">
 
-  <!-- Page Header -->
+  <!-- ======================= -->
+  <!-- Page Header             -->
+  <!-- ======================= -->
   <div class="page-header">
     <div class="page-header-left">
       <h1>Logistics Tracking</h1>
       <p class="subtitle">Global distribution stream and real-time delivery management</p>
     </div>
     <div class="d-flex gap-2">
+      <!-- Export PDF button: Only visible to ADMIN users. Calls exportToPdf() in TS when clicked -->
       <button class="btn btn-secondary" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
         <span class="material-symbols-outlined" style="font-size:16px">inventory</span>
         Logistics Report
@@ -14,22 +18,30 @@
     </div>
   </div>
 
-  <!-- KPI Quick Stats -->
+  <!-- ======================= -->
+  <!-- KPI Quick Stats         -->
+  <!-- ======================= -->
   <div class="kpi-grid mb-4">
+    <!-- Card 1: Deliveries currently in transit -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">In Transit</div>
+        <!-- Binds to the inTransitCount getter in TS -->
         <div class="kpi-value">{{ inTransitCount }}</div>
         <div class="kpi-trend up">
           <span class="material-symbols-outlined" style="font-size:13px">local_shipping</span>
           Active loads
         </div>
       </div>
+      <!-- Background icon for the card -->
       <div class="kpi-icon-wrap"><span class="material-symbols-outlined">moving</span></div>
     </div>
+
+    <!-- Card 2: Deliveries out for final delivery -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Out for Delivery</div>
+        <!-- Binds to the outForDeliveryCount getter in TS -->
         <div class="kpi-value">{{ outForDeliveryCount }}</div>
         <div class="kpi-trend up">
           <span class="material-symbols-outlined" style="font-size:13px">distance</span>
@@ -38,6 +50,8 @@
       </div>
       <div class="kpi-icon-wrap"><span class="material-symbols-outlined">delivery_dining</span></div>
     </div>
+
+    <!-- Card 3: Static success rate metric for UI completeness -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Success Rate</div>
@@ -51,26 +65,36 @@
     </div>
   </div>
 
-  <!-- Table & Filters -->
+  <!-- ======================= -->
+  <!-- Table & Filters         -->
+  <!-- ======================= -->
   <div class="table-wrapper">
+    <!-- Toolbar containing search input and dropdown filters -->
     <div class="table-toolbar">
       <div class="d-flex gap-3 align-items-center flex-wrap">
+        
+        <!-- Text Search Input -->
         <div class="search-box">
           <span class="material-symbols-outlined search-icon">search</span>
+          <!-- Two-way binding with [(ngModel)] to 'searchTerm'. Triggers 'applyFilters()' on every keystroke -->
           <input type="text" placeholder="Search Tracking #, Store or Product..." [(ngModel)]="searchTerm" (input)="applyFilters()" style="width:320px">
         </div>
         
+        <!-- Status Dropdown Filter -->
         <select [(ngModel)]="selectedStatus" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
           <option value="">All Statuses</option>
+          <!-- Loops through the DeliveryStatus enum values exported from TS -->
           <option *ngFor="let s of statuses | keyvalue" [value]="s.value">{{s.value}}</option>
         </select>
 
+        <!-- Clear Filters Button: Only shows up if a search term OR status filter is currently active -->
         <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedStatus" style="font-size:13px">
           Clear Filters
         </button>
       </div>
     </div>
 
+    <!-- Loading State: Displays a spinning icon while 'loading' is true -->
     <div *ngIf="loading" class="empty-state">
       <div class="spin" style="font-size:32px; color:var(--green-primary)">
         <span class="material-symbols-outlined">refresh</span>
@@ -78,13 +102,16 @@
       <p>Synchronizing logistics network...</p>
     </div>
 
+    <!-- Empty State: Displays if finished loading but the filtered array has 0 items -->
     <div *ngIf="!loading && filteredDeliveries.length === 0" class="empty-state">
       <span class="material-symbols-outlined empty-icon">local_shipping</span>
       <h3>No shipments found</h3>
       <p>Active delivery threads will be tracked here once dispatched.</p>
     </div>
 
+    <!-- Data Table: Only displays if finished loading AND there is data to show -->
     <table *ngIf="!loading && filteredDeliveries.length > 0">
+      <!-- Table Headers -->
       <thead>
         <tr>
           <th>Tracking ID</th>
@@ -95,22 +122,33 @@
           <th>Actions</th>
         </tr>
       </thead>
+      <!-- Table Body -->
       <tbody>
+        <!-- Loop through every 'd' (delivery) in the 'filteredDeliveries' array -->
         <tr *ngFor="let d of filteredDeliveries">
+          
+          <!-- Column: Tracking ID (styled like code) -->
           <td>
             <code style="font-size:12px; font-weight:700; background:var(--bg-page); padding:4px 8px; border-radius:6px; color:var(--green-primary)">
               {{ d.trackingNumber }}
             </code>
           </td>
+          
+          <!-- Column: Shipment Details (Product Name, Quantity, SKU) -->
           <td>
             <div style="font-weight:700">{{ d.product?.name || d.productName || 'Unknown Product' }}</div>
             <div style="font-size:11px; color:var(--text-muted)">{{ d.quantity || 0 }} Units &middot; {{ d.product?.sku || d.productSku || 'N/A' }}</div>
           </td>
+          
+          <!-- Column: Destination (Supermarket Name and Location) -->
           <td>
             <div style="font-size:13px; font-weight:600">{{ d.supermarket?.name || 'Store' }}</div>
             <div style="font-size:11px; color:var(--text-muted)">{{ d.supermarket?.location }}</div>
           </td>
+          
+          <!-- Column: Status Badge -->
           <td>
+            <!-- Dynamically applies different color badges depending on the exact status string -->
             <span class="badge" [ngClass]="{
               'badge-pending': d.status === 'PENDING',
               'badge-info': d.status === 'DISPATCHED' || d.status === 'IN_TRANSIT',
@@ -121,6 +159,8 @@
               {{ d.status }}
             </span>
           </td>
+          
+          <!-- Column: Timeline (ETA if active, Delivered date if finished) -->
           <td>
             <div *ngIf="d.status !== 'DELIVERED'">
               <div style="font-size:12px; font-weight:600; color:var(--info)">ETA: {{ d.estimatedDelivery | date:'MMM d' }}</div>
@@ -131,31 +171,40 @@
               <div style="font-size:10px; color:var(--text-muted)">Total: 4.2h</div>
             </div>
           </td>
+          
+          <!-- Column: Action Buttons -->
           <td>
             <div class="d-flex gap-2">
-              <!-- Warehouse Controls -->
+              
+              <!-- WAREHOUSE CONTROLS: Only visible to Warehouse Staff. Allows advancing the delivery state -->
               <ng-container *ngIf="auth.isWarehouseStaff()">
+                <!-- If PENDING, show Dispatch button -->
                 <button *ngIf="d.status === 'PENDING'" class="btn btn-primary btn-sm" (click)="setStatus(d, statuses.DISPATCHED)">
                   Dispatch
                 </button>
+                <!-- If DISPATCHED, show Transit button -->
                 <button *ngIf="d.status === 'DISPATCHED'" class="btn btn-secondary btn-sm" (click)="setStatus(d, statuses.IN_TRANSIT)">
                   Transit
                 </button>
+                <!-- If IN TRANSIT, show Arrived (Out for Delivery) button -->
                 <button *ngIf="d.status === 'IN_TRANSIT'" class="btn btn-secondary btn-sm" (click)="setStatus(d, statuses.OUT_FOR_DELIVERY)">
                    Arrived
                 </button>
               </ng-container>
-
-              <!-- Supermarket Controls -->
+              
+              <!-- SUPERMARKET CONTROLS: Only visible if the logged-in user belongs to THIS delivery's supermarket -->
               <ng-container *ngIf="isSupermarketUserForDelivery(d) && (d.status !== 'DELIVERED' && d.status !== 'FAILED')">
+                <!-- Accept delivery button -->
                 <button class="btn btn-primary btn-sm" (click)="markReceived(d, true)">
                   Confirm Receipt
                 </button>
+                <!-- Reject delivery button (opens failure modal) -->
                 <button class="btn btn-ghost btn-sm" (click)="markReceived(d, false)">
                   <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">close</span>
                 </button>
               </ng-container>
 
+              <!-- State when fully delivered -->
               <div *ngIf="d.status === 'DELIVERED'" class="d-flex align-items-center gap-1" style="color:var(--text-muted); font-size:11px">
                 <span class="material-symbols-outlined" style="font-size:14px; color:var(--green-primary)">verified</span>
                 Archived
@@ -167,7 +216,10 @@
     </table>
   </div>
 
-  <!-- Force Receive Confirmation Modal -->
+  <!-- ======================= -->
+  <!-- Force Receive Modal     -->
+  <!-- ======================= -->
+  <!-- Shown if a supermarket user tries to receive a delivery that the backend says isn't out for delivery yet -->
   <div class="modal-overlay" *ngIf="showForceReceiveModal" (click)="cancelForceReceive()">
     <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -184,6 +236,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="cancelForceReceive()">Cancel</button>
+        <!-- Confirms the force override -->
         <button class="btn btn-primary" (click)="confirmForceReceive()" style="background-color: var(--green-primary); border-color: var(--green-primary)">
           Yes, Force Receive
         </button>
@@ -191,7 +244,10 @@
     </div>
   </div>
 
-  <!-- Rejection / Failure Report Modal -->
+  <!-- ======================= -->
+  <!-- Failure Report Modal    -->
+  <!-- ======================= -->
+  <!-- Shown if a supermarket user clicks the red X to reject an incoming delivery -->
   <div class="modal-overlay" *ngIf="showFailureModal" (click)="closeFailureModal()">
     <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -204,11 +260,13 @@
         </p>
         <div class="form-group">
           <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 6px; color: #334155">Issue / Failure Reason</label>
+          <!-- Textarea bound to failureReason -->
           <textarea [(ngModel)]="failureReason" rows="3" class="form-control" placeholder="e.g. Damaged goods / Driver never arrived / Wrong quantities" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none;"></textarea>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="closeFailureModal()">Cancel</button>
+        <!-- Submits the failure report, disabled if reason is empty -->
         <button class="btn btn-primary" (click)="confirmFailure()" [disabled]="!failureReason.trim()" style="background-color: var(--danger); border-color: var(--danger)">
           Submit Issue
         </button>

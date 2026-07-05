@@ -1,23 +1,35 @@
+<!-- Main container with a fade-up animation class defined in global CSS -->
 <div class="animate-fade-up">
 
+  <!-- ======================= -->
+  <!-- Page Header             -->
+  <!-- ======================= -->
   <div class="page-header">
     <div class="page-header-left">
       <h1>Inventory Management</h1>
       <p class="subtitle">Complete stock directory across all locations</p>
     </div>
     <div class="d-flex gap-2">
+      <!-- Export PDF button: Only visible to ADMIN users. Calls exportToPdf() in TS -->
       <button class="btn btn-secondary" (click)="exportToPdf()" *ngIf="auth.isAdmin()">
         <span class="material-symbols-outlined" style="font-size:16px">download</span>
         Export PDF
       </button>
+      
+      <!-- Add/Edit Stock Button: Visible to Warehouse Staff and Admins. Toggles the showAddForm boolean -->
       <button class="btn btn-primary" (click)="toggleAddForm()" *ngIf="auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.isAdmin()" title="Perform manual stock level updates">
         <span class="material-symbols-outlined" style="font-size:16px">add</span>
+        <!-- Button text changes based on whether the form is currently open -->
         {{ showAddForm ? 'Cancel' : 'Direct Stock Adjustment' }}
       </button>
     </div>
   </div>
 
-  <!-- Supermarket Notice Banner -->
+  <!-- ======================= -->
+  <!-- Informational Banners   -->
+  <!-- ======================= -->
+  
+  <!-- Supermarket Notice Banner: Explains to store managers that they shouldn't edit stock manually here -->
   <div class="alert alert-info mb-4" *ngIf="auth.isSupermarketManager()" style="background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.2); border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 12px; color: #075985;">
     <span class="material-symbols-outlined">info</span>
     <div style="font-size: 13px; font-weight: 500;">
@@ -25,11 +37,15 @@
     </div>
   </div>
 
-  <!-- KPI Quick Stats (Optimized) -->
+  <!-- ======================= -->
+  <!-- KPI Quick Stats         -->
+  <!-- ======================= -->
   <div class="kpi-grid mb-4">
+    <!-- Card 1: Total SKUs currently displayed -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Active SKUs</div>
+        <!-- Binds to the totalSkus getter in TS -->
         <div class="kpi-value">{{ totalSkus }}</div>
         <div class="kpi-trend up">
           <span class="material-symbols-outlined" style="font-size:13px">inventory</span>
@@ -38,10 +54,14 @@
       </div>
       <div class="kpi-icon-wrap"><span class="material-symbols-outlined">dataset</span></div>
     </div>
+    
+    <!-- Card 2: Low Stock Alerts -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Stock Alerts</div>
+        <!-- Binds to the lowStockCount getter. Dynamically turns RED if > 0 -->
         <div class="kpi-value" [style.color]="lowStockCount > 0 ? 'var(--danger)' : 'inherit'">{{ lowStockCount }}</div>
+        <!-- Subtext dynamically changes color and icon based on count -->
         <div class="kpi-trend" [ngClass]="lowStockCount > 0 ? 'down' : 'up'">
           <span class="material-symbols-outlined" style="font-size:13px">{{ lowStockCount > 0 ? 'error' : 'check_circle' }}</span>
           {{ lowStockCount > 0 ? 'Urgent reorder' : 'Levels optimal' }}
@@ -49,9 +69,12 @@
       </div>
       <div class="kpi-icon-wrap"><span class="material-symbols-outlined">warning</span></div>
     </div>
+    
+    <!-- Card 3: Financial Valuation of current stock -->
     <div class="kpi-card">
       <div>
         <div class="kpi-label">Total Valuation</div>
+        <!-- Binds to the totalValuation getter and formats it with a custom 'lkr' currency pipe (LKR 1,000.00) -->
         <div class="kpi-value" style="font-size:1.1rem">{{ totalValuation | lkr }}</div>
         <div class="kpi-trend up">
           <span class="material-symbols-outlined" style="font-size:13px">payments</span>
@@ -62,19 +85,28 @@
     </div>
   </div>
 
-  <!-- Add Inventory Form (Modern Slide Panel style or Inline) -->
+  <!-- ======================= -->
+  <!-- Add/Edit Inventory Form -->
+  <!-- ======================= -->
+  <!-- Visible only when showAddForm is true -->
   <div class="card mb-4 animate-fade-in" *ngIf="showAddForm">
     <div style="font-size:15px; font-weight:700; margin-bottom:16px">Register New Inventory Entry</div>
+    
     <div class="d-flex gap-3 align-items-end flex-wrap">
+      
+      <!-- Product Selection Dropdown -->
       <div class="form-group mb-0" style="flex:2">
         <label>Select Product</label>
         <select (change)="onProductSelect($event)">
           <option value="">-- Choose existing or define new --</option>
+          <!-- Iterate over all globally available products -->
           <option *ngFor="let product of availableProducts" [value]="product.id">{{product.sku}} - {{product.name}}</option>
+          <!-- Triggers the 'isNewProduct' flag in TS -->
           <option value="new">+ Define New Product</option>
         </select>
       </div>
 
+      <!-- New Product Fields: ONLY visible if the user selected "+ Define New Product" -->
       <ng-container *ngIf="isNewProduct">
         <div class="form-group mb-0" style="flex:1">
           <label>SKU</label>
@@ -86,6 +118,7 @@
         </div>
         <div class="form-group mb-0" style="flex:1">
           <label>Category</label>
+          <!-- Using HTML5 datalist to provide autocomplete options for categories -->
           <input type="text" [(ngModel)]="newProduct.category" list="category-options" placeholder="Select or type category">
           <datalist id="category-options">
             <option *ngFor="let cat of categories" [value]="cat"></option>
@@ -97,63 +130,86 @@
         </div>
       </ng-container>
 
+      <!-- Standard Inventory Fields: Always visible -->
       <div class="form-group mb-0" style="flex:0.8">
         <label>Qty</label>
         <input type="number" [(ngModel)]="newInventory.quantity" placeholder="0">
       </div>
       <div class="form-group mb-0" style="flex:0.8">
         <label>Par Level</label>
+        <!-- The threshold at which the item is considered "Low Stock" -->
         <input type="number" [(ngModel)]="newInventory.reorderLevel" placeholder="0">
       </div>
+      
+      <!-- Save Button -->
       <button class="btn btn-primary" (click)="addInventoryItem()" style="height:40px">Save</button>
     </div>
   </div>
 
-  <!-- Filter Toolbar -->
+  <!-- ======================= -->
+  <!-- Table & Filters         -->
+  <!-- ======================= -->
   <div class="table-wrapper">
+    
+    <!-- Filter Toolbar -->
     <div class="table-toolbar">
+      
+      <!-- Top Row: Search and Dropdown Filters -->
       <div class="d-flex gap-3 align-items-center flex-wrap">
+        
+        <!-- Text Search -->
         <div class="search-box">
           <span class="material-symbols-outlined search-icon">search</span>
           <input type="text" placeholder="Search by SKU or Product name..." [(ngModel)]="searchTerm" (input)="applyFilters()" style="width:280px">
         </div>
         
+        <!-- Category Filter -->
         <select [(ngModel)]="selectedCategory" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
           <option value="">All Categories</option>
           <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
         </select>
 
+        <!-- Warehouse Filter -->
         <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
           <option value="">All Locations</option>
           <option *ngFor="let wh of warehouses" [value]="wh.name">{{wh.name}}</option>
         </select>
 
+        <!-- Low Stock Toggle Button -->
+        <!-- Binds 'active' CSS class if showLowStockOnly is true -->
         <button class="btn btn-ghost" (click)="toggleLowStockFilter()" [class.active]="showLowStockOnly" style="font-size:13px; gap:6px">
+          <!-- Icon turns red when filter is active -->
           <span class="material-symbols-outlined" style="font-size:18px" [style.color]="showLowStockOnly ? 'var(--danger)' : 'inherit'">warning</span>
           Low Stock Only
         </button>
 
+        <!-- Clear Filters (shows if any filter is active) -->
         <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedCategory || selectedWarehouse || showLowStockOnly" style="font-size:13px">
           Clear Filters
         </button>
       </div>
 
+      <!-- Bottom Row: Sorting and Pagination Controls -->
       <div class="d-flex gap-2 align-items-center">
+        <!-- Sort Dropdown -->
         <select [(ngModel)]="sortBy" (change)="changeSort($event)" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
           <option value="latest">Sort: Latest Update</option>
           <option value="oldest">Sort: Oldest Update</option>
           <option value="nameAsc">Sort: Name (A-Z)</option>
           <option value="nameDesc">Sort: Name (Z-A)</option>
         </select>
+        
+        <!-- Page Size Dropdown -->
         <select [(ngModel)]="pageSize" (change)="changePageSize($event)" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
           <option value="10">10 per page</option>
           <option value="20">20 per page</option>
           <option value="50">50 per page</option>
-          <option value="10000">All</option>
+          <option value="10000">All</option> <!-- 10000 effectively disables pagination by showing everything -->
         </select>
       </div>
     </div>
 
+    <!-- Loading State -->
     <div *ngIf="loading" class="empty-state">
       <div class="spin" style="font-size:32px; color:var(--green-primary)">
         <span class="material-symbols-outlined">refresh</span>
@@ -161,13 +217,16 @@
       <p>Synchronizing inventory data...</p>
     </div>
 
+    <!-- Empty State -->
     <div *ngIf="!loading && filteredItems.length === 0" class="empty-state">
       <span class="material-symbols-outlined empty-icon">inventory_2</span>
       <h3>No records found</h3>
       <p>Adjust your filters or register new stock to see data.</p>
     </div>
 
+    <!-- Data Table -->
     <table *ngIf="!loading && filteredItems.length > 0">
+      <!-- Table Headers -->
       <thead>
         <tr>
           <th>Product Details</th>
@@ -177,11 +236,20 @@
           <th>Valuation</th>
           <th>Status</th>
           <th>Last Update</th>
+          <!-- Action column only visible to those with edit permissions -->
           <th *ngIf="auth.isAdmin() || auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.hasRole('ROLE_WAREHOUSE_MANAGER')">Actions</th>
         </tr>
       </thead>
+      <!-- Table Body -->
       <tbody>
+        <!-- 
+          Notice we loop over 'paginatedItems' NOT 'filteredItems' directly! 
+          This applies the pagination and sorting logic from the TS file.
+          Also applies a faint red background if quantity <= reorderLevel.
+        -->
         <tr *ngFor="let item of paginatedItems" [style.background]="item.quantity <= item.reorderLevel ? 'rgba(220,38,38,0.02)' : ''">
+          
+          <!-- Column: Product Details (Name, SKU, Category) -->
           <td>
             <div style="font-weight:700">{{ item.product?.name }}</div>
             <div style="font-size:11px; color:var(--text-muted); display:flex; gap:8px">
@@ -189,20 +257,35 @@
               <span>{{ item.product?.category }}</span>
             </div>
           </td>
+          
+          <!-- Column: Location (Warehouse or Supermarket name) -->
           <td style="color:var(--text-muted); font-size:13px">
             {{ item.warehouse?.name || item.supermarket?.name || 'In Transit' }}
           </td>
+          
+          <!-- Column: Current Stock (Turns red if below par) -->
           <td style="font-weight:800; font-size:15px" [style.color]="item.quantity <= item.reorderLevel ? 'var(--danger)' : 'inherit'">
             {{ item.quantity }}
           </td>
+          
+          <!-- Column: Safety Par (Reorder Level) -->
           <td style="color:var(--text-muted)">{{ item.reorderLevel }}</td>
+          
+          <!-- Column: Valuation (Qty * Price, formatted with LKR pipe) -->
           <td style="font-weight:600">{{ (item.quantity * (item.product?.unitPrice || 0)) | lkr }}</td>
+          
+          <!-- Column: Status Badge -->
           <td>
+            <!-- Applies 'badge-critical' (red) if low stock, else 'badge-approved' (green) -->
             <span class="badge" [ngClass]="item.quantity <= item.reorderLevel ? 'badge-critical' : 'badge-approved'">
               {{ item.quantity <= item.reorderLevel ? 'Low Stock' : 'Optimal' }}
             </span>
           </td>
+          
+          <!-- Column: Last Update Date -->
           <td style="font-size:11px; color:var(--text-muted)">{{ (item.lastUpdated || item.updatedAt) | date:'MMM d, HH:mm' }}</td>
+          
+          <!-- Column: Action Buttons (Edit / Delete) -->
           <td *ngIf="auth.isAdmin() || auth.hasRole('ROLE_WAREHOUSE_STAFF') || auth.hasRole('ROLE_WAREHOUSE_MANAGER')">
             <div class="d-flex gap-2">
               <button class="btn btn-ghost btn-sm btn-icon" (click)="editInventory(item)" title="Edit Stock">
@@ -217,16 +300,21 @@
       </tbody>
     </table>
 
+    <!-- Pagination Footer Controls -->
     <div class="modal-footer d-flex justify-between align-center" *ngIf="!loading && filteredItems.length > 0">
       <span class="text-muted" style="font-size:13px">Showing page {{page}} of {{totalPages || 1}} ({{filteredItems.length}} total)</span>
       <div class="d-flex gap-2">
+        <!-- Prev Page Button: Disabled if already on page 1 -->
         <button class="btn btn-ghost btn-sm" [disabled]="page === 1" (click)="changePage(page - 1)">Previous</button>
+        <!-- Next Page Button: Disabled if already on the last page -->
         <button class="btn btn-ghost btn-sm" [disabled]="page >= totalPages" (click)="changePage(page + 1)">Next</button>
       </div>
     </div>
   </div>
 
+  <!-- ======================= -->
   <!-- Delete Confirmation Modal -->
+  <!-- ======================= -->
   <div class="modal-overlay" *ngIf="showConfirmModal" (click)="cancelDeleteInventory()">
     <div class="modal-content" style="max-width: 450px" (click)="$event.stopPropagation()">
       <div class="modal-header">

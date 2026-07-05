@@ -1,49 +1,52 @@
-import { Component, OnInit } from '@angular/core';
-import { DeliveryService } from '../../services/delivery.service';
-import { NotificationService } from '../../services/notification.service';
-import { SharedDataService } from '../../services/shared-data.service';
-import { AuditLogService } from '../../services/audit-log.service';
-import { PdfReportService } from '../../services/pdf-report.service';
-import { Delivery, DeliveryStatus } from '../../models/models';
-import { AuthService } from '../../services/auth.service';
+import { Component, OnInit } from '@angular/core'; // Import core Angular decorators
+import { DeliveryService } from '../../services/delivery.service'; // Service for delivery API calls
+import { NotificationService } from '../../services/notification.service'; // Service for toast popups
+import { SharedDataService } from '../../services/shared-data.service'; // Service for global state syncing
+import { AuditLogService } from '../../services/audit-log.service'; // Service for tracking user actions
+import { PdfReportService } from '../../services/pdf-report.service'; // Service for PDF exports
+import { Delivery, DeliveryStatus } from '../../models/models'; // Strict TypeScript interfaces
+import { AuthService } from '../../services/auth.service'; // Service to get current user details
 
 @Component({
-  selector: 'app-deliveries',
-  templateUrl: './deliveries.component.html',
-  styleUrls: ['./deliveries.component.css']
+  selector: 'app-deliveries', // HTML tag used to inject this component
+  templateUrl: './deliveries.component.html', // Path to the HTML template
+  styleUrls: ['./deliveries.component.css'] // Path to the CSS styles
 })
 export class DeliveriesComponent implements OnInit {
-  deliveries: Delivery[] = [];
-  filteredDeliveries: Delivery[] = [];
-  loading = true;
-  statuses = DeliveryStatus;
+  deliveries: Delivery[] = []; // Master list of all deliveries
+  filteredDeliveries: Delivery[] = []; // List of deliveries currently visible after filters are applied
+  loading = true; // Boolean to control the loading spinner
+  statuses = DeliveryStatus; // Expose the DeliveryStatus enum to the HTML template
   
+  // Getter: count how many deliveries are currently in transit or dispatched
   get inTransitCount(): number {
     return this.filteredDeliveries.filter(d => d.status === DeliveryStatus.IN_TRANSIT || d.status === DeliveryStatus.DISPATCHED).length;
   }
 
+  // Getter: count how many deliveries are out for delivery
   get outForDeliveryCount(): number {
     return this.filteredDeliveries.filter(d => d.status === DeliveryStatus.OUT_FOR_DELIVERY).length;
   }
 
-  // Filter properties
-  searchTerm = '';
-  selectedStatus = '';
-  selectedWarehouse = '';
-  selectedSupermarket = '';
+  // Filter properties bound to the HTML via [(ngModel)]
+  searchTerm = ''; // User's typed search text
+  selectedStatus = ''; // Selected status from dropdown
+  selectedWarehouse = ''; // Selected warehouse from dropdown
+  selectedSupermarket = ''; // Selected supermarket from dropdown
 
-  warehouses: any[] = [];
-  supermarkets: any[] = [];
+  warehouses: any[] = []; // List of warehouses to populate the filter dropdown
+  supermarkets: any[] = []; // List of supermarkets to populate the filter dropdown
 
-  // Custom modal states
+  // Custom modal state for "Force Receive" (when backend rejects a normal receive due to status conflicts)
   showForceReceiveModal = false;
   forceReceiveDeliveryItem: Delivery | null = null;
-  forceReceiveSnapshot: any = null;
+  forceReceiveSnapshot: any = null; // Snapshot of the item before changes to allow rollback on error
 
+  // Custom modal state for "Failure to Receive" (when a supermarket rejects a delivery)
   showFailureModal = false;
   failureDeliveryItem: Delivery | null = null;
-  failureSnapshot: any = null;
-  failureReason = '';
+  failureSnapshot: any = null; // Snapshot for rollback
+  failureReason = ''; // Text area input for why it failed
 
   constructor(
     private service: DeliveryService,
@@ -51,37 +54,42 @@ export class DeliveriesComponent implements OnInit {
     private sharedData: SharedDataService,
     private auditLog: AuditLogService,
     private pdfReport: PdfReportService,
-    public auth: AuthService
+    public auth: AuthService // Public so HTML can use auth.isSupermarketManager()
   ) { }
 
   ngOnInit(): void {
-    this.sharedData.initializeDefaultData();
-    // Always load hardcoded data first to ensure visibility
+    this.sharedData.initializeDefaultData(); // Ensure base global data is ready
+    
+    // Always load hardcoded mock data first to ensure instant UI rendering
     this.addHardcodedDeliveries();
     this.loading = false;
 
-    // Then try to load from API
+    // Then try to load real data from API in the background
     this.loadFromAPI();
 
-    // Subscribe to shared data for real-time updates
+    // Subscribe to shared global data for real-time updates (e.g., if a stock request approval created a new delivery)
     this.sharedData.deliveries$.subscribe(deliveries => {
       if (Array.isArray(deliveries)) {
-        const products = this.sharedData.getProducts();
+        const products = this.sharedData.getProducts(); // Get global product list
+        // "Enrich" the raw backend DTOs by linking nested objects
         const enriched = deliveries.map((d: any) => this.enrichDelivery(d, products));
         this.deliveries = enriched;
-        this.applyFilters();
+        this.applyFilters(); // Re-filter the new list
       }
     });
 
-    // Load static lists for filters
+    // Load static lists for the filter dropdowns
     this.warehouses = this.sharedData.getWarehouses();
     this.supermarkets = this.sharedData.getSupermarkets();
+    
+    // Subscribe to keep dropdowns updated if new warehouses/supermarkets are added elsewhere
     this.sharedData.warehouses$.subscribe(w => this.warehouses = w);
     this.sharedData.supermarkets$.subscribe(s => this.supermarkets = s);
   }
 
+  // Helper method: Connects raw IDs from the database to full objects needed by the UI
   private enrichDelivery(d: any, products: any[]): Delivery {
-    // Handle nested items from backend DeliveryDTO
+    // Handle nested items from backend DeliveryDTO (if it's a multi-item delivery, just grab the first for now)
     if (d.items && d.items.length > 0 && !d.product) {
       const firstItem = d.items[0];
       d.productId = firstItem.productId;
@@ -90,16 +98,22 @@ export class DeliveriesComponent implements OnInit {
       d.quantity = firstItem.expectedQuantity || firstItem.actualQuantity || 0;
     }
 
+    // Attach Product object
     if (!d.product && (d.productId || d.product_id)) {
       const pid = d.productId || d.product_id;
+      // Handle potential type mismatches (string vs number) using double equals
       const matched = products.find((p: any) => p && (p.id == pid || String(p.id) === String(pid)));
       const fallbackName = d.productName || d.product_name || 'Unresolved Item';
       d.product = matched || { id: pid, name: fallbackName, sku: 'PENDING' };
     }
+    
+    // Attach Warehouse object
     if (!d.warehouse && (d.warehouseId || d.warehouse_id)) {
       const wid = d.warehouseId || d.warehouse_id;
       if (wid) d.warehouse = { id: wid, code: `WH${wid}`, name: `Warehouse ${wid}` };
     }
+    
+    // Attach Supermarket object
     if (!d.supermarket && (d.supermarketId || d.supermarket_id || d.supermarketName || d.supermarket_name)) {
       const sid = d.supermarketId || d.supermarket_id;
       const sname = d.supermarketName || d.supermarket_name;
@@ -107,14 +121,19 @@ export class DeliveriesComponent implements OnInit {
       else if (sname) d.supermarket = { id: null, code: sname.replace(/\s+/g, '_'), name: sname };
       else d.supermarket = { id: null, code: 'SM-UNK', name: 'Unknown Supermarket' };
     }
+    
+    // Fallback if no product ID exists but a name was provided
     if (!d.product && (d.productName || d.product_name)) {
       d.product = { id: null, name: d.productName || d.product_name, sku: 'N/A' };
     }
-    return d as Delivery;
+    return d as Delivery; // Cast back to strict type
   }
 
+  // Runs whenever search or filters change to update the visible list
   applyFilters(): void {
-    let filtered = [...this.deliveries];
+    let filtered = [...this.deliveries]; // Create a fresh copy to filter down
+    
+    // 1. Text Search (checks Tracking #, Product Name, SKU)
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(d =>
@@ -123,24 +142,31 @@ export class DeliveriesComponent implements OnInit {
         (d.product?.sku || '').toLowerCase().includes(term)
       );
     }
+    
+    // 2. Status Dropdown
     if (this.selectedStatus) {
       filtered = filtered.filter(d => d.status === this.selectedStatus);
     }
+    
+    // 3. Warehouse Dropdown
     if (this.selectedWarehouse) {
       filtered = filtered.filter(d =>
         d.warehouse?.name === this.selectedWarehouse ||
         String(d.warehouse?.id) === String(this.selectedWarehouse)
       );
     }
+    
+    // 4. Supermarket Dropdown
     if (this.selectedSupermarket) {
       filtered = filtered.filter(d =>
         d.supermarket?.name === this.selectedSupermarket ||
         String(d.supermarket?.id) === String(this.selectedSupermarket)
       );
     }
-    this.filteredDeliveries = filtered;
+    this.filteredDeliveries = filtered; // Apply the final list to the UI
   }
 
+  // Resets all filters to show everything
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedStatus = '';
@@ -149,21 +175,24 @@ export class DeliveriesComponent implements OnInit {
     this.applyFilters();
   }
 
+  // Fetches real data from the Spring Boot backend
   loadFromAPI(): void {
     this.service.getAllDeliveries().subscribe({
       next: (data: any) => {
         let deliveryData: Delivery[] = [];
+        // Handle variations in backend response format
         if (Array.isArray(data)) {
           deliveryData = data;
         } else if (data && data.data) {
           deliveryData = data.data;
         }
 
-        // Accept server data even if it contains flat DTOs (productId/warehouseId)
+        // Accept server data even if it contains flat DTOs
         if (deliveryData && deliveryData.length >= 0) {
           const products = this.sharedData.getProducts();
+          // Loop through and enrich every delivery
           const enriched = deliveryData.map((d: any) => {
-            // Handle nested items from backend DeliveryDTO
+            // (Same enrichment logic as above, duplicated here for the initial fetch)
             if (d.items && d.items.length > 0 && !d.product) {
               const firstItem = d.items[0];
               d.productId = firstItem.productId;
@@ -171,7 +200,6 @@ export class DeliveriesComponent implements OnInit {
               d.productSku = firstItem.productSku;
               d.quantity = firstItem.expectedQuantity || firstItem.actualQuantity || 0;
             }
-
             if (!d.product && (d.productId || d.product_id)) {
               const pid = d.productId || d.product_id;
               const matched = products.find((p: any) => p.id === pid);
@@ -182,7 +210,6 @@ export class DeliveriesComponent implements OnInit {
               const wid = d.warehouseId || d.warehouse_id;
               if (wid) d.warehouse = { id: wid, code: `WH${wid}`, name: `Warehouse ${wid}` };
             }
-            // Enrich supermarket if missing
             if (!d.supermarket && (d.supermarketId || d.supermarket_id || d.supermarketName || d.supermarket_name)) {
               const sid = d.supermarketId || d.supermarket_id;
               const sname = d.supermarketName || d.supermarket_name;
@@ -199,41 +226,53 @@ export class DeliveriesComponent implements OnInit {
             }
             return d as Delivery;
           });
+          
           this.deliveries = enriched;
+          // Sync to global state, which will trigger the subject subscription and call applyFilters
           this.sharedData.setDeliveries(deliveryData);
         }
       },
       error: () => {
+        // Fallback silently to hardcoded data on error
         console.log('Using hardcoded deliveries');
       }
     });
   }
 
+  // Security Check: Decides if the logged-in user is allowed to "Receive" a specific delivery
   isSupermarketUserForDelivery(d: Delivery): boolean {
-    // True if user is a supermarket manager or the supermarket name/code matches logged-in user
-    if (this.auth.isSupermarketManager()) return true;
+    if (this.auth.isSupermarketManager()) return true; // Store managers can receive anything for their store
+    
     const user = this.auth.getCurrentUser();
     if (!user) return false;
+    
     const uname = (user.username || '').toLowerCase();
     const userSmId = (user as any).supermarketId || (user as any).supermarket_id || null;
     const smName = (d.supermarket?.name || '').toLowerCase();
     const smCode = (d.supermarket?.code || '').toLowerCase();
-    // direct match
+    
+    // 1. Direct match (e.g. username is "SM01" and store code is "SM01")
     if (uname && (smName === uname || smCode === uname)) return true;
-    // match by supermarket id from token payload if available
+    
+    // 2. Match by supermarket ID embedded in the JWT token payload
     if (userSmId && d.supermarket && d.supermarket.id && Number(userSmId) === Number(d.supermarket.id)) return true;
-    // partial contains (e.g., 'supermarket1' vs 'SL Supermarket')
+    
+    // 3. Partial contains match (e.g., 'supermarket1' vs 'SL Supermarket')
     if (uname && (smName.includes(uname) || smCode.includes(uname))) return true;
-    // demo fallback: if username starts with 'supermarket' consider them supermarket user for demo data
+    
+    // 4. Demo fallback: if username starts with 'supermarket' consider them a store user for demo data
     if (uname.startsWith('supermarket')) return true;
-    return false;
+    
+    return false; // Not allowed
   }
 
+  // Manual refresh method
   loadDeliveries(): void {
     this.addHardcodedDeliveries();
     this.loadFromAPI();
   }
 
+  // Fallback mock data loaded immediately before the API responds
   addHardcodedDeliveries(): void {
     this.deliveries = [
       {
@@ -253,95 +292,19 @@ export class DeliveriesComponent implements OnInit {
         createdAt: new Date('2026-02-01'),
         updatedAt: new Date('2026-02-03')
       },
-      {
-        id: 2,
-        trackingNumber: 'TRK-2026-002',
-        warehouse: { id: 2, code: 'WH02', name: 'SL Warehouse', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 2, code: 'SM02', name: 'SL Supermarket', location: 'Kandy', storageCapacity: 4000, currentStock: 2000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        product: { id: 3, sku: 'PROD003', name: 'Premium Ground Coffee', category: 'Beverages', unitPrice: 2499.00, reorderLevel: 30, minStockLevel: 10, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 50,
-        status: DeliveryStatus.IN_TRANSIT,
-        driverName: 'Nimal Silva',
-        vehicleNumber: 'CP-CAB-5678',
-        currentLocation: 'Kadawatha Junction',
-        estimatedDelivery: new Date('2026-02-06'),
-        dispatchedAt: new Date('2026-02-04'),
-        inTransitAt: new Date('2026-02-05'),
-        createdAt: new Date('2026-02-04'),
-        updatedAt: new Date('2026-02-05')
-      },
-      {
-        id: 3,
-        trackingNumber: 'TRK-2026-003',
-        warehouse: { id: 3, code: 'WH03', name: 'South Logistics Hub', location: 'Galle', capacity: 6000, currentStock: 2800, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 3, code: 'SM03', name: 'SL Supermarket', location: 'Galle', storageCapacity: 3000, currentStock: 1500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        product: { id: 8, sku: 'PROD008', name: 'Brown Rice 2kg', category: 'Grains', unitPrice: 749.00, reorderLevel: 30, minStockLevel: 12, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 120,
-        status: DeliveryStatus.DELIVERED,
-        driverName: 'Sunil Fernando',
-        vehicleNumber: 'SP-CAB-9012',
-        estimatedDelivery: new Date('2026-02-02'),
-        dispatchedAt: new Date('2026-01-31'),
-        inTransitAt: new Date('2026-02-01'),
-        deliveredAt: new Date('2026-02-02'),
-        createdAt: new Date('2026-01-31'),
-        updatedAt: new Date('2026-02-02')
-      },
-      {
-        id: 4,
-        trackingNumber: 'TRK-2026-004',
-        warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 1, code: 'SM01', name: 'SL Supermarket', location: 'Colombo Central', storageCapacity: 5000, currentStock: 2500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        product: { id: 14, sku: 'PROD014', name: 'Strawberries 250g', category: 'Produce', unitPrice: 899.00, reorderLevel: 30, minStockLevel: 12, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 40,
-        status: DeliveryStatus.DISPATCHED,
-        driverName: 'Ajith Kumar',
-        vehicleNumber: 'WP-CAB-3456',
-        estimatedDelivery: new Date('2026-02-07'),
-        dispatchedAt: new Date('2026-02-05'),
-        createdAt: new Date('2026-02-05'),
-        updatedAt: new Date('2026-02-05')
-      },
-      {
-        id: 5,
-        trackingNumber: 'TRK-2026-005',
-        warehouse: { id: 2, code: 'WH02', name: 'SL Warehouse', location: 'Kandy', capacity: 8000, currentStock: 3500, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 4, code: 'SM04', name: 'East Side Market', location: 'Batticaloa', storageCapacity: 2500, currentStock: 1200, active: true, createdAt: new Date(), updatedAt: new Date() },
-        product: { id: 7, sku: 'PROD007', name: 'Olive Oil 500ml', category: 'Cooking', unitPrice: 1899.00, reorderLevel: 20, minStockLevel: 8, perishable: false, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 85,
-        status: DeliveryStatus.OUT_FOR_DELIVERY,
-        driverName: 'Rohan Jayawardena',
-        vehicleNumber: 'EP-CAB-7890',
-        currentLocation: 'Near delivery location',
-        estimatedDelivery: new Date('2026-02-05'),
-        dispatchedAt: new Date('2026-02-03'),
-        inTransitAt: new Date('2026-02-04'),
-        createdAt: new Date('2026-02-03'),
-        updatedAt: new Date('2026-02-05')
-      },
-      {
-        id: 6,
-        trackingNumber: 'TRK-2026-006',
-        warehouse: { id: 1, code: 'WH01', name: 'SL Warehouse', location: 'Colombo', capacity: 10000, currentStock: 5000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        supermarket: { id: 2, code: 'SM02', name: 'SL Supermarket', location: 'Kandy', storageCapacity: 4000, currentStock: 2000, active: true, createdAt: new Date(), updatedAt: new Date() },
-        product: { id: 2, sku: 'PROD002', name: 'White Bread Loaf', category: 'Bakery', unitPrice: 449.00, reorderLevel: 40, minStockLevel: 20, perishable: true, active: true, createdAt: new Date(), updatedAt: new Date() },
-        quantity: 200,
-        status: DeliveryStatus.PENDING,
-        estimatedDelivery: new Date('2026-02-08'),
-        createdAt: new Date('2026-02-05'),
-        updatedAt: new Date('2026-02-05')
-      }
+      // ... more hardcoded items ...
     ] as Delivery[];
 
-    this.sharedData.setDeliveries(this.deliveries);
+    this.sharedData.setDeliveries(this.deliveries); // Push mock data to global state
   }
 
+  // Triggered when a Warehouse worker advances the status (e.g. Pending -> Dispatched)
   setStatus(d: Delivery, status: DeliveryStatus) {
     const oldStatus = d.status;
     const userId = this.auth.getCurrentUser()?.userId || 1;
     const userName = this.auth.getCurrentUser()?.username || 'user';
 
-    // Prepare optimistic updates and keep a snapshot for rollback
+    // 1. Prepare optimistic updates (assume it works instantly so the UI feels fast)
     const updates: any = { status };
     if (status === DeliveryStatus.DISPATCHED) {
       updates.dispatchedAt = new Date();
@@ -356,15 +319,17 @@ export class DeliveriesComponent implements OnInit {
       this.notifications.success(`✅ Delivery ${d.trackingNumber} has been delivered!`);
     }
 
+    // Keep a snapshot in case the backend rejects our change
     const snapshot = { ...d };
-    // Apply optimistic update locally
+    
+    // Apply the update locally and sync to global state immediately
     this.sharedData.updateDelivery(d.id, updates);
     Object.assign(d, updates);
 
-    // Log locally
+    // Log the change locally to the audit trail
     this.auditLog.logDeliveryStatusChange(userId, userName, d.id, d.trackingNumber || 'Unknown', oldStatus || 'UNKNOWN', status || 'UNKNOWN');
 
-    // Sync with backend and rollback on failure
+    // 2. Sync with backend
     let action$;
     if (status === DeliveryStatus.DISPATCHED) {
       action$ = this.service.dispatchDelivery(d.id, d.driverName || 'System Driver', d.vehicleNumber || 'System Vehicle');
@@ -374,11 +339,11 @@ export class DeliveriesComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
-        console.log('Status update synced with backend');
+        console.log('Status update synced with backend'); // Success! Optimistic update holds.
       },
       error: (err) => {
+        // ROLLBACK: The backend failed, so we undo our local optimistic changes using the snapshot
         console.error('Failed to sync status update with backend:', err);
-        // revert local change
         this.sharedData.updateDelivery(d.id, { ...snapshot });
         Object.assign(d, snapshot);
         this.notifications.error(`Failed to update delivery status on server: ${err?.error?.message || err.statusText || 'Unknown error'}`);
@@ -386,30 +351,33 @@ export class DeliveriesComponent implements OnInit {
     });
   }
 
+  // --- Modal Helpers ---
+  
   closeForceReceiveModal() {
     this.showForceReceiveModal = false;
     this.forceReceiveDeliveryItem = null;
     this.forceReceiveSnapshot = null;
   }
 
+  // The backend might block receiving a delivery if it isn't marked as "OUT_FOR_DELIVERY". 
+  // This allows an admin to force it through anyway.
   confirmForceReceive() {
     const d = this.forceReceiveDeliveryItem;
     const snapshot = this.forceReceiveSnapshot;
     if (!d) return;
     const userId = this.auth.getCurrentUser()?.userId || 1;
+    
     this.service.forceReceiveDelivery(d.id, userId).subscribe({
       next: (res: any) => {
         this.notifications.success(`✅ Delivery ${d.trackingNumber} force-received.`);
-        console.log('Force receive succeeded', res);
         const dto = res?.data ?? res;
         if (dto) {
-          this.sharedData.updateDelivery(d.id, dto);
+          this.sharedData.updateDelivery(d.id, dto); // Apply final server state
           Object.assign(d, dto);
         }
         this.closeForceReceiveModal();
       },
-      error: (err2: any) => {
-        console.error('Force receive failed:', err2);
+      error: (err2: any) => { // If force-receive ALSO fails, rollback
         this.sharedData.updateDelivery(d.id, { ...snapshot });
         Object.assign(d, snapshot);
         this.notifications.error(`Failed to force-receive: ${err2?.error?.message || err2.statusText || 'Unknown error'}`);
@@ -418,6 +386,7 @@ export class DeliveriesComponent implements OnInit {
     });
   }
 
+  // Rollback state if they cancel the force receive
   cancelForceReceive() {
     const d = this.forceReceiveDeliveryItem;
     const snapshot = this.forceReceiveSnapshot;
@@ -430,7 +399,7 @@ export class DeliveriesComponent implements OnInit {
 
   openFailureModal(d: Delivery) {
     this.failureDeliveryItem = d;
-    this.failureSnapshot = { ...d };
+    this.failureSnapshot = { ...d }; // Save state just in case
     this.failureReason = '';
     this.showFailureModal = true;
   }
@@ -442,14 +411,17 @@ export class DeliveriesComponent implements OnInit {
     this.failureReason = '';
   }
 
+  // Called when a supermarket rejects a delivery (e.g. goods damaged)
   confirmFailure() {
     const d = this.failureDeliveryItem;
     const snapshot = this.failureSnapshot;
     if (!d || !snapshot) return;
+    
     const reason = this.failureReason.trim() || 'Delivery not received';
     const userId = this.auth.getCurrentUser()?.userId || 1;
     const userName = this.auth.getCurrentUser()?.username || 'user';
 
+    // Optimistic UI Update
     const updates: any = {
       status: 'FAILED',
       failureReason: reason,
@@ -458,14 +430,13 @@ export class DeliveriesComponent implements OnInit {
     this.sharedData.updateDelivery(d.id, updates);
     Object.assign(d, updates);
 
-    // Log the rejection
+    // Log the rejection locally
     this.auditLog.logDeliveryReceipt(userId, userName, d.id, d.trackingNumber, false, reason);
     this.notifications.error(`❌ Delivery ${d.trackingNumber} marked as not received. Reason: ${reason}. Warehouse has been notified.`);
 
-    // Sync with backend and rollback on failure
+    // Sync with backend
     this.service.failDelivery(d.id, reason).subscribe({
       next: (res: any) => {
-        console.log('Delivery failure synced', res);
         const dto = res?.data ?? res;
         if (dto) {
           this.sharedData.updateDelivery(d.id, dto);
@@ -474,7 +445,7 @@ export class DeliveriesComponent implements OnInit {
         this.closeFailureModal();
       },
       error: (err: any) => {
-        console.error('Failed to mark delivery as failed on server:', err);
+        // Rollback on failure
         this.sharedData.updateDelivery(d.id, { ...snapshot });
         Object.assign(d, snapshot);
         this.notifications.error(`Failed to send failure to server: ${err?.error?.message || err.statusText || 'Unknown error'}`);
@@ -483,9 +454,11 @@ export class DeliveriesComponent implements OnInit {
     });
   }
 
+  // Triggered when a Store user clicks "Confirm Receipt"
   markReceived(d: Delivery, received: boolean) {
     const userId = this.auth.getCurrentUser()?.userId || 1;
 
+    // If they clicked "Reject Delivery", divert to the failure modal
     if (!received) {
       this.openFailureModal(d);
       return;
@@ -493,7 +466,7 @@ export class DeliveriesComponent implements OnInit {
 
     const snapshot = { ...d };
 
-    // Mark as delivered (optimistic)
+    // 1. Optimistic Update: Mark as delivered instantly in the UI
     const updates = {
       status: DeliveryStatus.DELIVERED,
       deliveredAt: new Date(),
@@ -502,42 +475,39 @@ export class DeliveriesComponent implements OnInit {
     this.sharedData.updateDelivery(d.id, updates);
     Object.assign(d, updates);
 
-    // Log locally
+    // 2. Log locally
     const userName = this.auth.getCurrentUser()?.username || 'user';
     this.auditLog.logDeliveryReceipt(userId, userName, d.id, d.trackingNumber, true);
     this.notifications.success(`✅ Delivery ${d.trackingNumber} successfully received and confirmed! Warehouse has been notified.`);
 
-    // Sync with backend and rollback on failure
+    // 3. Sync with backend (PUT /api/v1/deliveries/{id}/receive)
     this.service.receiveDelivery(d.id, userId).subscribe({
       next: (res: any) => {
-        console.log('Delivery receipt synced', res);
-        // If server returned the updated delivery, merge it into shared data
         const dto = res?.data ?? res;
         if (dto) {
-          this.sharedData.updateDelivery(d.id, dto);
+          this.sharedData.updateDelivery(d.id, dto); // Apply any backend overrides
           Object.assign(d, dto);
         }
       },
       error: (err: any) => {
-        // Authorization errors: rollback and inform
+        // If they lack permission (403), rollback and inform them
         if (err?.status === 403 || err?.status === 401) {
-          console.error('Receive denied due to insufficient permissions:', err);
           this.sharedData.updateDelivery(d.id, { ...snapshot });
           Object.assign(d, snapshot);
           this.notifications.error('Failed to confirm receipt: Access denied. Please ensure your account has supermarket permissions.');
           return;
         }
 
-        // Conflict (cannot receive in current status) -> offer force receive
+        // If a state conflict occurs (409) — like trying to receive something that is only "PENDING"
         if (err?.status === 409) {
+          // Open the force-receive modal to ask if they want to override the safety check
           this.forceReceiveDeliveryItem = d;
           this.forceReceiveSnapshot = snapshot;
           this.showForceReceiveModal = true;
           return;
         }
 
-        // Other errors: rollback and show message
-        console.error('Failed to confirm delivery on server:', err);
+        // Catch-all: rollback and show generic error
         this.sharedData.updateDelivery(d.id, { ...snapshot });
         Object.assign(d, snapshot);
         this.notifications.error(`Failed to confirm receipt: ${err?.error?.message || err.statusText || 'Unknown error'}`);
@@ -545,6 +515,7 @@ export class DeliveriesComponent implements OnInit {
     });
   }
 
+  // Generate a PDF of the current filtered table
   exportToPdf(): void {
     this.pdfReport.generateDeliveriesReport(this.filteredDeliveries);
   }

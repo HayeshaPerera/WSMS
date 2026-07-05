@@ -1,18 +1,30 @@
+/* =========================================
+   Forecasting Dashboard Styles
+   ========================================= */
+
+/* Main container layout */
 .forecasting-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.5rem; /* Space between the KPI grid, Cards Grid, and Detail sections */
   padding: 0 0.5rem;
 }
 
-/* Summary Grid */
+/* =========================================
+   Top KPI Summary Grid
+   ========================================= */
+/* Displays the top 4 metric cards in a responsive row */
 .kpi-grid {
   display: grid;
+  /* Auto-fit creates as many columns as possible, each at least 220px wide */
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
 
-/* Forecast Cards Grid */
+/* =========================================
+   Forecast Cards Grid (Product List)
+   ========================================= */
+/* The main grid containing the individual product forecast cards */
 .forecasts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -20,31 +32,35 @@
   margin-top: 0.5rem;
 }
 
+/* Individual Product Forecast Card */
 .forecast-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1.25rem;
-  cursor: pointer;
+  cursor: pointer; /* Pointer implies it's clickable */
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  transition: var(--transition);
+  transition: var(--transition); /* Smooth transition for hover effects */
 }
 
+/* Hover effect: lifts the card slightly and changes border color */
 .forecast-card:hover {
   transform: translateY(-3px);
   border-color: var(--green-mid);
   box-shadow: var(--shadow-md);
 }
 
+/* Selected state: Applies a strong green border and glowing shadow when clicked */
 .forecast-card.selected {
   border-color: var(--green-primary);
   box-shadow: 0 0 0 3px rgba(45, 122, 79, 0.12);
   background: rgba(45, 122, 79, 0.01);
 }
 
+/* Card Header containing Product Name and Trend Badge */
 .forecast-header-card {
   display: flex;
   justify-content: space-between;
@@ -59,6 +75,7 @@
   line-height: 1.3;
 }
 
+/* The small UP/DOWN/FLAT trend pill */
 .trend-badge {
   display: inline-flex;
   align-items: center;
@@ -76,16 +93,18 @@
   font-size: 1rem;
 }
 
+/* Container for Weekly/Monthly Demand numbers */
 .forecast-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
   gap: 0.75rem;
 }
 
+/* Individual Metric Box */
 .metric {
   background: var(--bg-page);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--green-primary);
+  border-left: 3px solid var(--green-primary); /* Left accent bar */
   border-radius: var(--radius-sm);
   padding: 0.6rem;
 }
@@ -106,13 +125,16 @@
   color: var(--text-primary);
 }
 
-/* Confidence Meter */
+/* =========================================
+   Confidence Meter Progress Bar
+   ========================================= */
 .forecast-confidence {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
+/* The empty track of the progress bar */
 .confidence-bar {
   width: 100%;
   height: 5px;
@@ -121,12 +143,14 @@
   overflow: hidden;
 }
 
+/* The filled portion of the progress bar (width set by inline style in HTML) */
 .confidence-fill {
   height: 100%;
   border-radius: 3px;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease; /* Animate the width when loading */
 }
 
+/* The text below the progress bar */
 .confidence-text {
   display: flex;
   justify-content: space-between;
@@ -135,6 +159,7 @@
   font-weight: 600;
 }
 
+/* Footer of the card containing SKU and Status */
 .card-footer-meta {
   display: flex;
   justify-content: space-between;
@@ -158,7 +183,10 @@
   display: flex;
 }
 
-/* Detail Section */
+/* =========================================
+   Detailed Analysis Section
+   ========================================= */
+/* The large box that appears at the bottom when a card is clicked */
 .detail-section {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -190,7 +218,7 @@
 }
 
 .detail-header h2 span {
-  color: var(--green-primary);
+  color: var(--green-primary); /* Icon color */
   font-size: 1.5rem;
 }
 
@@ -204,16 +232,18 @@
   border-radius: var(--radius-sm);
 }
 
+/* Grid layout for the 3 detail boxes (Info, Metrics, Guidance) */
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.25rem;
 }
 
+/* Individual detail box */
 .detail-card {
   background: var(--bg-page);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--green-primary);
+  border-left: 4px solid var(--green-primary); /* Thick green accent edge */
   border-radius: var(--radius-md);
   padding: 1.25rem;
 }
@@ -227,17 +257,18 @@
   letter-spacing: 0.5px;
 }
 
+/* A row containing a label (Left) and a value (Right) */
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); /* Separator line */
   font-size: 0.85rem;
 }
 
 .info-row:last-child {
-  border-bottom: none;
+  border-bottom: none; /* Remove line from last row */
 }
 
 .info-row span {
@@ -254,10 +285,13 @@
   color: var(--danger) !important;
 }
 
-/* Replenishment/Guidance block styles */
+/* =========================================
+   Replenishment Guidance Highlight Card
+   ========================================= */
+/* Special styling for the 3rd detail box */
 .detail-card.highlight-card {
   border-left-color: var(--green-primary);
-  background: rgba(45, 122, 79, 0.02);
+  background: rgba(45, 122, 79, 0.02); /* Faint green background */
 }
 
 .recommendation {
@@ -303,7 +337,10 @@
   border: 1px solid rgba(45, 122, 79, 0.15);
 }
 
-/* Charts containers */
+/* =========================================
+   Chart.js Containers
+   ========================================= */
+/* Wrapper for the two charts at the bottom */
 .charts-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
@@ -324,13 +361,16 @@
   margin: 0 0 1rem 0;
 }
 
+/* The wrapper that actually holds the <canvas> element */
 .canvas-wrapper {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 260px; /* Fixed height for Chart.js rendering */
 }
 
-/* Spinner and Loaders */
+/* =========================================
+   Loading Spinner Overlay
+   ========================================= */
 .loading-spinner-wrapper {
   display: flex;
   flex-direction: column;
@@ -350,7 +390,7 @@
   border: 4px solid var(--green-light);
   border-top: 4px solid var(--green-primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite; /* Infinite rotation */
 }
 
 @keyframes spin {
@@ -369,14 +409,19 @@
   }
 }
 
+/* =========================================
+   Responsive Breakpoints
+   ========================================= */
 @media (max-width: 768px) {
+  /* On phones, stack cards vertically */
   .forecasts-grid {
     grid-template-columns: 1fr;
   }
+  /* On phones, stack charts vertically */
   .charts-section {
     grid-template-columns: 1fr;
   }
   .canvas-wrapper {
-    height: 220px;
+    height: 220px; /* Slightly shorter charts on small screens */
   }
 }

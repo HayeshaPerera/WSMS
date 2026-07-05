@@ -1,247 +1,232 @@
 /* Login Page Styles — Restored Classic Clipart Design */
+
+/* The main container holding the entire page */
 .login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background-color: var(--bg-page);
+  min-height: 100vh; /* Make sure it takes up at least 100% of the viewport height */
+  display: flex; /* Use flexbox to easily center content */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  padding: 24px; /* Add some padding so the card doesn't touch the screen edges on small devices */
+  background-color: var(--bg-page); /* Use a CSS variable for the background color */
 }
 
+/* The white card that contains the login form and illustration */
 .login-card {
-  display: flex;
-  flex-direction: row;
-  max-width: 900px;
-  width: 100%;
-  background: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  min-height: 520px;
-  border: 1px solid var(--border);
+  display: flex; /* Use flexbox to put the left (illustration) and right (form) sides side-by-side */
+  flex-direction: row; /* Arrange items in a row (left to right) */
+  max-width: 900px; /* Don't let the card get wider than 900px */
+  width: 100%; /* Take up 100% of the available width up to the max-width */
+  background: var(--bg-surface); /* White background color from variables */
+  border-radius: var(--radius-lg); /* Rounded corners */
+  overflow: hidden; /* Hide any content that spills outside the rounded corners */
+  box-shadow: var(--shadow-md); /* Add a subtle drop shadow */
+  min-height: 520px; /* Ensure the card is at least 520px tall */
+  border: 1px solid var(--border); /* Add a light gray border */
 }
 
+/* The left side of the card holding the illustration */
 .illustration-side {
-  flex: 1.2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  background-color: var(--green-light);
-  border-right: 1px solid var(--border);
+  flex: 1.2; /* Take up 1.2 parts of the available space (slightly wider than the form) */
+  display: flex; /* Use flexbox to center the image */
+  align-items: center; /* Center the image vertically */
+  justify-content: center; /* Center the image horizontally */
+  padding: 40px; /* Add padding around the image */
+  background-color: var(--green-light); /* Give it a light green background */
+  border-right: 1px solid var(--border); /* Add a separator line between the left and right sides */
 }
 
+/* The illustration image itself */
 .clipart {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+  max-width: 100%; /* Ensure the image doesn't overflow its container */
+  height: auto; /* Keep the aspect ratio intact */
+  object-fit: contain; /* Make sure the whole image is visible */
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); /* Add a subtle shadow to the image to make it pop */
 }
 
+/* The right side of the card holding the form */
 .form-side {
-  flex: 1;
-  padding: 50px 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex: 1; /* Take up 1 part of the available space */
+  padding: 50px 60px; /* Add generous padding around the form */
+  display: flex; /* Use flexbox to arrange form elements vertically */
+  flex-direction: column; /* Arrange elements from top to bottom */
+  justify-content: center; /* Center the form vertically inside the container */
 }
 
+/* The header container for the brand name and subtitle */
 .login-header {
-  margin-bottom: 32px;
+  margin-bottom: 32px; /* Add space below the header before the form fields start */
 }
 
+/* The main brand text (WSSCMS) */
 .brand-text {
-  color: var(--green-primary);
-  margin: 0;
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  color: var(--green-primary); /* Use the primary brand green color */
+  margin: 0; /* Remove default margin */
+  font-size: 32px; /* Make the text large */
+  font-weight: 800; /* Make the text very bold */
+  letter-spacing: -0.02em; /* Bring the letters slightly closer together for a modern look */
 }
 
+/* The small subtitle text */
 .subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 4px;
+  font-size: 14px; /* Small font size */
+  color: var(--text-muted); /* Use a gray muted text color */
+  margin-top: 4px; /* Add a tiny bit of space above the subtitle */
 }
 
+/* A container for each individual form field (Username, Password) */
 .form-row {
-  margin-bottom: 20px;
+  margin-bottom: 20px; /* Add space between each form row */
 }
 
+/* The labels above the input fields */
 label {
-  display: block;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  display: block; /* Make the label take up the full width so the input drops to the next line */
+  color: var(--text-primary); /* Dark text color */
+  font-size: 13px; /* Small font size */
+  font-weight: 600; /* Semi-bold */
+  margin-bottom: 8px; /* Add space between the label and the input field */
+  text-transform: uppercase; /* Make the label text ALL CAPS */
+  letter-spacing: 0.05em; /* Add slight spacing between letters for readability */
 }
 
+/* Wrapper for the input field so we can place an icon inside it using absolute positioning */
 .input-with-icon {
-  position: relative;
+  position: relative; /* Set to relative so absolute children (icons) position relative to this box */
 }
 
+/* The actual text input fields */
 input {
-  width: 100%;
-  padding: 12px 42px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--border);
-  background: var(--bg-page);
-  color: var(--text-primary);
-  outline: none;
-  font-size: 14px;
-  transition: var(--transition);
+  width: 100%; /* Make input take full width of container */
+  padding: 12px 42px; /* Add vertical padding, and big horizontal padding to leave room for icons */
+  border-radius: var(--radius-md); /* Rounded corners */
+  border: 1.5px solid var(--border); /* Light gray border */
+  background: var(--bg-page); /* Light background color */
+  color: var(--text-primary); /* Dark text color */
+  outline: none; /* Remove the default browser outline */
+  font-size: 14px; /* Standard readable font size */
+  transition: var(--transition); /* Animate changes (like when focusing the input) */
 }
 
+/* Styles applied when the user clicks inside the input field */
 input:focus {
-  border-color: var(--green-primary);
-  background: var(--bg-surface);
-  box-shadow: 0 0 0 3px rgba(45,122,79,0.1);
+  border-color: var(--green-primary); /* Change border to brand green */
+  background: var(--bg-surface); /* Change background to pure white */
+  box-shadow: 0 0 0 3px rgba(45,122,79,0.1); /* Add a soft green glow around the input */
 }
 
+/* Styles applied when the input has an error (invalid) */
 input.error {
-  border-color: var(--danger);
+  border-color: var(--danger); /* Change border to red */
 }
 
+/* Hide default Microsoft Edge password reveal button (we built our own) */
 input::-ms-reveal,
 input::-ms-clear {
   display: none;
 }
 
+/* The icon on the left side of the input (person/lock) */
 .input-with-icon .left-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 20px;
-  color: var(--text-muted);
-  pointer-events: none;
-  z-index: 2;
+  position: absolute; /* Position it absolutely inside the relative wrapper */
+  left: 14px; /* Push it 14px from the left edge */
+  top: 50%; /* Push it down 50% from the top */
+  transform: translateY(-50%); /* Pull it back up by half its height to perfectly center vertically */
+  font-size: 20px; /* Size of the icon */
+  color: var(--text-muted); /* Gray color */
+  pointer-events: none; /* Make clicks pass through the icon so users can still click the input field below it */
+  z-index: 2; /* Make sure it stays on top of the input */
 }
 
+/* The button to toggle password visibility (eye icon) */
 .password-toggle {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  color: var(--text-muted);
-  z-index: 5;
+  position: absolute; /* Position it absolutely inside the relative wrapper */
+  right: 6px; /* Push it 6px from the right edge */
+  top: 50%; /* Push it down 50% from the top */
+  transform: translateY(-50%); /* Pull it back up by half its height to center vertically */
+  background: none; /* No background color */
+  border: none; /* No border */
+  cursor: pointer; /* Change mouse to hand on hover */
+  padding: 8px; /* Increase clickable area */
+  display: flex; /* Use flex to align the icon inside the button */
+  align-items: center; /* Center vertically */
+  color: var(--text-muted); /* Gray color */
+  z-index: 5; /* Make sure it stays on top so it's clickable */
 }
 
 /* Reset position for the icon inside the toggle button so it doesn't fly to the left */
 .password-toggle .icon {
-  position: static !important;
-  transform: none !important;
-  pointer-events: auto !important;
+  position: static !important; /* Override absolute positioning from general icons */
+  transform: none !important; /* Override transform */
+  pointer-events: auto !important; /* Make sure it can be clicked */
 }
 
+/* Change icon color to green when hovering over the toggle button */
 .password-toggle:hover .icon {
   color: var(--green-primary);
 }
 
+/* Error text shown below invalid inputs */
 .field-error {
-  display: block;
-  font-size: 11px;
-  color: var(--danger);
-  margin-top: 5px;
-  font-weight: 500;
+  display: block; /* Force it to a new line */
+  font-size: 11px; /* Very small text */
+  color: var(--danger); /* Red color */
+  margin-top: 5px; /* Space above */
+  font-weight: 500; /* Medium weight */
 }
 
-.forgot-link-container {
-  margin: 0 0 24px 0;
-  font-size: 13px;
-}
-
-.signup-link-container {
-  margin-top: 24px;
-  font-size: 13px;
-  text-align: center;
-}
-
-.muted-text {
-  color: var(--text-muted);
-}
-
-.blue-link {
-  color: var(--info);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.blue-link:hover {
-  text-decoration: underline;
-}
-
-.demo-hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--green-light);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 24px;
-}
-
-.demo-hint strong { color: var(--green-primary); }
-
+/* The main sign-in button */
 .btn-primary {
-  background: var(--green-primary);
-  color: #ffffff;
-  border: none;
-  padding: 14px 20px;
-  border-radius: var(--radius-md);
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 15px;
-  width: 100%;
-  box-shadow: 0 4px 6px rgba(45, 122, 79, 0.2);
+  background: var(--green-primary); /* Brand green background */
+  color: #ffffff; /* White text */
+  border: none; /* No border */
+  padding: 14px 20px; /* Big clickable area */
+  border-radius: var(--radius-md); /* Rounded corners */
+  font-weight: 700; /* Bold text */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: var(--transition); /* Smooth animation for hover state */
+  font-size: 15px; /* Readable text */
+  width: 100%; /* Make button take full width of form */
+  box-shadow: 0 4px 6px rgba(45, 122, 79, 0.2); /* Soft shadow */
 }
 
+/* Hover effect for the sign-in button (only if not disabled) */
 .btn-primary:hover:not(:disabled) {
-  background: var(--green-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(45, 122, 79, 0.3);
+  background: var(--green-hover); /* Slightly darker green */
+  transform: translateY(-1px); /* Make it jump up slightly to feel clickable */
+  box-shadow: 0 6px 12px rgba(45, 122, 79, 0.3); /* Increase shadow to enhance 3D effect */
 }
 
+/* Styles for when the button is disabled (loading or invalid form) */
 .btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.6; /* Make it semi-transparent */
+  cursor: not-allowed; /* Show a "blocked" cursor icon */
 }
 
+/* The red alert box that shows login failure messages */
 .error-message {
-  color: var(--danger);
-  background: rgba(220, 38, 38, 0.08);
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  margin-bottom: 24px;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: var(--danger); /* Red text */
+  background: rgba(220, 38, 38, 0.08); /* Very light red background */
+  padding: 12px 16px; /* Inner spacing */
+  border-radius: var(--radius-md); /* Rounded corners */
+  margin-bottom: 24px; /* Space below the error box */
+  font-size: 14px; /* Readable text */
+  display: flex; /* Flexbox to align icon and text */
+  align-items: center; /* Center them vertically */
+  border: 1px solid rgba(220, 38, 38, 0.2); /* Subtle red border */
 }
 
+/* Responsive Design: Rules for screens smaller than 992px (tablets and phones) */
 @media(max-width: 992px) {
   .login-card {
-    flex-direction: column;
-    max-width: 450px;
+    flex-direction: column; /* Stack the illustration and form vertically instead of side-by-side */
+    max-width: 450px; /* Shrink the maximum width */
   }
   .illustration-side {
-    padding: 30px;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
+    padding: 30px; /* Reduce padding */
+    border-right: none; /* Remove right border */
+    border-bottom: 1px solid var(--border); /* Add bottom border to separate from form below */
   }
   .form-side {
-    padding: 40px 30px;
+    padding: 40px 30px; /* Reduce form padding so it fits nicely on a phone screen */
   }
 }

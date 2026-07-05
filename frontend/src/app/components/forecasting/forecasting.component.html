@@ -1,17 +1,35 @@
+<!-- =========================================
+     Forecasting Page Header
+     ========================================= -->
+<!-- Uses a shared app-page-header component for consistent styling across pages -->
 <app-page-header 
   title="Demand Forecasting" 
   subtitle="AI-Powered Inventory Predictions & Analysis">
 </app-page-header>
 
+<!-- Main container for the forecasting dashboard -->
 <div class="forecasting-container">
+  
+  <!-- =========================================
+       Loading State
+       ========================================= -->
+  <!-- Displays a spinner while the API is fetching forecasting data -->
   <div *ngIf="loading" class="loading-spinner-wrapper">
     <div class="spinner"></div>
     <p>Calculating demand projection arrays...</p>
   </div>
 
+  <!-- =========================================
+       Main Content Area (Shows after loading finishes)
+       ========================================= -->
   <div *ngIf="!loading" class="forecast-content animate-fade-up">
-    <!-- Summary Cards -->
+    
+    <!-- =========================================
+         Top KPI Summary Cards
+         ========================================= -->
+    <!-- Grid layout displaying high-level forecasting metrics -->
     <div class="kpi-grid">
+      <!-- Total Products Tracked -->
       <app-kpi-card 
         label="Products Tracked" 
         [value]="forecasts.length" 
@@ -20,6 +38,7 @@
         trendType="neutral">
       </app-kpi-card>
       
+      <!-- Products with Increasing Demand -->
       <app-kpi-card 
         label="Increasing Demand" 
         [value]="increasingCount" 
@@ -28,6 +47,7 @@
         trendType="positive">
       </app-kpi-card>
 
+      <!-- Products with Stable Demand -->
       <app-kpi-card 
         label="Stable Demand" 
         [value]="stableCount" 
@@ -36,6 +56,7 @@
         trendType="neutral">
       </app-kpi-card>
 
+      <!-- Products with Decreasing Demand -->
       <app-kpi-card 
         label="Decreasing Demand" 
         [value]="decreasingCount" 
@@ -45,22 +66,28 @@
       </app-kpi-card>
     </div>
 
-    <!-- Forecasts Grid -->
+    <!-- =========================================
+         Forecast Cards Grid (Product List)
+         ========================================= -->
     <div class="forecasts-grid">
+      <!-- Loop through each forecast object to create a summary card -->
       <div 
         *ngFor="let f of forecasts" 
         class="forecast-card" 
-        [class.selected]="selectedForecast?.id === f.id"
-        (click)="selectForecast(f)">
+        [class.selected]="selectedForecast?.id === f.id"  
+        (click)="selectForecast(f)"> <!-- Click to show detailed analysis below -->
         
+        <!-- Card Header: Product Name & Trend Badge -->
         <div class="forecast-header-card">
           <div class="product-name">{{ f.productName }}</div>
+          <!-- Trend badge color dynamically changes based on trend direction -->
           <span class="trend-badge" [style.color]="getTrendColor(f.trend)">
             <span class="material-symbols-outlined trend-icon">{{ getTrendIcon(f.trend) }}</span>
             <span class="trend-label">{{ f.trend | uppercase }}</span>
           </span>
         </div>
 
+        <!-- Metric Values: Weekly & Monthly Demand -->
         <div class="forecast-metrics">
           <div class="metric" [style.border-left-color]="getTrendColor(f.trend)">
             <label>Weekly Demand</label>
@@ -72,8 +99,10 @@
           </div>
         </div>
 
+        <!-- AI Confidence/Accuracy Bar -->
         <div class="forecast-confidence">
           <div class="confidence-bar">
+            <!-- Fills the progress bar based on confidence percentage (0 to 1) -->
             <div class="confidence-fill" [style.background]="getTrendColor(f.trend)" [style.width]="(f.confidence * 100) + '%'"></div>
           </div>
           <div class="confidence-text">
@@ -82,17 +111,23 @@
           </div>
         </div>
 
+        <!-- Card Footer: SKU and Stock Status Alert -->
         <div class="card-footer-meta">
           <div class="sku-tag">{{ f.productSku }}</div>
           <div class="stock-status-wrapper">
+            <!-- Displays Critical, Low, or Adequate depending on stock levels -->
             <app-status-badge [status]="getStockStatus(f).toUpperCase()"></app-status-badge>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Detail View -->
+    <!-- =========================================
+         Detailed Analysis Section (Appears when a card is clicked)
+         ========================================= -->
     <div *ngIf="selectedForecast" class="detail-section">
+      
+      <!-- Detail Header -->
       <div class="detail-header">
         <h2>
           <span class="material-symbols-outlined">analytics</span>
@@ -101,7 +136,10 @@
         <span class="sku-title-tag">{{ selectedForecast.productSku }}</span>
       </div>
 
+      <!-- Detail Information Grids -->
       <div class="detail-grid">
+        
+        <!-- Section 1: Basic Product Information -->
         <div class="detail-card">
           <h3>Product Information</h3>
           <div class="info-row">
@@ -114,16 +152,18 @@
           </div>
           <div class="info-row">
             <span>Unit Price</span>
-            <strong>{{ selectedForecast.unitPrice | lkr }}</strong>
+            <strong>{{ selectedForecast.unitPrice | lkr }}</strong> <!-- Uses custom LKR currency pipe -->
           </div>
           <div class="info-row">
             <span>Current Stock</span>
+            <!-- Highlights stock in red if it is lower than predicted weekly demand -->
             <strong [class.text-danger]="selectedForecast.currentStock < selectedForecast.predictedWeeklyDemand">
               {{ selectedForecast.currentStock }} units
             </strong>
           </div>
         </div>
 
+        <!-- Section 2: Deep Forecast Metrics -->
         <div class="detail-card">
           <h3>Forecast Metrics</h3>
           <div class="info-row">
@@ -147,7 +187,7 @@
           </div>
           <div class="info-row">
             <span>Forecast Algorithm</span>
-            <strong>{{ selectedForecast.forecastMethod }}</strong>
+            <strong>{{ selectedForecast.forecastMethod }}</strong> <!-- e.g., Prophet, ARIMA, Exponential Smoothing -->
           </div>
           <div class="info-row">
             <span>Last Computed</span>
@@ -155,6 +195,7 @@
           </div>
         </div>
 
+        <!-- Section 3: Actionable Replenishment Guidance (Highlighted Card) -->
         <div class="detail-card highlight-card">
           <h3>Replenishment Guidance</h3>
           <div class="recommendation">
@@ -163,37 +204,50 @@
           </div>
           <div class="recommendation">
             <span class="rec-label">Required Safety Stock</span>
+            <!-- Safety stock is set to 50% of weekly demand -->
             <span class="rec-value">{{ selectedForecast.predictedWeeklyDemand * 0.5 | number:'1.0-0' }} units</span>
           </div>
           <div class="recommendation">
             <span class="rec-label">Calculated Reorder Point</span>
+            <!-- Reorder point is dynamically tied to 1 week of predicted demand -->
             <span class="rec-value">{{ selectedForecast.predictedWeeklyDemand | number:'1.0-0' }} units</span>
           </div>
           <div class="recommendation">
             <span class="rec-label">Estimated Order Cost</span>
+            <!-- Financial projection: Reorder Qty * Unit Price -->
             <span class="rec-value-cost">{{ (selectedForecast.recommendedOrder * selectedForecast.unitPrice) | lkr }}</span>
           </div>
           <div class="recommendation">
             <span class="rec-label">Est. Monthly Revenue</span>
+            <!-- Financial projection: Monthly Demand * Unit Price -->
             <span class="rec-value-revenue">{{ (selectedForecast.predictedMonthlyDemand * selectedForecast.unitPrice) | lkr }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Charts Section -->
+      <!-- =========================================
+           Chart.js Visualizations Area
+           ========================================= -->
       <div class="charts-section">
+        
+        <!-- Left Chart: Bar chart for Future Weekly Demand Projection -->
         <div class="chart-container">
           <h3>Weekly Demand Projection</h3>
           <div class="canvas-wrapper">
+            <!-- The canvas element targeted by Chart.js in the component TS -->
             <canvas id="demandChart"></canvas>
           </div>
         </div>
+        
+        <!-- Right Chart: Line chart for Historical Sales Trend -->
         <div class="chart-container">
           <h3>Historical Sales Trend</h3>
           <div class="canvas-wrapper">
+            <!-- The canvas element targeted by Chart.js in the component TS -->
             <canvas id="trendChart"></canvas>
           </div>
         </div>
+
       </div>
     </div>
   </div>

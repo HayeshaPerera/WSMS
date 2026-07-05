@@ -1,64 +1,73 @@
+/* =========================================
+   Deliveries Page Styles
+   ========================================= */
+
+/* The main wrapper for the entire page to keep it from stretching too wide */
 .deliveries-container {
-  padding: 1.5rem;
-  max-width: 1600px;
-  margin: 0 auto;
+  padding: 1.5rem; /* Space inside the container edges */
+  max-width: 1600px; /* Don't stretch beyond 1600px on massive monitors */
+  margin: 0 auto; /* Center the container horizontally */
 }
 
+/* The header containing the title and the "Export" button */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  display: flex; /* Use flexbox to put title on left, button on right */
+  justify-content: space-between; /* Push items to opposite ends */
+  align-items: flex-end; /* Align them to the bottom of the header */
   padding: 0 0.5rem;
 }
 
-/* Filter Panel Standard */
+/* =========================================
+   Filter Panel & Controls
+   ========================================= */
+
+/* Layout wrapper for the search box and dropdowns */
 .controls-layout {
   display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
+  gap: 1rem; /* Space between each control */
+  align-items: center; /* Center them vertically */
+  flex-wrap: wrap; /* Allow them to wrap to a new line on small screens */
 }
 
-.flex-2 {
-  flex: 2;
-}
+/* Flexbox utility classes for sizing children */
+.flex-2 { flex: 2; } /* Take up 2 "parts" of the available space */
+.flex-3 { flex: 3; } /* Take up 3 "parts" of the available space */
+.flex-0 { flex: 0; } /* Don't grow at all */
 
-.flex-3 {
-  flex: 3;
-}
-
+/* A sub-grouping of filters */
 .filter-group {
   display: flex;
   gap: 1.25rem;
   align-items: flex-end;
 }
-
 .filter-item {
-  flex: 1;
+  flex: 1; /* Allow the item to grow */
 }
 
-.flex-0 {
-  flex: 0;
-}
-
+/* Adds a glowing line above the filter panel */
 .filter-panel {
   border-top: 2px solid var(--primary-glow);
 }
 
+/* The magnifying glass icon inside the search box */
 .search-icon {
   color: var(--primary);
   opacity: 0.9;
 }
 
-/* Tracking Tag */
+/* =========================================
+   Custom Table Cell Stylings
+   ========================================= */
+
+/* The little code block style applied to the Tracking Number */
 .tracking-tag {
   padding: 0.4rem 0.8rem;
   border-radius: var(--radius-sm);
-  font-family: 'Inter', monospace;
+  font-family: 'Inter', monospace; /* Use a monospace font so tracking numbers align nicely */
   font-size: 0.85rem;
 }
 
-/* Route Display */
+/* Layout for displaying Warehouse -> Supermarket route visually */
 .route-display {
   display: inline-flex;
   align-items: center;
@@ -75,19 +84,23 @@
 }
 
 .route-display .connector {
-  color: var(--accent);
+  color: var(--accent); /* Color for the arrow connecting the points */
   opacity: 0.5;
 }
 
-/* Action Enhancements */
+/* =========================================
+   Action Buttons
+   ========================================= */
+   
 .action-buttons {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
+/* The small "Archived" badge shown when a delivery is fully complete */
 .completion-pill {
-  border-radius: 999px;
+  border-radius: 999px; /* Make the pill totally rounded on the edges */
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.5px;
@@ -99,35 +112,37 @@
   border: 1px solid var(--success);
 }
 
+/* =========================================
+   Responsive Breakpoints
+   ========================================= */
+
+/* For tablets (screens smaller than 1024px) */
 @media (max-width: 1024px) {
   .controls-layout {
-    flex-direction: column;
+    flex-direction: column; /* Stack filters vertically */
     align-items: stretch;
     gap: 1.5rem;
   }
-
   .filter-group {
     width: 100%;
     flex-wrap: wrap;
     gap: 1rem;
   }
-
   .filter-item {
     min-width: 180px;
   }
-
   .route-display {
-    flex-direction: column;
+    flex-direction: column; /* Stack route points vertically on small screens */
     align-items: flex-start;
     gap: 0.25rem;
   }
-
   .route-display .connector {
-    transform: rotate(90deg);
+    transform: rotate(90deg); /* Rotate the arrow so it points down instead of right */
     margin-left: 0.5rem;
   }
 }
 
+/* For mobile phones (screens smaller than 768px) */
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
@@ -136,7 +151,11 @@
   }
 }
 
-/* Modal Styling */
+/* =========================================
+   Modal Popup Styles (Force Receive & Failure)
+   ========================================= */
+
+/* The dark semi-transparent background behind the popup */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -146,16 +165,19 @@
   justify-content: center;
   z-index: 1000;
 }
+
+/* The actual white popup box */
 .modal-content {
   background: white;
   border-radius: 12px;
   width: 480px;
-  max-width: 90vw;
+  max-width: 90vw; /* Don't exceed screen width on phones */
   box-shadow: 0 20px 50px rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
-  color: var(--text-dark, #333);
+  color: var(--text-dark, #333); /* Force dark text since background is white */
 }
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -163,15 +185,18 @@
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
+
 .modal-header h2 {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
   color: var(--text-dark, #333);
 }
+
 .modal-body {
   padding: 20px;
 }
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -179,6 +204,8 @@
   padding: 16px 20px;
   border-top: 1px solid var(--border-color, #e2e8f0);
 }
+
+/* The small "X" close button in the top right */
 .btn-icon {
   background: none;
   border: none;
@@ -192,11 +219,15 @@
 .btn-icon:hover {
   background: #f1f5f9;
 }
+
+/* Layout for the label + textarea combo in the failure modal */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+
+/* The textarea itself */
 .form-control {
   padding: 8px 12px;
   border: 1px solid var(--border-color, #cbd5e1);
@@ -206,6 +237,7 @@
   background: white;
   color: #333;
 }
+
 .form-control:focus {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary, #3b82f6); /* Turn border blue when typing */
 }

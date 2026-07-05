@@ -1,118 +1,121 @@
+/* =========================================
+   Inventory Page Styles
+   ========================================= */
+
+/* The main wrapper for the entire page to keep it from stretching too wide */
 .inventory-container {
-  padding: 1.5rem;
-  max-width: 1600px;
-  margin: 0 auto;
+  padding: 1.5rem; /* Space inside the container edges */
+  max-width: 1600px; /* Limit maximum width on ultra-wide monitors */
+  margin: 0 auto; /* Center the container horizontally */
 }
 
+/* The header containing the title and the "Export/Add" buttons */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  display: flex; /* Use flexbox to put title on left, buttons on right */
+  justify-content: space-between; /* Push items to opposite ends */
+  align-items: flex-end; /* Align them to the bottom of the header */
   padding: 0 0.5rem;
 }
 
-/* Modern Form */
+/* =========================================
+   Add/Edit Form Layout
+   ========================================= */
 .modern-form {
   display: flex;
   flex-direction: column;
 }
 
+/* CSS Grid used to lay out the form inputs neatly */
 .form-grid {
   display: grid;
+  /* Automatically create as many columns as will fit, with each being at least 200px wide */
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  gap: 1.5rem; /* Space between inputs */
 }
 
 .new-product-form {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md); /* Rounded corners for the form box */
 }
 
-/* Filters & Controls */
+/* =========================================
+   Filters & Controls
+   ========================================= */
+
+/* Layout wrapper for the search box and dropdowns */
 .controls-layout {
   display: flex;
   gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
+  align-items: center; /* Center vertically */
+  flex-wrap: wrap; /* Wrap to new line if screen is narrow */
 }
 
-.flex-2 {
-  flex: 2;
-}
+/* Flexbox utility classes for precise sizing of filter inputs */
+.flex-2 { flex: 2; } /* Take up 2 "parts" of the available space */
+.flex-3 { flex: 3; } /* Take up 3 "parts" of the available space */
+.flex-0 { flex: 0; } /* Do not grow */
 
-.flex-3 {
-  flex: 3;
-}
-
+/* Sub-grouping for related filters */
 .filter-group {
   display: flex;
   gap: 1.25rem;
   align-items: flex-end;
 }
-
 .filter-item {
-  flex: 1;
+  flex: 1; /* Allow to grow */
 }
 
-.flex-0 {
-  flex: 0;
-}
-
+/* The magnifying glass icon inside the search box */
 .search-icon {
   color: var(--primary);
   opacity: 0.9;
 }
 
+/* Styling for the Total Value KPI card */
 .total-value {
   background: hsla(var(--accent-h), 100%, 50%, 0.1);
   border: 1px solid hsla(var(--accent-h), 100%, 50%, 0.2);
   color: var(--accent);
 }
 
+/* Adds a glowing colored border above the filter section */
 .filter-panel {
   border-top: 2px solid var(--primary-glow);
 }
 
-.fw-bold {
-  font-weight: 700;
-}
+/* =========================================
+   Typography & Margin Utility Classes
+   ========================================= */
+.fw-bold { font-weight: 700; }
+.mr-2 { margin-right: 0.5rem; }
+.fs-xxs { font-size: 0.65rem; }
+.fs-xs { font-size: 0.75rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.w-100 { width: 100%; }
 
-.mr-2 {
-  margin-right: 0.5rem;
-}
+/* =========================================
+   Table Cell Specifics
+   ========================================= */
 
-.fs-xxs {
-  font-size: 0.65rem;
-}
-
-.fs-xs {
-  font-size: 0.75rem;
-}
-
-.mb-1 {
-  margin-bottom: 0.25rem;
-}
-
-.w-100 {
-  width: 100%;
-}
-
-/* Table Specifics */
+/* The cell holding Product Name + SKU */
 .product-cell {
   display: flex;
   flex-direction: column;
 }
 
+/* The SKU text */
 .product-cell .sku {
   font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.5px; /* Slight tracking for readability */
 }
 
+/* The Product Name text */
 .product-cell .name {
   font-weight: 700;
   margin-top: 2px;
 }
 
+/* The pill showing the product category (e.g. Dairy) */
 .category-tag {
   padding: 4px 10px;
   border-radius: 6px;
@@ -120,6 +123,7 @@
   font-weight: 600;
 }
 
+/* The cell holding Warehouse/Supermarket name */
 .location-cell {
   display: flex;
   align-items: center;
@@ -128,19 +132,22 @@
 }
 
 .location-cell i {
-  color: var(--accent);
+  color: var(--accent); /* Color the location pin icon */
 }
 
+/* The cell holding the stock quantity */
 .quantity-cell {
   display: flex;
   flex-direction: column;
 }
 
+/* Highlights the entire row red if stock is low */
 .row-warning {
   background: rgba(244, 67, 54, 0.05) !important;
-  border-left: 3px solid var(--danger);
+  border-left: 3px solid var(--danger); /* Thick red border on left edge */
 }
 
+/* Square buttons for table actions (Edit/Delete) */
 .btn-icon {
   width: 38px;
   height: 38px;
@@ -150,28 +157,32 @@
   justify-content: center;
 }
 
+/* =========================================
+   Responsive Breakpoints
+   ========================================= */
+
+/* For tablets (screens smaller than 1024px) */
 @media (max-width: 1024px) {
   .controls-layout {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: column; /* Stack filters vertically */
+    align-items: stretch; /* Stretch to fill width */
     gap: 1.5rem;
   }
-
   .filter-group {
     width: 100%;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allow wrapping */
     gap: 1rem;
   }
-
   .filter-item {
-    min-width: 180px;
+    min-width: 180px; /* Don't get too skinny */
   }
 }
 
+/* For mobile phones (screens smaller than 768px) */
 @media (max-width: 768px) {
   .page-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: column; /* Stack title and buttons vertically */
+    align-items: flex-start; /* Align left */
     gap: 1.5rem;
   }
 }

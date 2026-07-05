@@ -1,55 +1,74 @@
+/* ==========================================================
+   Analytics Dashboard Component Styles
+   Theme: Light/Glassmorphism with refined green accents
+   ========================================================== */
+
+/* Main wrapper - restricts max width and removes default padding */
 .analytics-container {
   padding: 0;
   max-width: 100%;
 }
 
+/* =========================================
+   Header Section
+   ========================================= */
+/* Dashboard header containing title and export button */
 .dashboard-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: space-between; /* Space between title and button */
+  align-items: center;            /* Center items vertically */
   margin-bottom: 20px;
 }
 
+/* Page title text */
 .header-info h1 {
   font-size: 22px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.02em; /* Tighter letter spacing for modern look */
 }
 
+/* Page subtitle text */
 .header-info p {
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-/* ─── Glass Card (Light Mode) ───────────────────────── */
+/* =========================================
+   Glass Card Component (Light Mode)
+   ========================================= */
+/* Standard card styling used throughout the dashboard */
 .glass-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-xs); /* Subtle shadow */
   padding: 20px;
 }
 
-/* Export PDF button */
+/* PDF Export button overrides */
 .btn-export {
   background: var(--green-primary) !important;
   color: #fff !important;
   border-color: var(--green-primary) !important;
 }
 .btn-export:hover {
-  background: var(--green-hover) !important;
+  background: var(--green-hover) !important; /* Darker green on hover */
 }
 
-/* ─── Tab Buttons ─────────────────────────────────── */
+/* =========================================
+   Tab Navigation Menu
+   ========================================= */
+/* Container for the 4 tab buttons */
 .tabs {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 8px; /* Space between buttons */
+  flex-wrap: wrap; /* Allow wrapping on small screens */
   padding: 0;
 }
 
+/* Default state for tab buttons */
 .tabs .btn {
   color: var(--text-primary) !important;
   background: var(--bg-surface) !important;
@@ -57,38 +76,47 @@
   font-weight: 500;
 }
 
+/* Active tab state (Green filled) */
 .tabs .btn.btn-primary {
   background: var(--green-primary) !important;
   color: #fff !important;
   border-color: var(--green-primary) !important;
 }
 
+/* Inactive tab state */
 .tabs .btn.btn-secondary {
   background: var(--bg-surface) !important;
   color: var(--text-primary) !important;
   border-color: var(--border) !important;
 }
 
+/* Hover state for inactive tabs */
 .tabs .btn.btn-secondary:hover {
-  background: var(--green-light) !important;
+  background: var(--green-light) !important; /* Light green tint */
   border-color: var(--green-primary) !important;
   color: var(--green-primary) !important;
 }
 
-/* ─── KPI Summary Cards ────────────────────────────── */
+/* =========================================
+   KPI Summary Cards (Top Row)
+   ========================================= */
+/* Grid layout for the 4 alert counters */
 .kpi-grid {
   display: grid;
+  /* Automatically create columns that fit, minimum 180px wide */
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
 
+/* Individual KPI card layout */
 .stat-card {
   display: flex;
-  align-items: center;
+  align-items: center; /* Center icon and text vertically */
   gap: 16px;
   padding: 18px 20px;
 }
 
+/* Square rounded icon container */
 .stat-icon {
   width: 48px;
   height: 48px;
@@ -101,49 +129,60 @@
   color: var(--green-primary);
 }
 
+/* Container for label and value */
 .stat-content {
   display: flex;
   flex-direction: column;
 }
 
+/* KPI Title (e.g. "Critical", "High Priority") */
 .stat-label {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  text-transform: uppercase; /* ALL CAPS */
+  letter-spacing: 0.07em; /* Widely spaced */
 }
 
+/* KPI Number Value */
 .stat-value {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2rem; /* Large text */
+  font-weight: 800; /* Extra bold */
   color: var(--text-primary);
-  line-height: 1.1;
+  line-height: 1.1; /* Tight line height */
 }
 
-/* ─── Border accents ───────────────────────────────── */
+/* =========================================
+   Color utility classes
+   ========================================= */
+/* Thick left border accents for cards/alerts */
 .border-danger  { border-left: 4px solid var(--danger) !important; }
 .border-warning { border-left: 4px solid var(--warning) !important; }
-.border-accent  { border-left: 4px solid #7C3AED !important; }
+.border-accent  { border-left: 4px solid #7C3AED !important; } /* Purple accent */
 .border-success { border-left: 4px solid var(--success) !important; }
-.border-primary { border-top: 4px solid var(--green-primary) !important; }
+.border-primary { border-top: 4px solid var(--green-primary) !important; } /* Top border variant */
 
-.text-danger  { color: var(--danger) !important; }
-.text-warning { color: var(--warning) !important; }
-.text-accent  { color: #7C3AED !important; }
-.text-success { color: var(--success) !important; }
+/* Text color overrides */
+.text-danger  { color: var(--danger) !important; } /* Red */
+.text-warning { color: var(--warning) !important; } /* Orange/Yellow */
+.text-accent  { color: #7C3AED !important; } /* Purple */
+.text-success { color: var(--success) !important; } /* Green */
 .text-primary { color: var(--text-primary) !important; }
 .text-secondary { color: var(--text-muted) !important; }
 .text-muted   { color: var(--text-muted) !important; }
 .text-white   { color: var(--text-primary) !important; }
 
-/* ─── Alert Items ──────────────────────────────────── */
+/* =========================================
+   Alert Items List (TAB 1)
+   ========================================= */
+/* Container holding all alert rows */
 .alerts-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 12px; /* Space between alerts */
 }
 
+/* Individual alert row box */
 .alert-item {
   display: flex;
   gap: 16px;
@@ -154,24 +193,29 @@
   transition: var(--transition);
 }
 
+/* Left border colors based on alert severity */
 .alert-item.severity-critical { border-left: 4px solid var(--danger); }
 .alert-item.severity-high     { border-left: 4px solid var(--warning); }
 .alert-item.severity-medium   { border-left: 4px solid #7C3AED; }
 .alert-item.severity-low      { border-left: 4px solid var(--success); }
 
+/* Alert Emoji/Icon */
 .alert-icon {
   font-size: 1.8rem;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevent icon from shrinking */
   color: var(--text-muted);
 }
 
+/* Alert Icon colors based on severity */
 .severity-critical .alert-icon { color: var(--danger); }
 .severity-high     .alert-icon { color: var(--warning); }
 .severity-medium   .alert-icon { color: #7C3AED; }
 .severity-low      .alert-icon { color: var(--success); }
 
-.alert-content { flex: 1; }
+/* Wrapper for text content of alert */
+.alert-content { flex: 1; } /* Take remaining width */
 
+/* Top row of alert text (Title + Badge) */
 .alert-header {
   display: flex;
   justify-content: space-between;
@@ -179,22 +223,24 @@
   margin-bottom: 4px;
 }
 
+/* Alert Title text */
 .alert-title {
   font-weight: 700;
   color: var(--text-primary);
   font-size: 14px;
 }
 
+/* Bottom row of alert (Timestamp + Button) */
 .alert-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border); /* Divider line */
 }
 
-/* Acknowledge button */
+/* Acknowledge button styling */
 .btn-sm.btn-secondary,
 .btn.btn-sm.btn-secondary {
   background: var(--bg-surface) !important;
@@ -207,23 +253,29 @@
   background: var(--green-light) !important;
 }
 
-/* ─── Reorder Recommendations Grid ────────────────── */
+/* =========================================
+   Reorder Recommendations Grid (TAB 2)
+   ========================================= */
+/* Grid layout for the recommendation cards */
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Min card width 280px */
   gap: 16px;
 }
 
+/* Individual recommendation card */
 .inventory-item-card {
   padding: 20px;
-  transition: var(--transition);
+  transition: var(--transition); /* Smooth hover animation */
 }
 
+/* Lift card slightly on hover */
 .inventory-item-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
+/* Header row (Product Name + Confidence Badge) */
 .item-header {
   display: flex;
   justify-content: space-between;
@@ -233,6 +285,7 @@
 
 .item-meta { display: flex; flex-direction: column; }
 
+/* Grid row for metrics (e.g. Current stock / Reorder level) */
 .item-stats {
   display: flex;
   justify-content: space-between;
@@ -240,6 +293,7 @@
 
 .item-stats .stat { display: flex; flex-direction: column; }
 
+/* Metric label */
 .item-stats .label {
   font-size: 11px;
   color: var(--text-muted);
@@ -247,13 +301,17 @@
   letter-spacing: 0.05em;
 }
 
+/* Metric value */
 .item-stats .value {
   font-weight: 700;
   font-size: 1.15rem;
   color: var(--text-primary);
 }
 
-/* ─── Progress Bar ─────────────────────────────────── */
+/* =========================================
+   Progress Bar (Days until stockout)
+   ========================================= */
+/* Empty track background */
 .progress-track {
   height: 6px;
   border-radius: 3px;
@@ -261,26 +319,32 @@
   background: var(--border);
 }
 
+/* Filled portion */
 .progress-bar {
   height: 100%;
   border-radius: 3px;
-  transition: width 0.5s ease;
+  transition: width 0.5s ease; /* Animate width change */
 }
 
 .bg-danger  { background: var(--danger) !important; }
 .bg-primary { background: var(--green-primary) !important; }
 
-/* ─── Reasoning box ────────────────────────────────── */
+/* =========================================
+   AI Reasoning Explanation Box
+   ========================================= */
 .rec-reasoning {
-  background: var(--green-light);
+  background: var(--green-light); /* Faint green background */
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   font-size: 12px;
   color: var(--text-muted);
-  border-left: 3px solid var(--green-primary);
+  border-left: 3px solid var(--green-primary); /* Green left accent */
 }
 
-/* ─── Dashboard Grid ───────────────────────────────── */
+/* =========================================
+   Cost Analysis Dashboard Grid (TAB 3)
+   ========================================= */
+/* Two column layout: Main content (flexible) and Side panel (320px fixed) */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -288,47 +352,55 @@
   align-items: start;
 }
 
-/* ─── Form Grid ────────────────────────────────────── */
+/* Grid for the two large KPI boxes inside main content */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
 }
 
-/* ─── Activity Timeline ────────────────────────────── */
+/* =========================================
+   Activity Timeline / Key Insights
+   ========================================= */
 .activity-timeline {
   display: flex;
   flex-direction: column;
-  list-style: none;
+  list-style: none; /* Remove default bullet points */
 }
 
+/* Individual insight line item */
 .activity-item {
   position: relative;
-  border-left: 2px solid var(--border);
-  padding-left: 16px;
-  margin-left: 8px;
+  border-left: 2px solid var(--border); /* Vertical line connecting items */
+  padding-left: 16px; /* Space from line */
+  margin-left: 8px; /* Push in from edge */
   padding-bottom: 16px;
 }
 
+/* Custom bullet point overlay on the vertical line */
 .activity-item::before {
   content: '';
   position: absolute;
-  left: -5px;
+  left: -5px; /* Center dot on the border line */
   top: 2px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--green-primary);
   border: 2px solid var(--bg-surface);
-  box-shadow: 0 0 0 2px var(--green-light);
+  box-shadow: 0 0 0 2px var(--green-light); /* Outer glow ring */
 }
 
-/* ─── Table Styles ─────────────────────────────────── */
+/* =========================================
+   Audit Trail Table (TAB 4)
+   ========================================= */
+/* Container to allow horizontal scrolling on small screens */
 .table-container {
   overflow-x: auto;
   border-radius: var(--radius-md);
 }
 
+/* Search Box embedded in header */
 .search-box {
   display: flex;
   align-items: center;
@@ -339,6 +411,7 @@
   padding: 8px 12px;
 }
 
+/* Hide default input borders */
 .search-box input {
   border: none;
   background: transparent;
@@ -348,31 +421,44 @@
   min-width: 200px;
 }
 
-/* ─── Badges ───────────────────────────────────────── */
+/* =========================================
+   Badge Styles (Pill-shaped labels)
+   ========================================= */
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 20px; /* Fully rounded ends */
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.badge-info    { background: #EFF6FF; color: #1D4ED8; }
-.badge-success { background: var(--green-light); color: var(--green-primary); }
-.badge-warning { background: #FEF3C7; color: #92400E; }
-.badge-danger  { background: #FEF2F2; color: var(--danger); }
+/* Predefined badge color combinations (Background + Text color) */
+.badge-info    { background: #EFF6FF; color: #1D4ED8; } /* Blue */
+.badge-success { background: var(--green-light); color: var(--green-primary); } /* Green */
+.badge-warning { background: #FEF3C7; color: #92400E; } /* Orange */
+.badge-danger  { background: #FEF2F2; color: var(--danger); } /* Red */
+
+/* Severity specific badge styles with borders */
 .badge-critical { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; }
 .badge-high    { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
 .badge-medium  { background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE; }
 .badge-low     { background: var(--green-light); color: var(--green-primary); }
 
-/* ─── Utility ──────────────────────────────────────── */
+/* =========================================
+   Utility Classes
+   ========================================= */
+/* Padding */
 .p-4 { padding: 16px; }
 .p-2 { padding: 8px; }
 .p-5 { padding: 20px; }
+.pt-2 { padding-top: 8px; }
+.pb-2 { padding-bottom: 8px; }
+.py-2 { padding-top: 8px; padding-bottom: 8px; }
+
+/* Margin */
 .m-0 { margin: 0; }
 .mb-1 { margin-bottom: 4px; }
 .mb-2 { margin-bottom: 8px; }
@@ -381,30 +467,32 @@
 .mt-1 { margin-top: 4px; }
 .mt-2 { margin-top: 8px; }
 .mt-3 { margin-top: 12px; }
-.pt-2 { padding-top: 8px; }
-.pb-2 { padding-bottom: 8px; }
+
+/* Typography */
 .fw-bold { font-weight: 700 !important; }
-.fs-sm { font-size: 12px; }
-.fs-xs { font-size: 11px; }
-.fs-xl { font-size: 2rem; }
+.fs-sm { font-size: 12px; } /* Small font */
+.fs-xs { font-size: 11px; } /* Extra small font */
+.fs-xl { font-size: 2rem; } /* Extra large font */
+.text-center { text-align: center; }
+.text-uppercase { text-transform: uppercase; }
+
+/* Layout */
 .w-100 { width: 100%; }
 .h-100 { height: 100%; }
 .d-flex { display: flex; }
 .d-block { display: block; }
-.text-center { text-align: center; }
-.text-uppercase { text-transform: uppercase; }
-
 .justify-between { justify-content: space-between; }
-.py-2 { padding-top: 8px; padding-bottom: 8px; }
 
+/* Borders & Backgrounds */
 .border-glass { border-color: var(--border) !important; }
 .border-bottom { border-bottom: 1px solid var(--border) !important; }
 .border-top { border-top: 1px solid var(--border) !important; }
 .border-radius-sm { border-radius: var(--radius-sm); }
-
 .bg-dark-soft { background: var(--green-light); }
-.border-glass  { border-color: var(--border) !important; }
 
+/* =========================================
+   Animations
+   ========================================= */
 .animate-fade-in  { animation: fadeIn 0.3s ease; }
 .animate-slide-in { animation: slideIn 0.25s ease; }
 
@@ -418,13 +506,22 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Color for empty state text/icons */
 .empty-placeholder { color: var(--text-muted); }
 
+/* =========================================
+   Responsive Media Queries
+   ========================================= */
+/* Tablet/Medium Screens */
 @media (max-width: 1200px) {
+  /* Collapse cost analysis dashboard to single column */
   .dashboard-grid { grid-template-columns: 1fr; }
 }
 
+/* Mobile Screens */
 @media (max-width: 768px) {
+  /* Stack header items vertically */
   .dashboard-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  /* Tighter gap between tabs */
   .tabs { gap: 6px; }
 }

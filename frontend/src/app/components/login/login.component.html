@@ -1,61 +1,63 @@
-<div class="login-container">
-  <div class="login-card">
+<div class="login-container"> <!-- The main outer container that covers the whole screen and centers the content -->
+  <div class="login-card"> <!-- The white card that contains both the illustration and the login form -->
     
     <!-- Left Side: Illustration -->
-    <div class="illustration-side">
-      <img src="assets/login-illustration.png" alt="Supply Chain Illustration" class="clipart" />
+    <div class="illustration-side"> <!-- A container for the left side of the card -->
+      <img src="assets/login-illustration.png" alt="Supply Chain Illustration" class="clipart" /> <!-- Display the login illustration image -->
     </div>
 
     <!-- Right Side: Form -->
-    <div class="form-side">
-      <div class="login-header">
-        <h2 class="brand-text">WSSCMS</h2>
-        <p class="subtitle">Enterprise Supply Chain Portal</p>
+    <div class="form-side"> <!-- A container for the right side which holds the actual form -->
+      <div class="login-header"> <!-- Container for the login title and subtitle -->
+        <h2 class="brand-text">WSSCMS</h2> <!-- The main brand title (Warehouse Supermarket Supply Chain Management System) -->
+        <p class="subtitle">Enterprise Supply Chain Portal</p> <!-- A small subtitle describing the application -->
       </div>
 
-      <div class="error-message" *ngIf="errorMessage">
-        <span class="material-symbols-outlined" style="font-size: 16px; margin-right: 8px;">error</span>
-        {{ errorMessage }}
+      <div class="error-message" *ngIf="errorMessage"> <!-- An error message box that ONLY shows up if the 'errorMessage' variable in TS is not empty -->
+        <span class="material-symbols-outlined" style="font-size: 16px; margin-right: 8px;">error</span> <!-- An error icon from Google Material Symbols -->
+        {{ errorMessage }} <!-- Display the actual text of the error message from the TS file -->
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-        <div class="form-row">
-          <label for="username">Username</label>
-          <div class="input-with-icon">
-            <span class="material-symbols-outlined icon left-icon">person</span>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate> <!-- Define the form, link it to the 'loginForm' variable in TS, and call 'onSubmit()' when submitted. 'novalidate' disables browser default validation -->
+        
+        <div class="form-row"> <!-- A container for the username input field -->
+          <label for="username">Username</label> <!-- The label text for the username field -->
+          <div class="input-with-icon"> <!-- A wrapper div to allow placing an icon inside the input field -->
+            <span class="material-symbols-outlined icon left-icon">person</span> <!-- The person icon shown inside the username input on the left -->
             <input 
               type="text" 
               id="username" 
               formControlName="username" 
               [class.error]="usernameInvalid"
               placeholder="Enter username"
-            />
+            /> <!-- The actual input field, linked to the 'username' form control, adds 'error' CSS class if it's invalid -->
           </div>
-          <span class="field-error" *ngIf="usernameInvalid">Username is required</span>
+          <span class="field-error" *ngIf="usernameInvalid">Username is required</span> <!-- Error text that only shows up if the username field is empty/invalid -->
         </div>
 
-        <div class="form-row">
-          <label for="password">Password</label>
-          <div class="input-with-icon">
-            <span class="material-symbols-outlined icon left-icon">lock</span>
+        <div class="form-row"> <!-- A container for the password input field -->
+          <label for="password">Password</label> <!-- The label text for the password field -->
+          <div class="input-with-icon"> <!-- A wrapper div to allow placing icons inside the input field -->
+            <span class="material-symbols-outlined icon left-icon">lock</span> <!-- The lock icon shown inside the password input on the left -->
             <input 
               [type]="showPassword ? 'text' : 'password'" 
               id="password" 
               formControlName="password" 
               [class.error]="passwordInvalid"
               placeholder="Enter password"
-            />
-            <button type="button" class="password-toggle" (click)="showPassword = !showPassword" tabindex="-1">
-              <span class="material-symbols-outlined icon">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+            /> <!-- The actual input field, dynamically toggles between 'text' (visible) and 'password' (hidden dots) based on 'showPassword' boolean -->
+            
+            <button type="button" class="password-toggle" (click)="showPassword = !showPassword" tabindex="-1"> <!-- A clickable button to toggle password visibility. tabindex="-1" prevents the user from tabbing to it by accident -->
+              <span class="material-symbols-outlined icon">{{ showPassword ? 'visibility_off' : 'visibility' }}</span> <!-- The eye icon that changes depending on the visibility state -->
             </button>
           </div>
-          <span class="field-error" *ngIf="passwordInvalid">Password is required</span>
+          <span class="field-error" *ngIf="passwordInvalid">Password is required</span> <!-- Error text that only shows up if the password field is empty/invalid -->
         </div>
 
 
-        <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading">
-          <span *ngIf="!loading">Sign In</span>
-          <span *ngIf="loading">Signing in...</span>
+        <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading"> <!-- The submit button, disabled if form is missing fields OR if currently loading -->
+          <span *ngIf="!loading">Sign In</span> <!-- Text to show when NOT loading -->
+          <span *ngIf="loading">Signing in...</span> <!-- Text to show WHEN loading (waiting for API response) -->
         </button>
       </form>
 
