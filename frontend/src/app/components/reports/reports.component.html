@@ -8,7 +8,7 @@
 
   <div class="reports-grid">
     
-    <!-- Inventory Report -->
+    <!-- Master Inventory Report -->
     <div class="glass-card report-card">
       <div class="report-icon-wrapper icon-inventory">
         <span class="material-symbols-outlined">inventory_2</span>
@@ -16,7 +16,39 @@
       <h3 class="report-title">Master Inventory Report</h3>
       <p class="report-desc">Comprehensive log of current stock levels across all locations, including reorder alerts and valuation.</p>
       <div class="report-action">
-        <button class="btn btn-primary" (click)="generateInventoryReport()" [disabled]="loadingInventory">
+        <button class="btn btn-primary" (click)="generateInventoryReport('MASTER')" [disabled]="loadingInventory">
+          <span class="material-symbols-outlined" *ngIf="!loadingInventory">picture_as_pdf</span>
+          <span class="material-symbols-outlined spin" *ngIf="loadingInventory">autorenew</span>
+          {{ loadingInventory ? 'Fetching...' : 'Generate PDF' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Warehouse Inventory Report -->
+    <div class="glass-card report-card">
+      <div class="report-icon-wrapper icon-inventory" style="background: rgba(217, 119, 6, 0.1); color: #D97706;">
+        <span class="material-symbols-outlined">warehouse</span>
+      </div>
+      <h3 class="report-title">Warehouse Inventory</h3>
+      <p class="report-desc">Filtered report containing only the current stock levels and alerts for the central distribution warehouses.</p>
+      <div class="report-action">
+        <button class="btn btn-primary" (click)="generateInventoryReport('WAREHOUSE')" [disabled]="loadingInventory">
+          <span class="material-symbols-outlined" *ngIf="!loadingInventory">picture_as_pdf</span>
+          <span class="material-symbols-outlined spin" *ngIf="loadingInventory">autorenew</span>
+          {{ loadingInventory ? 'Fetching...' : 'Generate PDF' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Supermarket Inventory Report -->
+    <div class="glass-card report-card">
+      <div class="report-icon-wrapper icon-inventory" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;">
+        <span class="material-symbols-outlined">storefront</span>
+      </div>
+      <h3 class="report-title">Supermarket Inventory</h3>
+      <p class="report-desc">Filtered report containing only the current stock levels and alerts for retail supermarket locations.</p>
+      <div class="report-action">
+        <button class="btn btn-primary" (click)="generateInventoryReport('SUPERMARKET')" [disabled]="loadingInventory">
           <span class="material-symbols-outlined" *ngIf="!loadingInventory">picture_as_pdf</span>
           <span class="material-symbols-outlined spin" *ngIf="loadingInventory">autorenew</span>
           {{ loadingInventory ? 'Fetching...' : 'Generate PDF' }}

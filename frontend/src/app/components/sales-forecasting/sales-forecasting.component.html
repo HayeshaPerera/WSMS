@@ -182,11 +182,14 @@
             </div>
         </div>
 
-        <!-- Loading spinner: shown while sales data is being fetched -->
-        <div *ngIf="loading" class="p-5 text-center">
-            <div class="spinner"></div>
-            <p class="text-secondary mt-2">Loading sales records...</p>
-        </div>
+        <!-- Loading State using Skeleton Loader -->
+            <div *ngIf="loading" class="mt-4">
+                <div class="skeleton-loader mb-2" style="height: 50px; width: 100%;"></div>
+                <div class="skeleton-loader mb-2" style="height: 50px; width: 100%;"></div>
+                <div class="skeleton-loader mb-2" style="height: 50px; width: 100%;"></div>
+                <div class="skeleton-loader mb-2" style="height: 50px; width: 100%;"></div>
+                <div class="skeleton-loader" style="height: 50px; width: 100%;"></div>
+            </div>
 
         <!-- ============= -->
         <!-- SALES TABLE    -->

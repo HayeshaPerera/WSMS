@@ -43,6 +43,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   showManagementDropdown = false;
   sidebarOpen = false;         // Whether the mobile sidebar is currently visible
   showNotifPanel = false;      // Whether the notification dropdown panel is currently visible
+  showProfilePanel = false;    // Whether the profile dropdown panel is currently visible
   loadingNotifications = false; // Whether the panel is currently loading data
 
   // ========== Notification Properties ==========
@@ -137,6 +138,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleManagement(): void {
     this.showManagementDropdown = !this.showManagementDropdown;
     this.showNotifPanel = false; // Close other dropdowns
+    this.showProfilePanel = false;
   }
 
   /**
@@ -147,6 +149,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (this.sidebarOpen) {
       this.showNotifPanel = false; // Close notification panel if sidebar opens
       this.showManagementDropdown = false; // Close management dropdown if sidebar opens
+      this.showProfilePanel = false;
     }
   }
 
@@ -156,6 +159,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleNotifPanel(): void {
     this.showNotifPanel = !this.showNotifPanel;
     this.showManagementDropdown = false;
+    this.showProfilePanel = false;
 
     // If opening, simulate a quick "synchronizing" state for visual clarity
     if (this.showNotifPanel) {
@@ -164,6 +168,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.loadingNotifications = false;
       }, 600);
     }
+  }
+
+  /**
+   * Toggles the user profile panel visibility.
+   */
+  toggleProfilePanel(): void {
+    this.showProfilePanel = !this.showProfilePanel;
+    this.showNotifPanel = false;
+    this.showManagementDropdown = false;
   }
 
   /**
@@ -193,7 +206,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   /**
    * HostListener: listens for click events on the entire document.
-   * Closes the notification panel if the user clicks outside of it.
+   * Closes the notification and profile panels if the user clicks outside of them.
    * @param event - The DOM click event
    */
   @HostListener('document:click', ['$event'])
@@ -202,6 +215,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // If the click is not inside the notification-bell container, close the panel
     if (!target.closest('.notification-bell')) {
       this.showNotifPanel = false;
+    }
+    // If the click is not inside the profile-btn container, close the panel
+    if (!target.closest('.profile-btn') && !target.closest('.sidebar-profile-panel')) {
+      this.showProfilePanel = false;
     }
   }
 

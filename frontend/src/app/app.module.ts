@@ -8,6 +8,8 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 // Import BrowserAnimationsModule for Angular animation support (@angular/animations)
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+// Import NgChartsModule for Chart.js integrations
+import { NgChartsModule } from 'ng2-charts';
 
 // Import the routing module that defines all application routes
 import { AppRoutingModule } from './app-routing.module';
@@ -119,7 +121,8 @@ import { ReportsComponent } from './components/reports/reports.component';
     HttpClientModule,              // HTTP client for API requests
     FormsModule,                   // Template-driven forms (ngModel)
     ReactiveFormsModule,           // Reactive forms (FormGroup, FormControl)
-    BrowserAnimationsModule        // Animation support (@angular/animations)
+    BrowserAnimationsModule,       // Animation support (@angular/animations)
+    NgChartsModule                 // Chart.js integration
   ],
   // Configure application-wide service providers
   providers: [

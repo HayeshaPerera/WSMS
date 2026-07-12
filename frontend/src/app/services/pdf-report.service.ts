@@ -139,14 +139,14 @@ export class PdfReportService {
     `;
   }
 
-  generateInventoryReport(inventory: any[]): void {
+  generateInventoryReport(inventory: any[], title: string = 'Master Inventory Report', filename: string = 'Inventory_Report.pdf'): void {
     const lowStockCount = inventory.filter(item => item.quantity <= item.reorderLevel).length;
     
     let content = `
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Inventory Report</title>
+        <title>${title}</title>
         ${this.getBaseStyle()}
       </head>
       <body>
@@ -163,7 +163,7 @@ export class PdfReportService {
           </div>
         </div>
         
-        <h1>Inventory Report</h1>
+        <h1>${title}</h1>
         
         <div class="summary">
           <strong>Total Items:</strong> ${inventory.length} | 
@@ -175,7 +175,7 @@ export class PdfReportService {
             <tr>
               <th>Product Name</th>
               <th>SKU</th>
-              <th>Warehouse</th>
+              <th>Location</th>
               <th>Current Qty</th>
               <th>Reorder Level</th>
               <th>Status</th>
@@ -188,7 +188,7 @@ export class PdfReportService {
                 <tr>
                   <td><strong>${item.product?.name || 'N/A'}</strong></td>
                   <td class="text-muted">${item.product?.sku || 'N/A'}</td>
-                  <td>${item.warehouse?.name || 'N/A'}</td>
+                  <td>${item.warehouse?.name || item.supermarket?.name || 'N/A'}</td>
                   <td class="${isLowStock ? 'text-danger' : ''}">${item.quantity}</td>
                   <td>${item.reorderLevel}</td>
                   <td>
@@ -210,7 +210,7 @@ export class PdfReportService {
       </html>
     `;
     
-    this.downloadPdf(content, 'Inventory_Report.pdf');
+    this.downloadPdf(content, filename);
   }
 
   generateStockRequestsReport(requests: any[]): void {

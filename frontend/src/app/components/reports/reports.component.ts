@@ -99,7 +99,7 @@ export class ReportsComponent implements OnInit {
     });
   }
 
-  generateInventoryReport() {
+  generateInventoryReport(type: 'MASTER' | 'WAREHOUSE' | 'SUPERMARKET' = 'MASTER') {
     this.loadingInventory = true;
     this.notifications.info('Fetching latest inventory data...');
     this.inventoryService.getAllInventory().subscribe({
@@ -108,8 +108,28 @@ export class ReportsComponent implements OnInit {
         let inventory = res || [];
         if (!Array.isArray(inventory) && inventory.data) inventory = inventory.data;
         inventory = this.enrichItems(inventory);
-        this.pdfService.generateInventoryReport(inventory);
-        this.notifications.success('Inventory Report generated');
+        
+        let title = 'Master Inventory Report';
+        let filename = 'Master_Inventory_Report.pdf';
+        
+        if (type === 'WAREHOUSE') {
+          inventory = inventory.filter((i: any) => {
+             const loc = (i.location || i.locationName || i.warehouse?.name || i.warehouseName || '').toLowerCase();
+             return i.warehouse || i.warehouseId || i.warehouse_id || loc.includes('warehouse');
+          });
+          title = 'Warehouse Inventory Report';
+          filename = 'Warehouse_Inventory_Report.pdf';
+        } else if (type === 'SUPERMARKET') {
+          inventory = inventory.filter((i: any) => {
+             const loc = (i.location || i.locationName || i.supermarket?.name || i.supermarketName || '').toLowerCase();
+             return i.supermarket || i.supermarketId || i.supermarket_id || loc.includes('supermarket');
+          });
+          title = 'Supermarket Inventory Report';
+          filename = 'Supermarket_Inventory_Report.pdf';
+        }
+
+        this.pdfService.generateInventoryReport(inventory, title, filename);
+        this.notifications.success(`${title} generated`);
       },
       error: () => {
         this.loadingInventory = false;

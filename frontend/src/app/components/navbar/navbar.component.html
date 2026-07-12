@@ -124,7 +124,7 @@
       <span class="material-symbols-outlined">notifications</span> <span class="nav-text">Notifications</span>
       <span class="nav-badge" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }}</span>
     </a>
-    <a style="cursor:default">
+    <a (click)="toggleProfilePanel()" class="profile-btn" style="cursor:pointer">
       <span class="material-symbols-outlined">account_circle</span>
       <span class="nav-text" style="font-size:12px; overflow:hidden; text-overflow:ellipsis;">{{ auth.getCurrentUser()?.username }}</span>
     </a>
@@ -166,6 +166,33 @@
              {{ n.timestamp | date:'shortTime' }}
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile panel -->
+  <div *ngIf="showProfilePanel" class="sidebar-profile-panel">
+    <div class="profile-panel-header">
+      <div class="profile-avatar">
+        <span class="material-symbols-outlined">person</span>
+      </div>
+      <div class="profile-info-main">
+        <div class="profile-name">{{ auth.getCurrentUser()?.username }}</div>
+        <div class="profile-role badge-success">{{ auth.getCurrentUser()?.roles?.[0]?.replace('ROLE_', '') }}</div>
+      </div>
+    </div>
+    <div class="profile-details">
+      <div class="detail-row">
+        <span class="detail-icon material-symbols-outlined">email</span>
+        <span class="detail-text">{{ auth.getCurrentUser()?.email || 'N/A' }}</span>
+      </div>
+      <div class="detail-row" *ngIf="auth.getCurrentUser()?.warehouseId">
+        <span class="detail-icon material-symbols-outlined">warehouse</span>
+        <span class="detail-text">Warehouse ID: {{ auth.getCurrentUser()?.warehouseId }}</span>
+      </div>
+      <div class="detail-row" *ngIf="auth.getCurrentUser()?.supermarketId">
+        <span class="detail-icon material-symbols-outlined">storefront</span>
+        <span class="detail-text">Store ID: {{ auth.getCurrentUser()?.supermarketId }}</span>
       </div>
     </div>
   </div>
