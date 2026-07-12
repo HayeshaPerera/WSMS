@@ -35,6 +35,7 @@ public class StockRequestService {
     @Autowired private UserRepository userRepository;
     @Autowired private InventoryRepository inventoryRepository;
     @Autowired private DeliveryService deliveryService; // Needed to auto-create a delivery upon approval
+    @Autowired private NotificationService notificationService;
 
     private static final Logger logger = LoggerFactory.getLogger(StockRequestService.class);
 
@@ -122,6 +123,33 @@ public class StockRequestService {
 
         // Save to DB
         StockRequest savedRequest = stockRequestRepository.save(request);
+
+        // Notify warehouse staff
+        List<User> warehouseUsers = userRepository.findByWarehouseId(requestDTO.getWarehouseId());
+        for (User u : warehouseUsers) {
+            notificationService.createNotification(
+                u.getId(),
+                "New Stock Request",
+                "Supermarket " + supermarket.getName() + " requested " + requestDTO.getRequestedQuantity() + " units of " + product.getName(),
+                "info",
+                "stock_request",
+                savedRequest.getId()
+            );
+        }
+
+        // Notify supermarket staff (confirmation)
+        List<User> supermarketUsers = userRepository.findBySupermarketId(request.getSupermarket().getId());
+        for (User u : supermarketUsers) {
+            notificationService.createNotification(
+                u.getId(),
+                "Stock Request Sent",
+                "Your request for " + requestDTO.getRequestedQuantity() + " units of " + product.getName() + " has been sent to the warehouse.",
+                "info",
+                "stock_request",
+                savedRequest.getId()
+            );
+        }
+
         return convertToDTO(savedRequest);
     }
 
@@ -183,6 +211,19 @@ public class StockRequestService {
             logger.warn("Delivery creation after approval failed for request {}: {}", updatedRequest.getId(), e.getMessage());
         }
 
+        // Notify supermarket staff
+        List<User> supermarketUsers = userRepository.findBySupermarketId(request.getSupermarket().getId());
+        for (User u : supermarketUsers) {
+            notificationService.createNotification(
+                u.getId(),
+                "Stock Request Approved",
+                "Request " + updatedRequest.getRequestNumber() + " for " + request.getProduct().getName() + " was approved (" + approvedQuantity + " units).",
+                "success",
+                "stock_request",
+                updatedRequest.getId()
+            );
+        }
+
         return convertToDTO(updatedRequest);
     }
 
@@ -206,6 +247,20 @@ public class StockRequestService {
         request.setApprovedAt(LocalDateTime.now());
 
         StockRequest updatedRequest = stockRequestRepository.save(request);
+
+        // Notify supermarket staff
+        List<User> supermarketUsers = userRepository.findBySupermarketId(request.getSupermarket().getId());
+        for (User u : supermarketUsers) {
+            notificationService.createNotification(
+                u.getId(),
+                "Stock Request Rejected",
+                "Request " + updatedRequest.getRequestNumber() + " for " + request.getProduct().getName() + " was rejected. Reason: " + reason,
+                "error",
+                "stock_request",
+                updatedRequest.getId()
+            );
+        }
+
         return convertToDTO(updatedRequest);
     }
 

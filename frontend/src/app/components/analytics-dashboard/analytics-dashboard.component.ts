@@ -11,7 +11,7 @@ import { StockRequestService } from '../../services/stock-request.service';
 import { AuthService } from '../../services/auth.service';
 import { PdfReportService } from '../../services/pdf-report.service';
 import { NotificationService } from '../../services/notification.service';
-
+import { Router } from '@angular/router';
 // Import forkJoin to run multiple RxJS observables in parallel
 import { forkJoin } from 'rxjs';
 
@@ -82,7 +82,8 @@ export class AnalyticsDashboardComponent implements OnInit {
     private deliveryService: DeliveryService,
     private stockRequestService: StockRequestService,
     private notifications: NotificationService,
-    public auth: AuthService // Public so template can check user roles
+    public auth: AuthService, // Public so template can check user roles
+    private router: Router
   ) {}
 
 
@@ -162,9 +163,15 @@ export class AnalyticsDashboardComponent implements OnInit {
    * Once all three complete, it feeds the data into the AnalyticsService to generate insights.
    */
   loadAnalytics(): void {
+    // Determine context based on route
+    let inventoryObs = this.inventoryService.getAllInventory();
+    if (this.router.url.includes('/warehouse')) {
+      inventoryObs = this.inventoryService.getWarehouseInventory(1);
+    }
+
     // forkJoin executes all provided observables in parallel and emits once all complete
     forkJoin({
-      inventory: this.inventoryService.getAllInventory(),
+      inventory: inventoryObs,
       deliveries: this.deliveryService.getAllDeliveries(),
       requests: this.stockRequestService.getAllRequests()
     }).subscribe({

@@ -12,27 +12,29 @@
 
 /* The white card that contains the login form and illustration */
 .login-card {
-  display: flex; /* Use flexbox to put the left (illustration) and right (form) sides side-by-side */
-  flex-direction: row; /* Arrange items in a row (left to right) */
-  max-width: 900px; /* Don't let the card get wider than 900px */
-  width: 100%; /* Take up 100% of the available width up to the max-width */
-  background: var(--bg-surface); /* White background color from variables */
-  border-radius: var(--radius-lg); /* Rounded corners */
-  overflow: hidden; /* Hide any content that spills outside the rounded corners */
-  box-shadow: var(--shadow-md); /* Add a subtle drop shadow */
-  min-height: 520px; /* Ensure the card is at least 520px tall */
-  border: 1px solid var(--border); /* Add a light gray border */
+  display: flex;
+  flex-direction: row;
+  max-width: 900px;
+  width: 100%;
+  background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  min-height: 520px;
+  border: var(--glass-border);
 }
 
 /* The left side of the card holding the illustration */
 .illustration-side {
-  flex: 1.2; /* Take up 1.2 parts of the available space (slightly wider than the form) */
-  display: flex; /* Use flexbox to center the image */
-  align-items: center; /* Center the image vertically */
-  justify-content: center; /* Center the image horizontally */
-  padding: 40px; /* Add padding around the image */
-  background-color: var(--green-light); /* Give it a light green background */
-  border-right: 1px solid var(--border); /* Add a separator line between the left and right sides */
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background-color: rgba(45, 122, 79, 0.03);
+  border-right: 1px solid var(--border-light);
 }
 
 /* The illustration image itself */
@@ -59,11 +61,14 @@
 
 /* The main brand text (WSSCMS) */
 .brand-text {
-  color: var(--green-primary); /* Use the primary brand green color */
-  margin: 0; /* Remove default margin */
-  font-size: 32px; /* Make the text large */
-  font-weight: 800; /* Make the text very bold */
-  letter-spacing: -0.02em; /* Bring the letters slightly closer together for a modern look */
+  margin: 0;
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-mid) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* The small subtitle text */

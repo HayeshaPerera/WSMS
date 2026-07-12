@@ -195,9 +195,9 @@
           <strong><i class="fas fa-chart-line text-accent"></i> Analysis:</strong> {{rec.reasoning}}
         </div>
 
-        <!-- Action Button: Opens a new stock request for this recommendation -->
-        <button class="btn btn-primary w-100 mt-3" (click)="createStockRequest(rec)">
-          <i class="fas fa-file-invoice"></i> Create Stock Request
+        <!-- Action Button: Opens a new GRN (Goods Receipt Note) to receive stock from a supplier -->
+        <button class="btn btn-primary w-100 mt-3" routerLink="/warehouse/grns">
+          <i class="fas fa-truck-loading"></i> Create GRN (Receive Stock)
         </button>
       </div>
     </div>

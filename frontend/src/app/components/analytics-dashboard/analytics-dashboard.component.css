@@ -41,9 +41,11 @@
 /* Standard card styling used throughout the dashboard */
 .glass-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs); /* Subtle shadow */
+  box-shadow: var(--shadow-sm);
   padding: 20px;
 }
 
@@ -72,27 +74,29 @@
 .tabs .btn {
   color: var(--text-primary) !important;
   background: var(--bg-surface) !important;
-  border: 1.5px solid var(--border) !important;
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border) !important;
   font-weight: 500;
+  border-radius: 20px;
 }
 
 /* Active tab state (Green filled) */
 .tabs .btn.btn-primary {
-  background: var(--green-primary) !important;
+  background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-mid) 100%) !important;
   color: #fff !important;
-  border-color: var(--green-primary) !important;
+  border: none !important;
 }
 
 /* Inactive tab state */
 .tabs .btn.btn-secondary {
-  background: var(--bg-surface) !important;
+  background: var(--bg-overlay) !important;
   color: var(--text-primary) !important;
-  border-color: var(--border) !important;
+  border-color: var(--border-light) !important;
 }
 
 /* Hover state for inactive tabs */
 .tabs .btn.btn-secondary:hover {
-  background: var(--green-light) !important; /* Light green tint */
+  background: var(--bg-surface) !important; 
   border-color: var(--green-primary) !important;
   color: var(--green-primary) !important;
 }
@@ -189,7 +193,9 @@
   padding: 16px;
   border-radius: var(--radius-md);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-xs);
   transition: var(--transition);
 }
 
@@ -436,16 +442,16 @@
 }
 
 /* Predefined badge color combinations (Background + Text color) */
-.badge-info    { background: #EFF6FF; color: #1D4ED8; } /* Blue */
-.badge-success { background: var(--green-light); color: var(--green-primary); } /* Green */
-.badge-warning { background: #FEF3C7; color: #92400E; } /* Orange */
-.badge-danger  { background: #FEF2F2; color: var(--danger); } /* Red */
+.badge-info    { background: rgba(2, 132, 199, 0.15); color: var(--info); }
+.badge-success { background: rgba(45, 122, 79, 0.15); color: var(--success); }
+.badge-warning { background: rgba(217, 119, 6, 0.15); color: var(--warning); }
+.badge-danger  { background: rgba(220, 38, 38, 0.15); color: var(--danger); }
 
 /* Severity specific badge styles with borders */
-.badge-critical { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; }
-.badge-high    { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
-.badge-medium  { background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE; }
-.badge-low     { background: var(--green-light); color: var(--green-primary); }
+.badge-critical { background: rgba(220, 38, 38, 0.15); color: var(--danger); border: 1px solid rgba(220, 38, 38, 0.3); }
+.badge-high    { background: rgba(217, 119, 6, 0.15); color: var(--warning); border: 1px solid rgba(217, 119, 6, 0.3); }
+.badge-medium  { background: rgba(124, 58, 237, 0.15); color: #7C3AED; border: 1px solid rgba(124, 58, 237, 0.3); }
+.badge-low     { background: rgba(45, 122, 79, 0.15); color: var(--success); border: 1px solid rgba(45, 122, 79, 0.3); }
 
 /* =========================================
    Utility Classes

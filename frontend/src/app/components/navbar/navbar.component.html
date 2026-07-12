@@ -116,7 +116,11 @@
 
     <!-- ── FOOTER ───────────────────────────── -->
     <span class="sidebar-section-label">Account</span>
-    <a (click)="toggleNotifPanel()" style="cursor:pointer; position:relative">
+    <a (click)="toggleTheme()" style="cursor:pointer">
+      <span class="material-symbols-outlined">{{ theme.getCurrentTheme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+      <span class="nav-text">{{ theme.getCurrentTheme() === 'dark' ? 'Light Mode' : 'Dark Mode' }}</span>
+    </a>
+    <a (click)="toggleNotifPanel()" class="notification-bell" style="cursor:pointer; position:relative">
       <span class="material-symbols-outlined">notifications</span> <span class="nav-text">Notifications</span>
       <span class="nav-badge" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }}</span>
     </a>
@@ -131,7 +135,7 @@
   </nav>
 
   <!-- Notification panel -->
-  <div *ngIf="showNotifPanel" class="sidebar-notif-panel">
+  <div *ngIf="showNotifPanel" class="sidebar-notif-panel notification-bell">
     <div class="notif-panel-header">
       <div class="d-flex align-items-center gap-2">
         <span class="material-symbols-outlined" style="font-size:18px; color:var(--green-primary)">notifications</span>

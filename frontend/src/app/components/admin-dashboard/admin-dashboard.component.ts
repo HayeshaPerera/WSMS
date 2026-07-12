@@ -217,6 +217,12 @@ export class AdminDashboardComponent implements OnInit {
     const ctx = document.getElementById('inventoryTrendChart') as HTMLCanvasElement;
     if (!ctx) return;
 
+    const gradient = ctx.getContext('2d')?.createLinearGradient(0, 0, 0, 400);
+    if (gradient) {
+      gradient.addColorStop(0, 'rgba(45, 122, 79, 0.4)');
+      gradient.addColorStop(1, 'rgba(45, 122, 79, 0.0)');
+    }
+
     this.inventoryTrendChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -225,14 +231,15 @@ export class AdminDashboardComponent implements OnInit {
           label: 'Inventory Value ($)',
           data: this.revenueData,
           borderColor: '#2D7A4F',
-          backgroundColor: 'rgba(45, 122, 79, 0.1)',
+          backgroundColor: gradient || 'rgba(45, 122, 79, 0.1)',
           borderWidth: 3,
           fill: true,
-          tension: 0.4,
+          tension: 0.45,
           pointBackgroundColor: '#2D7A4F',
           pointBorderColor: '#ffffff',
-          pointRadius: 6,
-          pointHoverRadius: 8
+          pointRadius: 4,
+          pointHoverRadius: 8,
+          pointHoverBackgroundColor: '#4CAF7D'
         }]
       },
       options: {

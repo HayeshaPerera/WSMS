@@ -19,16 +19,13 @@ import { Subscription } from 'rxjs';
   templateUrl: './notifications.component.html',    // Path to the HTML template
   styleUrls: ['./notifications.component.css'],     // Path to component-specific CSS
   animations: [
-    // Define the 'slideIn' animation trigger for enter/leave transitions
     trigger('slideIn', [
-      // Enter animation: slide down + fade in
       transition(':enter', [
-        style({ transform: 'translateY(-10px)', opacity: 0 }),  // Start: above and invisible
-        animate('200ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })) // End: in place and visible
+        style({ transform: 'translateX(100%)', opacity: 0 }),
+        animate('300ms cubic-bezier(0.16, 1, 0.3, 1)', style({ transform: 'translateX(0)', opacity: 1 }))
       ]),
-      // Leave animation: slide up + fade out
       transition(':leave', [
-        animate('150ms ease-in', style({ transform: 'translateY(-10px)', opacity: 0 })) // Slide up and disappear
+        animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 }))
       ])
     ])
   ]

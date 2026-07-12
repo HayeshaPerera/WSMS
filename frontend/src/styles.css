@@ -15,8 +15,8 @@
   --green-mid:       #81C99A;
   
   /* Backgrounds & Surfaces */
-  --bg-page:         #F4F6F4; 
-  --bg-surface:      rgba(255, 255, 255, 0.85); /* Glass surface */
+  --bg-page:         #E8EDEA; /* Slightly darker/cooler page background for better contrast */
+  --bg-surface:      rgba(255, 255, 255, 0.45); /* More translucent for real glass effect */
   --sidebar-bg:      #1A3C2A;
   --sidebar-hover:   #243d2e;
   --sidebar-active:  #2D7A4F;
@@ -50,6 +50,10 @@
   --glass-blur:      blur(16px);
   --glass-border:    1px solid rgba(255, 255, 255, 0.6);
 
+  /* Surface overlays */
+  --bg-overlay:          rgba(255, 255, 255, 0.5);
+  --bg-input:            #FFFFFF;
+
   /* Legacy aliases — keeps existing components working */
   --color-primary:       var(--green-primary);
   --color-primary-hover: var(--green-hover);
@@ -64,6 +68,36 @@
   --color-warning:       var(--warning);
   --color-info:          var(--info);
   --color-success:       var(--success);
+}
+
+[data-theme="dark"] {
+  --green-primary:   #4CAF7D;
+  --green-hover:     #81C99A;
+  --green-secondary: #2D7A4F;
+  --green-light:     rgba(76, 175, 125, 0.15);
+  --green-mid:       #245f3e;
+  
+  --bg-page:         #0F172A; 
+  --bg-surface:      rgba(30, 41, 59, 0.7); 
+  --sidebar-bg:      #0B1120;
+  --sidebar-hover:   #1E293B;
+  --sidebar-active:  #2D7A4F;
+  
+  --text-primary:    #F8FAFC; 
+  --text-muted:      #94A3B8; 
+  
+  --border:          rgba(255, 255, 255, 0.1);
+  --border-light:    rgba(255, 255, 255, 0.05);
+  
+  --bg-overlay:      rgba(30, 41, 59, 0.6);
+  --bg-input:        #1E293B;
+
+  --shadow-xs:       0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-sm:       0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-md:       0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow:     0 0 20px rgba(76, 175, 125, 0.15);
+  
+  --glass-border:    1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ── BACKGROUND ORB EFFECT ──────────────────────────────── */
@@ -81,7 +115,7 @@ body::before {
   left: -10%;
   width: 50vw;
   height: 50vw;
-  background: radial-gradient(circle, rgba(45, 122, 79, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(45, 122, 79, 0.15) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
   z-index: -1;
@@ -96,7 +130,7 @@ body::after {
   right: -10%;
   width: 40vw;
   height: 40vw;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.12) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
   z-index: -1;
@@ -116,6 +150,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 /* ── ICON SYSTEM ───────────────────────────────────────── */
@@ -401,16 +436,17 @@ body {
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-light);
   gap: 16px;
-  background: rgba(255,255,255,0.4);
+  background: var(--bg-overlay);
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 thead tr {
-  background: var(--green-primary);
+  background: var(--border-light);
 }
 
 th {
@@ -418,36 +454,33 @@ th {
   padding: 16px 24px;
   font-size: 12px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   white-space: nowrap;
-  border: none;
+  border-bottom: 1px solid var(--border-light);
   font-family: 'Inter', sans-serif;
 }
-
-th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
 
 td {
   padding: 16px 24px;
   font-size: 14px;
   color: var(--text-primary);
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-light);
   vertical-align: middle;
   font-family: 'Inter', sans-serif;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 tbody tr {
   animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
-  border-bottom: 1px solid var(--border-light);
   transition: all 0.2s ease;
+  background: transparent;
 }
 
 tbody tr:nth-child(even) {
-  background-color: rgba(45, 122, 79, 0.02);
+  background: rgba(150, 150, 150, 0.03);
 }
 
 /* Staggered row animations */
@@ -463,9 +496,11 @@ tbody tr:nth-child(9) { animation-delay: 0.45s; }
 tbody tr:nth-child(n+10) { animation-delay: 0.50s; }
 
 tbody tr:hover { 
-  background: rgba(45,122,79,0.06); 
+  background: var(--border-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
-tbody tr:last-child { border-bottom: none; }
+tbody tr:last-child td { border-bottom: none; }
 
 /* ── BUTTONS ─────────────────────────────────────────────── */
 .btn {
@@ -507,7 +542,7 @@ tbody tr:last-child { border-bottom: none; }
 }
 
 .btn-secondary {
-  background: #FFF;
+  background: var(--bg-surface);
   color: var(--green-primary);
   border: 1px solid var(--green-primary);
 }
@@ -584,8 +619,8 @@ input, select, textarea {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-primary);
-  background: #FFF;
-  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
   outline: none;
@@ -602,7 +637,7 @@ input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.3); }
 .search-box { position: relative; }
 .search-box input { 
   padding-left: 44px; 
-  background: #FFF;
+  background: var(--bg-input);
   border-radius: 30px;
 }
 .search-box .search-icon {
@@ -669,7 +704,7 @@ input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.3); }
   display: flex;
   justify-content: flex-end;
   gap: 16px;
-  background: rgba(255,255,255,0.5);
+  background: var(--bg-overlay);
 }
 
 @keyframes slideInRight {
@@ -712,7 +747,7 @@ input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.3); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255,255,255,0.5);
+  background: var(--bg-overlay);
 }
 
 .modal-header h2 {
@@ -736,7 +771,7 @@ input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.3); }
   display: flex;
   justify-content: flex-end;
   gap: 16px;
-  background: rgba(255,255,255,0.5);
+  background: var(--bg-overlay);
 }
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
