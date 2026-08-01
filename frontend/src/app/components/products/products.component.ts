@@ -18,6 +18,19 @@ export class ProductsComponent implements OnInit {
   editingProduct: Product | null = null;
 
   categories = ['Dairy', 'Bakery', 'Beverages', 'Meat', 'Produce', 'Grains', 'Canned Goods', 'Spreads', 'Cooking', 'Snacks', 'Frozen'];
+  isNewCategory = false;
+  selectedCategoryOption = '';
+
+  onCategorySelect(event: any): void {
+    const val = event.target.value;
+    if (val === 'NEW_CATEGORY') {
+      this.isNewCategory = true;
+      this.newProduct.category = '';
+    } else {
+      this.isNewCategory = false;
+      this.newProduct.category = val;
+    }
+  }
 
   newProduct = {
     sku: '',
@@ -125,6 +138,13 @@ export class ProductsComponent implements OnInit {
 
   editProduct(product: Product): void {
     this.editingProduct = product;
+    if (this.categories.includes(product.category)) {
+      this.selectedCategoryOption = product.category;
+      this.isNewCategory = false;
+    } else {
+      this.selectedCategoryOption = 'NEW_CATEGORY';
+      this.isNewCategory = true;
+    }
     this.newProduct = {
       sku: product.sku,
       name: product.name,
@@ -236,6 +256,8 @@ export class ProductsComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.isNewCategory = false;
+    this.selectedCategoryOption = '';
     this.newProduct = {
       sku: '',
       name: '',

@@ -146,7 +146,7 @@
             <input type="number" [(ngModel)]="item.quantity" min="1" />
           </div>
           <div class="form-group sm">
-            <label>Unit Cost</label>
+            <label>Unit Cost (LKR)</label>
             <input type="number" [(ngModel)]="item.unitCost" step="0.01" />
           </div>
           <div class="form-group">
@@ -209,7 +209,7 @@
             <td>{{ item.productName }}</td>
             <td><span class="mono">{{ item.productSku }}</span></td>
             <td>{{ item.quantity }}</td>
-            <td>{{ item.unitCost ? ('$' + item.unitCost.toFixed(2)) : '—' }}</td>
+            <td>{{ item.unitCost ? (item.unitCost | lkr) : '—' }}</td>
             <td>{{ item.batchNumber || '—' }}</td>
             <td>{{ item.expiryDate ? (item.expiryDate | date:'dd MMM yyyy') : '—' }}</td>
           </tr>
@@ -266,14 +266,16 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Category</label>
-          <input type="text" [(ngModel)]="newProduct.category" list="quick-cat-list" placeholder="e.g. Dairy" />
-          <datalist id="quick-cat-list">
-            <option value="Dairy"></option>
-            <option value="Bakery"></option>
-            <option value="Beverages"></option>
-            <option value="Produce"></option>
-          </datalist>
+          <div class="d-flex justify-between align-center mb-1">
+            <label style="margin-bottom:0">Category</label>
+            <span *ngIf="isNewCategory" style="font-size:11px; color:var(--green-primary); cursor:pointer; font-weight:600" (click)="isNewCategory = false; selectedCategoryOption = ''; newProduct.category = '';">← Select existing</span>
+          </div>
+          <select *ngIf="!isNewCategory" [(ngModel)]="selectedCategoryOption" (change)="onCategorySelect($event)">
+            <option value="">-- Select Category --</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            <option value="NEW_CATEGORY" style="font-weight:700; color:var(--green-primary)">+ Add Custom Category</option>
+          </select>
+          <input *ngIf="isNewCategory" type="text" [(ngModel)]="newProduct.category" placeholder="Type category name...">
         </div>
         <div class="form-group">
           <label>Unit Price (LKR)</label>

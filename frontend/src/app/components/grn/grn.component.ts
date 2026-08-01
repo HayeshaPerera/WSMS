@@ -34,6 +34,20 @@ export class GrnComponent implements OnInit {
     description: '',
     isActive: true
   };
+  categories = ['Dairy', 'Bakery', 'Beverages', 'Meat', 'Produce', 'Grains', 'Canned Goods', 'Spreads', 'Cooking', 'Snacks', 'Frozen'];
+  isNewCategory = false;
+  selectedCategoryOption = '';
+
+  onCategorySelect(event: any): void {
+    const val = event.target.value;
+    if (val === 'NEW_CATEGORY') {
+      this.isNewCategory = true;
+      this.newProduct.category = '';
+    } else {
+      this.isNewCategory = false;
+      this.newProduct.category = val;
+    }
+  }
 
   newGrn: GrnDTO = {
     warehouseId: 0,
@@ -167,6 +181,8 @@ export class GrnComponent implements OnInit {
     const value = event;
     if (value === 'new') {
       this.pendingItemIndex = index;
+      this.isNewCategory = false;
+      this.selectedCategoryOption = '';
       this.newProduct = { sku: '', name: '', category: '', unitPrice: 0, description: '', isActive: true };
       this.showNewProductModal = true;
       // Temporarily clear it so 'new' doesn't stay bound if they cancel

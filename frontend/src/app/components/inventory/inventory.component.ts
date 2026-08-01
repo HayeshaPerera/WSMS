@@ -84,6 +84,8 @@ export class InventoryComponent implements OnInit {
   // --- Form State Variables ---
   selectedProduct: Product | null = null; // Currently selected product when adding stock
   isNewProduct = false; // Toggles whether we are adding stock for an existing product OR creating a brand new product
+  isNewCategory = false; // Toggles custom category input field
+  selectedCategoryOption = ''; // Holds selected category in dropdown
   
   // Model for adding/editing a stock record
   newInventory = {
@@ -491,6 +493,18 @@ export class InventoryComponent implements OnInit {
     }
   }
 
+  // Triggered when a user selects an option in the "Category" dropdown inside the Add Form
+  onCategorySelect(event: any): void {
+    const val = event.target.value;
+    if (val === 'NEW_CATEGORY') {
+      this.isNewCategory = true;
+      this.newProduct.category = '';
+    } else {
+      this.isNewCategory = false;
+      this.newProduct.category = val;
+    }
+  }
+
   // The main "Save" button handler for the Add/Edit form
   addInventoryItem(): void {
     // 1. Validation
@@ -634,6 +648,8 @@ export class InventoryComponent implements OnInit {
   resetForm(): void {
     this.selectedProduct = null;
     this.isNewProduct = false;
+    this.isNewCategory = false;
+    this.selectedCategoryOption = '';
     this.editingInventory = null;
     this.newInventory = {
       productId: null,

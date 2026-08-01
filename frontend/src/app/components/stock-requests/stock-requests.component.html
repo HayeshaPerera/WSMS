@@ -175,6 +175,13 @@
             }">
               {{ r.status }}
             </span>
+
+            <!-- Rejection Reason Callout: Visible to Supermarket staff once a request is rejected -->
+            <div *ngIf="r.status === 'REJECTED'" 
+                 style="margin-top: 6px; display: flex; align-items: flex-start; gap: 5px; padding: 5px 9px; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; color: var(--danger, #dc2626); font-size: 11px; line-height: 1.35; max-width: 240px; text-align: left;">
+              <span class="material-symbols-outlined" style="font-size: 14px; flex-shrink: 0; margin-top: 1px;">error_outline</span>
+              <span><strong>Reason:</strong> {{ r.rejectionReason || 'No reason specified by warehouse' }}</span>
+            </div>
           </td>
           
           <!-- Column: Timeline (Date and Time of request) -->
@@ -200,7 +207,7 @@
             
             <!-- If the request is NOT pending, show text instead of buttons -->
             <div *ngIf="r.status !== 'PENDING'" style="font-size:11px; color:var(--text-muted); font-style:italic">
-              {{ r.status === 'APPROVED' ? 'Dispatched' : 'Finalized' }}
+              {{ r.status === 'APPROVED' ? 'Dispatched' : (r.status === 'REJECTED' ? 'Rejected' : 'Finalized') }}
             </div>
           </td>
         </tr>

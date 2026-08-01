@@ -28,11 +28,16 @@
           <input type="text" [(ngModel)]="newProduct.name" placeholder="Full descriptive name">
         </div>
         <div class="form-group" style="flex:1">
-          <label>Classification</label>
-          <input type="text" [(ngModel)]="newProduct.category" list="product-category-options" placeholder="Select or type category">
-          <datalist id="product-category-options">
-            <option *ngFor="let cat of categories" [value]="cat"></option>
-          </datalist>
+          <div class="d-flex justify-between align-center mb-1">
+            <label style="margin-bottom:0">Classification</label>
+            <span *ngIf="isNewCategory" style="font-size:11px; color:var(--green-primary); cursor:pointer; font-weight:600" (click)="isNewCategory = false; selectedCategoryOption = ''; newProduct.category = '';">← Select existing</span>
+          </div>
+          <select *ngIf="!isNewCategory" [(ngModel)]="selectedCategoryOption" (change)="onCategorySelect($event)">
+            <option value="">-- Select Category --</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            <option value="NEW_CATEGORY" style="font-weight:700; color:var(--green-primary)">+ Add Custom Category</option>
+          </select>
+          <input *ngIf="isNewCategory" type="text" [(ngModel)]="newProduct.category" placeholder="Type custom category...">
         </div>
       </div>
 
