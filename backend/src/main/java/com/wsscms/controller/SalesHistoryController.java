@@ -56,6 +56,9 @@ public class SalesHistoryController {
     @Autowired
     private SupermarketRepository supermarketRepository;
 
+    @Autowired
+    private com.wsscms.repository.DemandForecastRepository demandForecastRepository;
+
     // ─────────────────────────────────────────────────────────
     // GET /api/v1/sales
     // ─────────────────────────────────────────────────────────
@@ -260,8 +263,16 @@ public class SalesHistoryController {
                 sale.setSupermarket(supermarket);
                 sale.setSaleDate(saleDate);
                 sale.setQuantitySold(baseQty);
-                sale.setUnitPrice(product.getUnitPrice());
-                sale.setTotalAmount(product.getUnitPrice().multiply(java.math.BigDecimal.valueOf(baseQty)));
+                
+                // Ensure realistic LKR pricing (if product price is old USD value < 50 or null, convert to LKR)
+                java.math.BigDecimal unitPrice = product.getUnitPrice();
+                if (unitPrice == null || unitPrice.compareTo(java.math.BigDecimal.valueOf(50)) < 0) {
+                    unitPrice = unitPrice != null && unitPrice.compareTo(java.math.BigDecimal.ZERO) > 0 
+                            ? unitPrice.multiply(java.math.BigDecimal.valueOf(300)) 
+                            : java.math.BigDecimal.valueOf(850.00);
+                }
+                sale.setUnitPrice(unitPrice);
+                sale.setTotalAmount(unitPrice.multiply(java.math.BigDecimal.valueOf(baseQty)));
                 sale.setNotes("Demo Simulated POS Transaction");
 
                 salesHistoryRepository.save(sale);
@@ -270,6 +281,22 @@ public class SalesHistoryController {
         }
 
         return ResponseEntity.ok(ApiResponse.success(recordsCreated + " simulated transactions successfully generated for " + products.size() + " products at " + supermarket.getName() + "!"));
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // DELETE /api/v1/sales/reset-demo-data
+    // ─────────────────────────────────────────────────────────
+    /**
+     * Clears all simulated or historical sales records from the database so administrators
+     * can test clean CSV uploads without accumulated historical bias.
+     */
+    @DeleteMapping("/reset-demo-data")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERMARKET_MANAGER')")
+    public ResponseEntity<ApiResponse<String>> resetDemoData() {
+        long count = salesHistoryRepository.count();
+        salesHistoryRepository.deleteAll();
+        demandForecastRepository.deleteAll();
+        return ResponseEntity.ok(ApiResponse.success("Successfully reset transaction ledger and cleared cached predictions! Removed " + count + " historical test records."));
     }
 
     // ─────────────────────────────────────────────────────────

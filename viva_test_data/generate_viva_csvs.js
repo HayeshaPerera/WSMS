@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const prices = {
-    'PROD001': 4.99, 'PROD002': 2.49, 'PROD003': 12.99,
-    'PROD004': 5.99, 'PROD005': 6.99, 'PROD006': 3.99,
-    'PROD007': 8.99, 'PROD008': 5.49, 'PROD009': 2.99
+    'PROD001': 1490.00, 'PROD002': 750.00, 'PROD003': 3890.00,
+    'PROD004': 1790.00, 'PROD005': 2100.00, 'PROD006': 1180.00,
+    'PROD007': 2690.00, 'PROD008': 1650.00, 'PROD009': 890.00
 };
 
 function generateCsv(filename, trendType, skus) {

@@ -81,9 +81,9 @@
         <div class="forecast-header-card">
           <div class="product-name">{{ f.productName }}</div>
           <!-- Trend badge color dynamically changes based on trend direction -->
-          <span class="trend-badge" [style.color]="getTrendColor(f.trend)">
+          <span class="trend-badge" [style.color]="getTrendColor(f.trend)" title="Customer purchasing velocity over time">
             <span class="material-symbols-outlined trend-icon">{{ getTrendIcon(f.trend) }}</span>
-            <span class="trend-label">{{ f.trend | uppercase }}</span>
+            <span class="trend-label" style="font-weight: 700;">DEMAND: {{ f.trend | uppercase }}</span>
           </span>
         </div>
 
@@ -112,10 +112,10 @@
         </div>
 
         <!-- Card Footer: SKU and Stock Status Alert -->
-        <div class="card-footer-meta">
+        <div class="card-footer-meta" style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px;">
           <div class="sku-tag">{{ f.productSku }}</div>
-          <div class="stock-status-wrapper">
-            <!-- Displays Critical, Low, or Adequate depending on stock levels -->
+          <div class="stock-status-wrapper" style="display: flex; align-items: center; gap: 6px;" title="Current Inventory Health vs Predicted Weekly Demand">
+            <span style="font-size: 11px; color: #6B7280; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">STOCK:</span>
             <app-status-badge [status]="getStockStatus(f).toUpperCase()"></app-status-badge>
           </div>
         </div>

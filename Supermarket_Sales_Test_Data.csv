@@ -1,0 +1,37 @@
+Product SKU,Sale Date,Quantity Sold,Unit Price,Notes
+RICE-BAS5KG,2026-07-20,45,3250.00,Morning Peak Rush POS #1
+RICE-BAS5KG,2026-07-21,38,3250.00,Express Counter Checkout
+RICE-BAS5KG,2026-07-22,52,3250.00,Midweek Grocery Promo
+RICE-BAS5KG,2026-07-23,40,3250.00,Standard Counter Checkout
+RICE-BAS5KG,2026-07-24,65,3250.00,Weekend Peak Rush POS #1
+RICE-BAS5KG,2026-07-25,70,3250.00,Weekend Peak Rush POS #2
+MILK-ANCH400G,2026-07-20,25,1180.00,Morning Peak Rush POS #1
+MILK-ANCH400G,2026-07-21,30,1180.00,Express Counter Checkout
+MILK-ANCH400G,2026-07-22,28,1180.00,Standard Counter Checkout
+MILK-ANCH400G,2026-07-23,35,1180.00,Standard Counter Checkout
+MILK-ANCH400G,2026-07-24,48,1180.00,Weekend Peak Rush POS #1
+MILK-ANCH400G,2026-07-25,55,1180.00,Weekend Peak Rush POS #2
+OIL-SUN1L,2026-07-20,18,1350.00,Morning Peak Rush POS #1
+OIL-SUN1L,2026-07-21,22,1350.00,Express Counter Checkout
+OIL-SUN1L,2026-07-22,20,1350.00,Standard Counter Checkout
+OIL-SUN1L,2026-07-23,25,1350.00,Standard Counter Checkout
+OIL-SUN1L,2026-07-24,35,1350.00,Weekend Peak Rush POS #1
+OIL-SUN1L,2026-07-25,40,1350.00,Weekend Peak Rush POS #2
+EGGS-DOZ,2026-07-20,60,780.00,Morning Peak Rush POS #1
+EGGS-DOZ,2026-07-21,55,780.00,Express Counter Checkout
+EGGS-DOZ,2026-07-22,65,780.00,Midweek Grocery Promo
+EGGS-DOZ,2026-07-23,58,780.00,Standard Counter Checkout
+EGGS-DOZ,2026-07-24,85,780.00,Weekend Peak Rush POS #1
+EGGS-DOZ,2026-07-25,92,780.00,Weekend Peak Rush POS #2
+TEA-DIL500G,2026-07-20,30,950.00,Morning Peak Rush POS #1
+TEA-DIL500G,2026-07-21,28,950.00,Express Counter Checkout
+TEA-DIL500G,2026-07-22,34,950.00,Standard Counter Checkout
+TEA-DIL500G,2026-07-23,32,950.00,Standard Counter Checkout
+TEA-DIL500G,2026-07-24,46,950.00,Weekend Peak Rush POS #1
+TEA-DIL500G,2026-07-25,50,950.00,Weekend Peak Rush POS #2
+CHICK-1KG,2026-07-20,20,1850.00,Morning Peak Rush POS #1
+CHICK-1KG,2026-07-21,25,1850.00,Express Counter Checkout
+CHICK-1KG,2026-07-22,22,1850.00,Standard Counter Checkout
+CHICK-1KG,2026-07-23,28,1850.00,Standard Counter Checkout
+CHICK-1KG,2026-07-24,42,1850.00,Weekend Peak Rush POS #1
+CHICK-1KG,2026-07-25,48,1850.00,Weekend Peak Rush POS #2

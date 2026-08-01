@@ -153,4 +153,11 @@ export class SalesService {
         }
         return this.http.post<ApiResponse>(`${this.apiUrl}/generate-demo`, null, { params });
     }
+
+    /**
+     * Resets and deletes all historical sales test records to enable clean testing.
+     */
+    resetDemoData(): Observable<ApiResponse> {
+        return this.http.delete<ApiResponse>(`${this.apiUrl}/reset-demo-data`);
+    }
 }
