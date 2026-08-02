@@ -118,7 +118,8 @@ export class AuthService {
   // Checks if the logged-in user has a specific role (e.g., 'ROLE_ADMIN')
   hasRole(role: string): boolean {
     const u = this.currentUserSignal();
-    return !!u && Array.isArray(u.roles) && u.roles.includes(role);
+    if (!u || !Array.isArray(u.roles)) return false;
+    return u.roles.some(r => r === role || `ROLE_${r}` === role || r === `ROLE_${role}`);
   }
 
   // Convenience methods for checking specific core roles
