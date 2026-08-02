@@ -538,16 +538,28 @@ export class InventoryComponent implements OnInit {
       // User selected "--- Create New Product ---"
       this.isNewProduct = true;
       this.selectedProduct = null;
+      this.newInventory.reorderLevel = 20; // Default recommended par level
     } else if (productId) {
       // User selected an existing product
       this.isNewProduct = false;
       this.selectedProduct = this.availableProducts.find(p => p.id == productId) || null;
       this.newInventory.productId = parseInt(productId);
+
+      // Auto-populate existing Par Level (Reorder threshold)
+      const existingInv = this.items.find(i => i.product?.id == productId || (i as any).productId == productId);
+      if (existingInv && existingInv.reorderLevel != null && existingInv.reorderLevel > 0) {
+        this.newInventory.reorderLevel = existingInv.reorderLevel;
+      } else if (this.selectedProduct && this.selectedProduct.reorderLevel != null && this.selectedProduct.reorderLevel > 0) {
+        this.newInventory.reorderLevel = this.selectedProduct.reorderLevel;
+      } else {
+        this.newInventory.reorderLevel = 20; // default safe par level
+      }
     } else {
       // User selected the default blank option
       this.isNewProduct = false;
       this.selectedProduct = null;
       this.newInventory.productId = null;
+      this.newInventory.reorderLevel = 0;
     }
   }
 

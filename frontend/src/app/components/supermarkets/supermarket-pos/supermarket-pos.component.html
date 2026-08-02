@@ -4,17 +4,23 @@
       <h2><i class="fas fa-cash-register text-success"></i> Point of Sale</h2>
       <p class="text-muted">Process sales and automatically update inventory stock</p>
     </div>
-    <div style="display: flex; gap: 10px; align-items: center;">
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
       <div class="date-filter">
-        <label class="text-muted" style="font-size: 12px; margin-bottom: 2px; display: block;">From</label>
-        <input type="date" class="form-control glass" [(ngModel)]="exportStartDate" (ngModelChange)="updateFilteredExportSales()" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 6px 12px;">
+        <label class="text-muted" style="font-size: 12px; margin-bottom: 2px; display: block;">From Date</label>
+        <input type="date" class="form-control glass" [(ngModel)]="exportStartDate" (ngModelChange)="updateFilteredExportSales()" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.15); padding: 6px 12px; font-weight: 600;">
       </div>
       <div class="date-filter">
-        <label class="text-muted" style="font-size: 12px; margin-bottom: 2px; display: block;">To</label>
-        <input type="date" class="form-control glass" [(ngModel)]="exportEndDate" (ngModelChange)="updateFilteredExportSales()" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 6px 12px;">
+        <label class="text-muted" style="font-size: 12px; margin-bottom: 2px; display: block;">To Date</label>
+        <input type="date" class="form-control glass" [(ngModel)]="exportEndDate" (ngModelChange)="updateFilteredExportSales()" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.15); padding: 6px 12px; font-weight: 600;">
       </div>
-      <button class="btn btn-success" (click)="exportSalesToCsv()" title="Export sales to Excel/CSV for the selected time period" style="margin-top: 18px;">
-        <i class="fas fa-file-excel me-2"></i> Export Sales
+      <button *ngIf="exportStartDate || exportEndDate" class="btn btn-secondary glass" (click)="clearDateFilter()" title="Clear date filters to show all historical sales records" style="margin-top: 18px; padding: 7px 12px; border-radius: 8px;">
+        <i class="fas fa-times mr-1"></i> Clear Dates
+      </button>
+      <button class="btn btn-primary" style="margin-top: 18px; font-weight: 600; padding: 7px 14px; border-radius: 8px;" (click)="generateDemoSales()" title="Generate sample historical sales records">
+        <i class="fas fa-bolt me-1"></i> Generate Sales Data
+      </button>
+      <button class="btn btn-success" (click)="exportSalesToCsv()" title="Export sales to Excel/CSV" style="margin-top: 18px; padding: 7px 14px; border-radius: 8px;">
+        <i class="fas fa-file-excel me-1"></i> Export Sales
       </button>
     </div>
   </div>
@@ -124,11 +130,17 @@
     </div>
   </div>
 
-  <!-- Filtered Sales History Section -->
-  <div class="glass-card mt-4 p-0 overflow-hidden" *ngIf="exportStartDate || exportEndDate">
+  <!-- Always visible Sales History Section -->
+  <div class="glass-card mt-4 p-0 overflow-hidden">
     <div class="table-toolbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 24px; flex-wrap: wrap; gap: 15px;">
-      <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">Sales History</h3>
-      <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text-primary);">POS Sales History</h3>
+        <span style="font-size: 12px; padding: 2px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10B981; font-weight: 700;">{{ filteredExportSales.length }} total records</span>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <button class="btn btn-primary btn-sm" style="padding: 6px 14px; font-weight: 600; border-radius: 8px;" (click)="generateDemoSales()">
+          <i class="fas fa-bolt me-1"></i> Generate Sales Data
+        </button>
         <!-- Search filter -->
         <div class="search-box" style="width: 250px;">
           <i class="fas fa-search search-icon" style="top: 50%; transform: translateY(-50%); font-size: 14px; left: 12px; color: var(--text-muted);"></i>
@@ -172,23 +184,38 @@
           <tr *ngIf="paginatedSales.length === 0">
             <td colspan="4" class="text-center text-muted py-5">
               <i class="fas fa-history fa-2x mb-3 opacity-25 d-block"></i>
-              No records found.
+              <p style="margin-bottom: 15px; font-size: 15px; font-weight: 500;">No sales records found for this date range.</p>
+              <button class="btn btn-primary btn-sm" (click)="generateDemoSales()" style="padding: 10px 20px; font-size: 14px; border-radius: 20px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                <i class="fas fa-bolt me-2"></i> Click Here to Generate Historical Sales Data
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div class="table-footer" style="padding: 15px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.3);">
-      <span class="text-muted" style="font-size: 13px;">
-        Showing {{ showingStartIndex }} to {{ showingEndIndex }} of {{ filteredSalesForTable.length }} entries
+    <div class="table-footer" style="padding: 15px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.3); flex-wrap: wrap; gap: 12px;">
+      <span class="text-muted" style="font-size: 13px; font-weight: 500;">
+        Showing <strong style="color: #0f172a;">{{ showingStartIndex }}</strong> to <strong style="color: #0f172a;">{{ showingEndIndex }}</strong> of <strong style="color: #10B981;">{{ filteredSalesForTable.length }}</strong> total transactions
       </span>
-      <div style="display: flex; gap: 5px;">
-        <button class="btn btn-secondary btn-sm" [disabled]="currentPage === 1" (click)="changePage(-1)">
-          <i class="fas fa-chevron-left"></i>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn btn-secondary btn-sm" title="First Page" [disabled]="currentPage === 1" (click)="goToPage(1)" style="padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+          <i class="fas fa-angle-double-left me-1"></i> First
         </button>
-        <span style="display: inline-flex; align-items: center; padding: 0 10px; font-weight: 600; font-size: 14px;">{{ currentPage }} / {{ totalPages }}</span>
-        <button class="btn btn-secondary btn-sm" [disabled]="currentPage === totalPages" (click)="changePage(1)">
-          <i class="fas fa-chevron-right"></i>
+        <button class="btn btn-secondary btn-sm" title="Previous Page" [disabled]="currentPage === 1" (click)="changePage(-1)" style="padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+          <i class="fas fa-chevron-left"></i> Prev
+        </button>
+        
+        <div style="display: flex; align-items: center; gap: 6px; margin: 0 6px; font-weight: 600; font-size: 13.5px; color: #334155;">
+          <span>Page</span>
+          <input type="number" [ngModel]="currentPage" (ngModelChange)="onPageInput($event)" min="1" [max]="totalPages" style="width: 60px; text-align: center; border: 1.5px solid #CBD5E1; border-radius: 6px; padding: 4px; font-weight: 700; outline: none; background: #fff; color: #0F172A;" title="Type a page number to jump instantly" />
+          <span>of {{ totalPages || 1 }}</span>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" title="Next Page" [disabled]="currentPage >= totalPages" (click)="changePage(1)" style="padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+          Next <i class="fas fa-chevron-right ms-1"></i>
+        </button>
+        <button class="btn btn-secondary btn-sm" title="Last Page" [disabled]="currentPage >= totalPages" (click)="goToPage(totalPages)" style="padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600;">
+          Last <i class="fas fa-angle-double-right ms-1"></i>
         </button>
       </div>
     </div>

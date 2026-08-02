@@ -63,20 +63,34 @@
     <!-- ========================= -->
     <!-- CSV UPLOAD FORM (toggle)  -->
     <!-- ========================= -->
-    <div class="glass-card mb-4 csv-upload-form" *ngIf="showCsvUploadForm" style="border: 2px dashed var(--accent-color); padding: 40px; text-align: center; background: rgba(0,0,0,0.2);">
-        <h3 class="mb-2"><i class="fas fa-file-csv text-accent mr-2"></i> Bulk Import Sales Data</h3>
-        <p class="text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">Upload a CSV file containing historical POS sales data to train the AI Demand Forecasting model. Ensure your CSV matches the standard template format.</p>
+    <div class="glass-card mb-4 csv-upload-form" *ngIf="showCsvUploadForm" 
+        (dragover)="onDragOver($event)" 
+        (dragleave)="onDragLeave($event)" 
+        (drop)="onFileDrop($event)"
+        [style.border-color]="isDragging ? '#10B981' : 'var(--accent-color)'"
+        [style.background]="isDragging ? 'rgba(16, 185, 129, 0.18)' : 'rgba(0,0,0,0.2)'"
+        style="border: 2px dashed var(--accent-color); padding: 40px; text-align: center; border-radius: 16px; transition: all 0.3s ease; cursor: pointer;"
+        (click)="csvFileInput.click()">
         
-        <div class="upload-area" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 8px;">
-            <input type="file" #csvFileInput (change)="onCsvFileSelected($event); toggleCsvUploadForm()" accept=".csv" style="display: none;">
-            <button class="btn btn-primary" style="padding: 12px 24px; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);" (click)="csvFileInput.click()">
-                <i class="fas fa-cloud-upload-alt mr-2"></i> Browse CSV File
+        <h3 class="mb-2"><i class="fas fa-file-csv text-accent mr-2"></i> Bulk Import Sales Data</h3>
+        <p class="text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">Upload or drag & drop a CSV / Excel file containing historical POS sales data to train the AI Demand Forecasting model.</p>
+        
+        <div class="upload-area" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 28px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); pointer-events: none;">
+            <input type="file" #csvFileInput (change)="onCsvFileSelected($event); toggleCsvUploadForm(); $event.stopPropagation();" accept=".csv" style="display: none;" (click)="$event.stopPropagation()">
+            <div style="width: 76px; height: 76px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 1.5px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease;" [style.transform]="isDragging ? 'scale(1.15)' : 'scale(1)'">
+                <i class="fas" [ngClass]="isDragging ? 'fa-folder-open' : 'fa-cloud-upload-alt'" style="font-size: 36px; color: #10B981;"></i>
+            </div>
+            <span style="font-size: 18px; font-weight: 700; color: var(--text-primary, #FFFFFF);">
+                {{ isDragging ? 'Drop your Excel / CSV file right here!' : 'Drag & Drop your Excel / CSV file here' }}
+            </span>
+            <span class="text-muted fs-sm">or click anywhere inside this drop box to select from computer</span>
+            <button class="btn btn-primary mt-1" style="padding: 10px 24px; font-size: 15px; font-weight: 700; pointer-events: auto; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" (click)="csvFileInput.click(); $event.stopPropagation();">
+                <i class="fas fa-folder-open mr-2"></i> Browse Computer
             </button>
-            <span class="text-muted fs-sm">Drag and drop functionality coming soon</span>
         </div>
         
-        <div class="mt-4 pt-3 border-top border-light text-center">
-             <button class="btn btn-secondary glass" (click)="toggleCsvUploadForm()"><i class="fas fa-times mr-1"></i> Cancel</button>
+        <div class="mt-4 pt-3 border-top border-light text-center" (click)="$event.stopPropagation()">
+             <button class="btn btn-secondary glass" (click)="toggleCsvUploadForm(); $event.stopPropagation()"><i class="fas fa-times mr-1"></i> Cancel</button>
         </div>
     </div>
 

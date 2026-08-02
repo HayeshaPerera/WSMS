@@ -146,7 +146,7 @@
             <div style="font-size:11px; color:var(--text-muted)">{{ d.supermarket?.location }}</div>
           </td>
           
-          <!-- Column: Status Badge -->
+          <!-- Column: Status Badge & Failure Reason -->
           <td>
             <!-- Dynamically applies different color badges depending on the exact status string -->
             <span class="badge" [ngClass]="{
@@ -158,11 +158,22 @@
             }">
               {{ d.status }}
             </span>
+            <div *ngIf="d.status === 'FAILED' && d.failureReason" style="margin-top: 6px; padding: 6px 8px; background: rgba(239, 68, 68, 0.08); border: 1px dashed rgba(239, 68, 68, 0.4); border-radius: 6px; max-width: 220px; font-size: 11.5px; color: #DC2626; line-height: 1.35;">
+              <div style="font-weight: 700; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                <span class="material-symbols-outlined" style="font-size: 14px;">error</span>
+                Reported Issue:
+              </div>
+              <div>{{ d.failureReason }}</div>
+            </div>
           </td>
           
           <!-- Column: Timeline (ETA if active, Delivered date if finished) -->
           <td>
-            <div *ngIf="d.status !== 'DELIVERED'">
+            <div *ngIf="d.status === 'FAILED'">
+              <div style="font-size:12px; font-weight:700; color: #DC2626;">Failed: {{ (d.failedAt || d.createdAt) | date:'MMM d, HH:mm' }}</div>
+              <div style="font-size:10px; color: #EF4444; font-weight: 600;">Store Rejection Notice</div>
+            </div>
+            <div *ngIf="d.status !== 'DELIVERED' && d.status !== 'FAILED'">
               <div style="font-size:12px; font-weight:600; color:var(--info)">ETA: {{ d.estimatedDelivery | date:'MMM d' }}</div>
               <div style="font-size:10px; color:var(--text-muted)">Created: {{ d.createdAt | date:'HH:mm' }}</div>
             </div>
@@ -203,6 +214,17 @@
                   <span class="material-symbols-outlined" style="font-size:16px; color:var(--danger)">close</span>
                 </button>
               </ng-container>
+
+              <!-- State when delivery failed / rejected by supermarket -->
+              <div *ngIf="d.status === 'FAILED'" class="d-flex flex-column gap-1" style="font-size:11.5px; color: #DC2626; background: rgba(239, 68, 68, 0.08); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.25);">
+                <div class="d-flex align-items-center gap-1" style="font-weight: 700;">
+                  <span class="material-symbols-outlined" style="font-size:15px; color: #DC2626;">report_problem</span>
+                  Issue Reported
+                </div>
+                <span style="font-size: 11px; color: #475569; max-width: 180px; font-weight: 500;">
+                  "{{ d.failureReason || 'Delivery not received / rejected by store' }}"
+                </span>
+              </div>
 
               <!-- State when fully delivered -->
               <div *ngIf="d.status === 'DELIVERED'" class="d-flex align-items-center gap-1" style="color:var(--text-muted); font-size:11px">

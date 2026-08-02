@@ -238,8 +238,8 @@ public class SalesHistoryController {
                 }
             }
 
-            // Loop backwards through time to generate daily sales
-            for (int i = days; i >= 1; i--) {
+            // Loop backwards through time to generate daily sales including TODAY (i = 0)
+            for (int i = days; i >= 0; i--) {
                 LocalDate saleDate = today.minusDays(i);
                 int dayOfWeek = saleDate.getDayOfWeek().getValue();
                 
@@ -252,8 +252,8 @@ public class SalesHistoryController {
                     baseQty += 6 + random.nextInt(10); 
                 }
                 
-                // 3. Drop days (10% chance of no sales at all on a given day to simulate stockouts/low foot traffic)
-                if (random.nextDouble() < 0.1) {
+                // 3. Drop days (10% chance of no sales on historical days, but NEVER drop today so today's data is always visible)
+                if (i > 0 && random.nextDouble() < 0.1) {
                     continue;
                 }
 

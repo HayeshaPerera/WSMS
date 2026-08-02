@@ -146,8 +146,11 @@
             <input type="number" [(ngModel)]="item.quantity" min="1" />
           </div>
           <div class="form-group sm">
-            <label>Unit Cost (LKR)</label>
-            <input type="number" [(ngModel)]="item.unitCost" step="0.01" />
+            <label style="display: flex; align-items: center; gap: 3px;" title="Edit unit cost/price here to automatically update product pricing upon GRN confirmation">
+              Unit Price / Cost
+              <span class="material-symbols-outlined" style="font-size: 14px; color: var(--color-primary); cursor: help;" title="Price modifications are allowed during GRN receiving">edit_note</span>
+            </label>
+            <input type="number" [(ngModel)]="item.unitCost" step="0.01" style="font-weight: 600;" />
           </div>
           <div class="form-group sm" title="Par Level / Minimum Threshold (Auto-suggested based on current stock or product profile)">
             <label style="display: flex; align-items: center; gap: 3px;">

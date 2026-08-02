@@ -87,6 +87,7 @@ export class SalesForecastingComponent implements OnInit {
 
     showRecordForm = false;              // Whether the record sale form is visible
     showCsvUploadForm = false;           // Whether the CSV upload form is visible
+    isDragging = false;                  // Whether file is currently dragged over dropzone
     newSale: SaleRecord = {              // Object holding the new sale form data
         productId: 0,                      // Selected product ID (0 = not selected)
         supermarketId: 0,                  // Selected supermarket ID (0 = not selected)
@@ -410,18 +411,53 @@ export class SalesForecastingComponent implements OnInit {
     }
 
     /**
-     * Handles file selection for CSV import.
+     * Drag-and-drop handlers for CSV upload dropzone.
      */
-    onCsvFileSelected(event: any): void {
-        const file = event.target.files[0];
-        if (!file) return;
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = true;
+    }
 
+    onDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+    }
+
+    onFileDrop(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                this.processCsvFile(file);
+                this.toggleCsvUploadForm();
+            } else {
+                this.notifications.warning('Please drop a valid .csv Excel file.');
+            }
+        }
+    }
+
+    private processCsvFile(file: File): void {
         const reader = new FileReader();
         reader.onload = (e: any) => {
             const content = e.target.result;
             this.parseAndUploadSalesCsv(content);
         };
         reader.readAsText(file);
+    }
+
+    /**
+     * Handles file selection for CSV import.
+     */
+    onCsvFileSelected(event: any): void {
+        const file = event.target.files[0];
+        if (!file) return;
+        this.processCsvFile(file);
         // Clear input value so same file can be selected again
         event.target.value = '';
     }
@@ -461,30 +497,66 @@ export class SalesForecastingComponent implements OnInit {
         const importedSales: SaleRecord[] = [];
         const errors: string[] = [];
 
+        // Dynamically detect column indices from the header row to seamlessly support both
+        // Downloaded CSV Templates and exported POS sales ledgers.
+        let skuIdx = -1, dateIdx = -1, qtyIdx = -1, priceIdx = -1, notesIdx = -1, nameIdx = -1;
+        
+        const firstLineCols = this.parseCsvRow(lines[0] || '').map(h => h.toLowerCase());
+        const isHeader = firstLineCols.some(h => h.includes('sku') || h.includes('date') || h.includes('qty') || h.includes('quantity') || h.includes('price') || h.includes('sold') || h.includes('product') || h.includes('store'));
+
+        let startRow = 1;
+        if (isHeader) {
+            firstLineCols.forEach((h, idx) => {
+                if (h.includes('sku') || h.includes('code')) {
+                    skuIdx = idx;
+                } else if (h.includes('date') || h.includes('time')) {
+                    dateIdx = idx;
+                } else if (h.includes('qty') || h.includes('quantity') || (h.includes('sold') && !h.includes('amount') && !h.includes('price'))) {
+                    qtyIdx = idx;
+                } else if (h.includes('price') || h.includes('unit') || h.includes('cost') || h.includes('rate')) {
+                    priceIdx = idx;
+                } else if (h.includes('note') || h.includes('desc') || h.includes('comment') || h.includes('reason')) {
+                    notesIdx = idx;
+                } else if ((h.includes('product') || h.includes('name') || h.includes('item')) && !h.includes('store') && !h.includes('supermarket') && nameIdx === -1) {
+                    nameIdx = idx;
+                }
+            });
+            startRow = 1;
+        } else {
+            startRow = 0;
+        }
+
+        // Default to standard template column order (SKU, Date, Quantity, Price, Notes) if headers were not explicit
+        if (skuIdx === -1) skuIdx = nameIdx !== -1 ? nameIdx : 0;
+        if (dateIdx === -1) dateIdx = 1;
+        if (qtyIdx === -1) qtyIdx = 2;
+        if (priceIdx === -1) priceIdx = 3;
+        if (notesIdx === -1) notesIdx = 4;
+
         // Parse CSV contents line-by-line into SaleRecord DTO structures.
         // Validates SKU mappings and numeric constraints before bulk submission.
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = startRow; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
 
-            // Split by comma
-            const cols = line.split(',');
-            if (cols.length < 3) {
+            // Split by comma with quote-aware parsing
+            const cols = this.parseCsvRow(line);
+            if (cols.length < 2) {
                 errors.push(`Line ${i + 1}: Insufficient columns`);
                 continue;
             }
 
             // Clean leading/trailing spaces and quotes that Excel/CSV exports often attach
-            const sku = cols[0].trim().replace(/^["']|["']$/g, '');
-            const dateStr = cols[1].trim().replace(/^["']|["']$/g, '');
-            const qtyStr = cols[2].trim().replace(/^["']|["']$/g, '');
+            const sku = (cols[skuIdx] !== undefined ? cols[skuIdx] : cols[0] || '').trim().replace(/^["']|["']$/g, '');
+            const dateStr = (cols[dateIdx] !== undefined ? cols[dateIdx] : cols[1] || '').trim().replace(/^["']|["']$/g, '');
+            const qtyStr = (cols[qtyIdx] !== undefined ? cols[qtyIdx] : cols[2] || '').trim().replace(/^["']|["']$/g, '');
             const qty = Number(qtyStr);
-            const priceStr = cols[3] ? cols[3].trim().replace(/^["']|["']$/g, '') : '0';
+            const priceStr = cols[priceIdx] !== undefined ? cols[priceIdx].trim().replace(/^["']|["']$/g, '') : (cols[3] || '0');
             const price = Number(priceStr);
-            const notes = cols[4] ? cols[4].trim().replace(/^["']|["']$/g, '') : 'POS Import';
+            const notes = cols[notesIdx] !== undefined ? cols[notesIdx].trim().replace(/^["']|["']$/g, '') : (cols[4] || 'POS Import');
 
             // Find product by SKU or Name case-insensitively
-            let product = this.products.find((p: any) => (p.sku && p.sku.toLowerCase() === sku.toLowerCase()) || (p.name && p.name.toLowerCase().includes(sku.toLowerCase())));
+            let product = this.products.find((p: any) => (p.sku && p.sku.toLowerCase() === sku.toLowerCase()) || (p.name && p.name.toLowerCase().includes(sku.toLowerCase())) || (p.name && p.name.toLowerCase().trim() === sku.toLowerCase().trim()));
             
             // Intelligent automatic resilience: if product is brand new or catalog array hasn't finished loading after a reset,
             // reliably extract demo ID mapping (e.g. SKU-001 -> ID 1) or assign standard catalog fallback to guarantee seamless CSV imports
@@ -495,7 +567,7 @@ export class SalesForecastingComponent implements OnInit {
             }
 
             if (isNaN(qty) || qty <= 0) {
-                errors.push(`Line ${i + 1}: Invalid quantity "${cols[2]}"`);
+                errors.push(`Line ${i + 1}: Invalid quantity "${qtyStr}" (Column ${qtyIdx + 1})`);
                 continue;
             }
 
@@ -542,6 +614,33 @@ export class SalesForecastingComponent implements OnInit {
                 this.notifications.error('Failed to import sales: ' + (err.error?.message || err.message));
             }
         });
+    }
+
+    /**
+     * Helper method to accurately split CSV rows respecting quotes from Excel or POS exports.
+     */
+    private parseCsvRow(row: string): string[] {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < row.length; i++) {
+            const char = row[i];
+            if (char === '"' || char === "'") {
+                if (inQuotes && i + 1 < row.length && row[i + 1] === char) {
+                    current += char;
+                    i++; // Skip escaped quote
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        result.push(current.trim());
+        return result.map(col => col.replace(/^["']|["']$/g, '').trim());
     }
 
     /**

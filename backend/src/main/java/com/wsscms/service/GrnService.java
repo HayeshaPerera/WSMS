@@ -121,6 +121,10 @@ public class GrnService {
                 inventory.setReorderLevel(item.getParLevel());
             }
 
+            if (item.getUnitCost() != null && item.getUnitCost().compareTo(java.math.BigDecimal.ZERO) > 0) {
+                item.getProduct().setUnitPrice(item.getUnitCost());
+                productRepository.save(item.getProduct());
+            }
             if (item.getParLevel() != null && item.getParLevel() > 0) {
                 item.getProduct().setReorderLevel(item.getParLevel());
                 productRepository.save(item.getProduct());

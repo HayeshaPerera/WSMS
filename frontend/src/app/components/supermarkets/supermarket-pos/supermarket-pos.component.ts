@@ -46,7 +46,14 @@ export class SupermarketPosComponent implements OnInit {
 
   loadAllSales(): void {
     this.salesService.getAllSales().subscribe({
-      next: (sales: any[]) => {
+      next: (res: any) => {
+        const sales = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.content || []);
+        // Sort newest first (date descending) so TODAY'S data is always at the top on Page 1
+        sales.sort((a: any, b: any) => {
+          const dateA = new Date(b.saleDate || '1970-01-01').getTime();
+          const dateB = new Date(a.saleDate || '1970-01-01').getTime();
+          return dateA - dateB;
+        });
         this.allSales = sales;
         this.updateFilteredExportSales();
       }
@@ -56,13 +63,21 @@ export class SupermarketPosComponent implements OnInit {
   updateFilteredExportSales(): void {
     let sales = [...this.allSales];
     if (this.exportStartDate) {
-       sales = sales.filter(s => (s.saleDate || '') >= this.exportStartDate);
+       const start = this.exportStartDate.substring(0, 10);
+       sales = sales.filter(s => (s.saleDate || '').substring(0, 10) >= start);
     }
     if (this.exportEndDate) {
-       sales = sales.filter(s => (s.saleDate || '') <= this.exportEndDate);
+       const end = this.exportEndDate.substring(0, 10);
+       sales = sales.filter(s => (s.saleDate || '').substring(0, 10) <= end);
     }
     this.filteredExportSales = sales;
     this.currentPage = 1; // reset page on new date filter
+  }
+
+  clearDateFilter(): void {
+    this.exportStartDate = '';
+    this.exportEndDate = '';
+    this.updateFilteredExportSales();
   }
 
   get filteredSalesForTable(): any[] {
@@ -101,19 +116,43 @@ export class SupermarketPosComponent implements OnInit {
     }
   }
 
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  onPageInput(val: any): void {
+    const p = parseInt(val, 10);
+    if (!isNaN(p) && p >= 1 && p <= this.totalPages) {
+      this.currentPage = p;
+    }
+  }
+
   onTableFilterChange(): void {
     this.currentPage = 1;
   }
 
   generateDemoSales(): void {
-    this.notifications.info('Generating dummy data for past days...');
-    this.salesService.generateDemoSales(15, this.supermarketId, false).subscribe({
+    let daysToGenerate = 100; // Default to 100 days (~3.5 months) back if no From Date is selected
+    if (this.exportStartDate) {
+      const from = new Date(this.exportStartDate);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - from.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 0 && !isNaN(diffDays)) {
+        daysToGenerate = Math.max(diffDays + 5, 30); // Add a 5-day cushion to cover the entire date range
+      }
+    }
+    this.notifications.info(`Generating ${daysToGenerate} days of sales history data up to today...`);
+    this.salesService.generateDemoSales(daysToGenerate, this.supermarketId || 1, true).subscribe({
       next: () => {
-        this.notifications.success('Dummy data generated and appended successfully!');
+        this.notifications.success(`✅ ${daysToGenerate} days of sales history generated successfully!`);
         this.loadAllSales();
+        this.loadInventory();
       },
       error: () => {
-        this.notifications.error('Failed to generate dummy data.');
+        this.notifications.error('Failed to generate sales data.');
       }
     });
   }

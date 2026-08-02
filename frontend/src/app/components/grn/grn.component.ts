@@ -167,10 +167,12 @@ export class GrnComponent implements OnInit {
   }
 
   addItem(): void {
-    const firstProductId = this.products[0]?.id || 0;
+    const firstProduct = this.products[0];
+    const firstProductId = firstProduct?.id || 0;
     this.newGrn.items.push({
       productId: firstProductId,
       quantity: 1,
+      unitCost: firstProduct?.unitPrice || 100,
       parLevel: this.getSuggestedParLevel(firstProductId)
     });
   }
@@ -221,7 +223,11 @@ export class GrnComponent implements OnInit {
       }, 0);
     } else {
       const pId = parseInt(value, 10);
+      const prod = this.products.find(item => item.id == pId);
       this.newGrn.items[index].productId = pId;
+      if (prod && prod.unitPrice != null) {
+        this.newGrn.items[index].unitCost = prod.unitPrice;
+      }
       this.newGrn.items[index].parLevel = this.getSuggestedParLevel(pId);
     }
   }
@@ -263,6 +269,7 @@ export class GrnComponent implements OnInit {
         
         if (this.pendingItemIndex >= 0 && this.newGrn.items[this.pendingItemIndex]) {
           this.newGrn.items[this.pendingItemIndex].productId = productWithId.id;
+          this.newGrn.items[this.pendingItemIndex].unitCost = productWithId.unitPrice || 0;
           this.newGrn.items[this.pendingItemIndex].parLevel = productWithId.reorderLevel || 20;
         }
         this.showNewProductModal = false;
@@ -275,6 +282,7 @@ export class GrnComponent implements OnInit {
         this.sharedData.addProduct(createdProduct);
         if (this.pendingItemIndex >= 0 && this.newGrn.items[this.pendingItemIndex]) {
           this.newGrn.items[this.pendingItemIndex].productId = createdProduct.id;
+          this.newGrn.items[this.pendingItemIndex].unitCost = createdProduct.unitPrice || 0;
           this.newGrn.items[this.pendingItemIndex].parLevel = createdProduct.reorderLevel || 20;
         }
         this.showNewProductModal = false;
