@@ -45,6 +45,7 @@ export class InventoryComponent implements OnInit {
   searchTerm = '';
   selectedCategory = '';
   selectedWarehouse = '';
+  selectedSupermarket = '';
   showLowStockOnly = false;
   sortBy = 'latest'; // Default sort order (latest, oldest, nameAsc, nameDesc)
 
@@ -80,6 +81,7 @@ export class InventoryComponent implements OnInit {
   // Static list of categories for the Add Product dropdown
   categories = ['Dairy', 'Bakery', 'Beverages', 'Meat', 'Produce', 'Grains', 'Canned Goods', 'Spreads', 'Cooking', 'Snacks', 'Frozen'];
   warehouses: any[] = []; // Loaded from API for filters/dropdowns
+  supermarkets: any[] = []; // Loaded from API for filters/dropdowns
 
   // --- Form State Variables ---
   selectedProduct: Product | null = null; // Currently selected product when adding stock
@@ -144,15 +146,16 @@ export class InventoryComponent implements OnInit {
       }
     });
 
+    this.sharedData.supermarkets$.subscribe(sms => {
+      if (Array.isArray(sms) && sms.length > 0) {
+        this.supermarkets = sms;
+      }
+    });
+
     // 5. Kick off the primary data fetch. 
     // We load Products first, and once products finish, it automatically calls loadInventoryFromAPI().
     this.loadProductsFromAPI();
-
-    // 6. If the user is an Admin, proactively load supermarket list into global state just in case it's needed later
-    const user = this.auth.getCurrentUser();
-    if (user && this.auth.isAdmin()) {
-      this.supermarketService.getAll().subscribe({ next: (data: any) => this.sharedData.setSupermarkets(data), error: () => {} });
-    }
+    this.loadSupermarketsFromAPI();
   }
 
   // Fetches warehouses and pushes them to global state
@@ -166,9 +169,33 @@ export class InventoryComponent implements OnInit {
         if (whs.length > 0) {
           this.warehouses = whs;
           this.sharedData.setWarehouses(whs); // Push to global subject
+        } else {
+          this.warehouses = [{ id: 1, name: 'SL Warehouse', code: 'WH01' }];
         }
       },
-      error: () => console.log('Failed to load warehouses from API')
+      error: () => {
+        this.warehouses = [{ id: 1, name: 'SL Warehouse', code: 'WH01' }];
+      }
+    });
+  }
+
+  loadSupermarketsFromAPI(): void {
+    this.supermarketService.getAll().subscribe({
+      next: (data: any) => {
+        let sms: any[] = [];
+        if (Array.isArray(data)) sms = data;
+        else if (data && Array.isArray(data.data)) sms = data.data;
+
+        if (sms.length > 0) {
+          this.supermarkets = sms;
+          this.sharedData.setSupermarkets(sms);
+        } else {
+          this.supermarkets = [{ id: 1, name: 'SL Supermarket', code: 'SM01' }, { id: 2, name: 'Eastside Grocery', code: 'SM02' }];
+        }
+      },
+      error: () => {
+        this.supermarkets = [{ id: 1, name: 'SL Supermarket', code: 'SM01' }, { id: 2, name: 'Eastside Grocery', code: 'SM02' }];
+      }
     });
   }
 
@@ -303,11 +330,15 @@ export class InventoryComponent implements OnInit {
       }
 
       // 3. Map flat warehouse/supermarket IDs back to nested objects so the HTML can do {{ it.warehouse.name }}
-      if (!it.warehouse && it.warehouseId) {
-        it.warehouse = { id: it.warehouseId, name: it.warehouseName || `Warehouse ${it.warehouseId}` };
+      if (!it.warehouse && (it.warehouseId || (it as any).warehouse_id)) {
+        const wid = it.warehouseId || (it as any).warehouse_id;
+        const foundWh = this.warehouses.find(w => w.id == wid);
+        it.warehouse = foundWh ? { ...foundWh } : { id: wid, name: it.warehouseName || `Warehouse ${wid}` };
       }
-      if (!it.supermarket && it.supermarketId) {
-        it.supermarket = { id: it.supermarketId, name: it.supermarketName || `Supermarket ${it.supermarketId}` };
+      if (!it.supermarket && (it.supermarketId || (it as any).supermarket_id)) {
+        const sid = it.supermarketId || (it as any).supermarket_id;
+        const foundSm = this.supermarkets.find(s => s.id == sid);
+        it.supermarket = foundSm ? { ...foundSm } : { id: sid, name: it.supermarketName || `Supermarket ${sid}` };
       }
 
       return it as Inventory;
@@ -424,7 +455,19 @@ export class InventoryComponent implements OnInit {
     if (this.selectedWarehouse) {
       filtered = filtered.filter(item =>
         item.warehouse?.name === this.selectedWarehouse ||
-        String(item.warehouse?.id) === String(this.selectedWarehouse)
+        String(item.warehouse?.id) === String(this.selectedWarehouse) ||
+        String((item as any).warehouseId) === String(this.selectedWarehouse) ||
+        String((item as any).warehouse_id) === String(this.selectedWarehouse)
+      );
+    }
+
+    // Supermarket dropdown
+    if (this.selectedSupermarket) {
+      filtered = filtered.filter(item =>
+        item.supermarket?.name === this.selectedSupermarket ||
+        String(item.supermarket?.id) === String(this.selectedSupermarket) ||
+        String((item as any).supermarketId) === String(this.selectedSupermarket) ||
+        String((item as any).supermarket_id) === String(this.selectedSupermarket)
       );
     }
     
@@ -437,11 +480,26 @@ export class InventoryComponent implements OnInit {
     this.page = 1; // Always reset to page 1 when filtering changes!
   }
 
+  onWarehouseFilterChange(): void {
+    if (this.selectedWarehouse) {
+      this.selectedSupermarket = '';
+    }
+    this.applyFilters();
+  }
+
+  onSupermarketFilterChange(): void {
+    if (this.selectedSupermarket) {
+      this.selectedWarehouse = '';
+    }
+    this.applyFilters();
+  }
+
   // Clears all inputs and resets filters
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategory = '';
     this.selectedWarehouse = '';
+    this.selectedSupermarket = '';
     this.showLowStockOnly = false;
     this.filteredItems = [...this.items];
     this.page = 1;

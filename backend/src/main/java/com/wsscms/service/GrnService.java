@@ -80,6 +80,7 @@ public class GrnService {
                 item.setUnitCost(itemDTO.getUnitCost());
                 item.setBatchNumber(itemDTO.getBatchNumber());
                 item.setExpiryDate(itemDTO.getExpiryDate());
+                item.setParLevel(itemDTO.getParLevel());
                 
                 header.getItems().add(item);
             }
@@ -106,12 +107,23 @@ public class GrnService {
                 
             Inventory inventory = (inventories != null && !inventories.isEmpty()) ? inventories.get(0) : null;
             
+            Integer targetParLevel = (item.getParLevel() != null && item.getParLevel() > 0)
+                ? item.getParLevel()
+                : (item.getProduct().getReorderLevel() != null ? item.getProduct().getReorderLevel() : 10);
+
             if (inventory == null) {
                 inventory = new Inventory();
                 inventory.setWarehouse(header.getWarehouse());
                 inventory.setProduct(item.getProduct());
                 inventory.setQuantity(0);
-                inventory.setReorderLevel(10);
+                inventory.setReorderLevel(targetParLevel);
+            } else if (item.getParLevel() != null && item.getParLevel() > 0) {
+                inventory.setReorderLevel(item.getParLevel());
+            }
+
+            if (item.getParLevel() != null && item.getParLevel() > 0) {
+                item.getProduct().setReorderLevel(item.getParLevel());
+                productRepository.save(item.getProduct());
             }
             
             inventory.setQuantity(inventory.getQuantity() + item.getQuantity());
@@ -158,6 +170,7 @@ public class GrnService {
                 itemDTO.setUnitCost(item.getUnitCost());
                 itemDTO.setBatchNumber(item.getBatchNumber());
                 itemDTO.setExpiryDate(item.getExpiryDate());
+                itemDTO.setParLevel(item.getParLevel());
                 return itemDTO;
             }).collect(Collectors.toList());
             dto.setItems(itemDTOs);

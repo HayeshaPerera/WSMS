@@ -14,4 +14,5 @@ public class GrnItemDTO {
     private BigDecimal unitCost;
     private String batchNumber;
     private LocalDate expiryDate;
+    private Integer parLevel;
 }

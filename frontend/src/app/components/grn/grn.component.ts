@@ -167,10 +167,38 @@ export class GrnComponent implements OnInit {
   }
 
   addItem(): void {
+    const firstProductId = this.products[0]?.id || 0;
     this.newGrn.items.push({
-      productId: this.products[0]?.id || 0,
-      quantity: 1
+      productId: firstProductId,
+      quantity: 1,
+      parLevel: this.getSuggestedParLevel(firstProductId)
     });
+  }
+
+  getSuggestedParLevel(productId: number): number {
+    if (!productId || productId <= 0) return 20;
+
+    // 1. Check existing inventory in this warehouse for current par / reorder level
+    const invList = this.sharedData.getInventory();
+    if (invList && invList.length > 0) {
+      const whId = Number(this.newGrn.warehouseId);
+      const match = invList.find((i: any) => 
+        (whId ? (i.warehouse?.id == whId || i.warehouseId == whId) : true) &&
+        (i.product?.id == productId || i.productId == productId || (i.product && i.product.id == productId))
+      );
+      if (match && match.reorderLevel != null && Number(match.reorderLevel) > 0) {
+        return Number(match.reorderLevel);
+      }
+    }
+
+    // 2. Check product's default reorder level from product profile
+    const p = this.products.find(item => item && (item.id == productId || item.id === Number(productId)));
+    if (p && p.reorderLevel != null && Number(p.reorderLevel) > 0) {
+      return Number(p.reorderLevel);
+    }
+
+    // 3. Default suggested par level
+    return 20;
   }
 
   removeItem(index: number): void {
@@ -186,9 +214,15 @@ export class GrnComponent implements OnInit {
       this.newProduct = { sku: '', name: '', category: '', unitPrice: 0, description: '', isActive: true };
       this.showNewProductModal = true;
       // Temporarily clear it so 'new' doesn't stay bound if they cancel
-      setTimeout(() => this.newGrn.items[index].productId = 0, 0);
+      setTimeout(() => {
+        if (this.newGrn.items[index]) {
+          this.newGrn.items[index].productId = 0;
+        }
+      }, 0);
     } else {
-      this.newGrn.items[index].productId = parseInt(value, 10);
+      const pId = parseInt(value, 10);
+      this.newGrn.items[index].productId = pId;
+      this.newGrn.items[index].parLevel = this.getSuggestedParLevel(pId);
     }
   }
 
@@ -227,8 +261,9 @@ export class GrnComponent implements OnInit {
         this.products.unshift(productWithId);
         this.sharedData.addProduct(productWithId);
         
-        if (this.pendingItemIndex >= 0) {
+        if (this.pendingItemIndex >= 0 && this.newGrn.items[this.pendingItemIndex]) {
           this.newGrn.items[this.pendingItemIndex].productId = productWithId.id;
+          this.newGrn.items[this.pendingItemIndex].parLevel = productWithId.reorderLevel || 20;
         }
         this.showNewProductModal = false;
         this.pendingItemIndex = -1;
@@ -238,8 +273,9 @@ export class GrnComponent implements OnInit {
         // Fallback: Use local product if backend fails
         this.products.unshift(createdProduct);
         this.sharedData.addProduct(createdProduct);
-        if (this.pendingItemIndex >= 0) {
+        if (this.pendingItemIndex >= 0 && this.newGrn.items[this.pendingItemIndex]) {
           this.newGrn.items[this.pendingItemIndex].productId = createdProduct.id;
+          this.newGrn.items[this.pendingItemIndex].parLevel = createdProduct.reorderLevel || 20;
         }
         this.showNewProductModal = false;
         this.pendingItemIndex = -1;

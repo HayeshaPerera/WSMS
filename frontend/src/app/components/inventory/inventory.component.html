@@ -174,9 +174,15 @@
         </select>
 
         <!-- Warehouse Filter -->
-        <select [(ngModel)]="selectedWarehouse" (change)="applyFilters()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
-          <option value="">All Locations</option>
-          <option *ngFor="let wh of warehouses" [value]="wh.name">{{wh.name}}</option>
+        <select [(ngModel)]="selectedWarehouse" (change)="onWarehouseFilterChange()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="">All Warehouses</option>
+          <option *ngFor="let wh of warehouses" [value]="wh.name">🏢 {{wh.name}}</option>
+        </select>
+
+        <!-- Supermarket Filter -->
+        <select [(ngModel)]="selectedSupermarket" (change)="onSupermarketFilterChange()" class="btn btn-secondary" style="height:38px; border-radius:var(--radius-md); padding:0 12px; font-size:13px">
+          <option value="">All Supermarkets</option>
+          <option *ngFor="let sm of supermarkets" [value]="sm.name">🛒 {{sm.name}}</option>
         </select>
 
         <!-- Low Stock Toggle Button -->
@@ -188,7 +194,7 @@
         </button>
 
         <!-- Clear Filters (shows if any filter is active) -->
-        <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedCategory || selectedWarehouse || showLowStockOnly" style="font-size:13px">
+        <button class="btn btn-ghost" (click)="clearFilters()" *ngIf="searchTerm || selectedCategory || selectedWarehouse || selectedSupermarket || showLowStockOnly" style="font-size:13px">
           Clear Filters
         </button>
       </div>

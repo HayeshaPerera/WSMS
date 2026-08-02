@@ -12,6 +12,7 @@ export interface GrnItemDTO {
   unitCost?: number;
   batchNumber?: string;
   expiryDate?: string;
+  parLevel?: number;
 }
 
 export interface GrnDTO {

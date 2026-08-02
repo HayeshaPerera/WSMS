@@ -50,11 +50,16 @@ public class GrnItem {
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
 
+    @Column(name = "par_level")
+    private Integer parLevel;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (orderedQty == null) orderedQty = quantity != null ? quantity : 0;
         if (receivedQty == null) receivedQty = quantity != null ? quantity : 0;
         if (unitPrice == null) unitPrice = unitCost != null ? unitCost : BigDecimal.ZERO;
+        if (parLevel == null && product != null && product.getReorderLevel() != null) parLevel = product.getReorderLevel();
+        if (parLevel == null) parLevel = 20;
     }
 }
